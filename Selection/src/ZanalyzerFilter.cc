@@ -243,16 +243,28 @@ ZanalyzerFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSetup)
     }
 
   }
-  if (elIsAcceptedEB<=1)    return false;
-  if (LV.size()==2){
-    TLorentzVector e_pair = LV[0] + LV[1];
-    double e_ee_invMass = e_pair.M ();
-    h_invMass->Fill(e_ee_invMass);
-  }  
-  if (elIsAccepted>2) cout<<"In this events we have more than two electrons accpeted!!!!!!!"<<endl;
+  if (elIsAccepted<=1)    return false;
+   double e_ee_invMass=0; 
+   if (elIsAccepted>2) cout<<"WARNING: In this events we have more than two electrons accpeted!!!!!!!"<<endl;
+   if (LV.size()==2){
+     TLorentzVector e_pair = LV[0] + LV[1];
+     e_ee_invMass = e_pair.M ();
+     h_invMass->Fill(e_ee_invMass);
+   }  
+   
+   if (elIsAcceptedEB==2){
+     h_invMassBB->Fill(e_ee_invMass);
+   }
+   if (elIsAcceptedEE==2){
+     h_invMassEE->Fill(e_ee_invMass);
+   }
+   if (elIsAcceptedEB==1 && elIsAcceptedEE==1){
+     h_invMassEB->Fill(e_ee_invMass);
+   }
+   
   eventAccept->Fill(elIsAccepted);
   LV.clear();
-
+  
   return true;
  
 }
@@ -264,6 +276,10 @@ ZanalyzerFilter::beginJob (){
   fOFile = new TFile("ZAnalysisFilter.root","RECREATE");
   eventAccept=new TH1D("eventAccept","Good Event Multiplicity", 20, 0, 20);
   h_invMass =new TH1F("Z peak - WP80","Z peak;InvMass (Gev)", 140, 0.0, 140.0);
+  h_invMassEE =new TH1F("Z peak - WP80 Endcap-Endcap","Z peak;InvMass (Gev)", 140, 0.0, 140.0);
+  h_invMassEB =new TH1F("Z peak - WP80 Endcap-Barrel","Z peak;InvMass (Gev)", 140, 0.0, 140.0);
+  h_invMassBB =new TH1F("Z peak - WP80 Barrel-Barrel","Z peak;InvMass (Gev)", 140, 0.0, 140.0);
+
 }
 
 // ------------ method called once each job just after ending the event loop  ------------
@@ -273,6 +289,10 @@ ZanalyzerFilter::endJob ()
   fOFile->cd();
   eventAccept->Write();
   h_invMass->Write();
+  h_invMassEE->Write();
+  h_invMassEB->Write();
+  h_invMassBB->Write();
+
 
   fOFile->Write() ;
   fOFile->Close() ;
