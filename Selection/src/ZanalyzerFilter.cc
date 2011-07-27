@@ -5,13 +5,13 @@
 // 
 /**\class Zanalyzer Zanalyzer.cc Zmonitoring/Zanalyzer/src/Zanalyzer.cc
 
- Description: [one line class summary]
+Description: [one line class summary]
 
- Implementation:
-     [Notes on implementation]
+Implementation:
+[Notes on implementation]
 */
 //
-// Original Author:  Vieri Candelise
+// Original Author:  Vieri Candelise & Matteo Marone
 //         Created:  Wed May 11 14:53:26 CEST 2011
 // $Id$
 //
@@ -94,17 +94,25 @@ ZanalyzerFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSetup)
   if (!electronCollection.isValid ())
     return false;
 
+  //////////////////////
   //Match The HLT Trigger
+  //////////////////////
+
+  bool WonnaMatch=false;
+
   edm::Handle<edm::TriggerResults> HLTResults;
   iEvent.getByLabel(triggerCollectionTag_, HLTResults);
-  if (!HLTResults.isValid ())
-    return false;
-
+  if (!HLTResults.isValid ()) return false;
+  
   const edm::TriggerNames & triggerNames = iEvent.triggerNames(*HLTResults);   
   int trigger_size = HLTResults->size();
   bool flag=false;
-
-  string path[10]={"HLT_Ele10_LW_L1R","HLT_Ele15_SW_L1R","HLT_Ele15_SW_CaloEleId_L1R","HLT_Ele17_SW_CaloEleId_L1R","HLT_Ele17_SW_TightEleId_L1R","HLT_Ele17_SW_TightEleId_L1R_v2","HLT_Ele17_SW_TightEleId_L1R_v3","HLT_Photon10_L1R","HLT_Photon15_L1R","HTL_Photon15_Cleaned_L1R"};
+  
+  string path[10]={"HLT_Ele17_CaloIdL_CaloIsoVL_Ele8_CaloIdL_CaloIsoVL_v3","HLT_Ele17_CaloIdVT_CaloIsoVT_TrkIdT_TrkIsoVT_SC8_Mass30_v3","HLT_Ele17_CaloIdT_TrkIdVL_CaloIsoVL_TrkIsoVL_Ele8_CaloIdT_TrkIdVL_CaloIsoVL_TrkIsoVL_v3","HLT_Ele27_CaloIdVT_CaloIsoT_TrkIdT_TrkIsoT_v3","HLT_Ele32_CaloIdVT_CaloIsoT_TrkIdT_TrkIsoT_v2","HLT_Ele32_CaloIdL_CaloIsoVL_SC17_v3","HLT_Ele45_CaloIdVT_TrkIdT_v3","HLT_Ele15_CaloIdVT_TrkIdT_LooseIsoPFTau15_v4","HLT_Ele15_CaloIdVT_CaloIsoT_TrkIdT_TrkIsoT_LooseIsoPFTau15_v4","HLT_Ele15_CaloIdVT_CaloIsoT_TrkIdT_TrkIsoT_LooseIsoPFTau20_v4"};
+  
+  //old 2010 string  
+  //string path[10]={"HLT_Ele17_CaloIdl_Ele8_CaloIsoIdL_CaloIsoVL_v3","HLT_Ele15_SW_L1R","HLT_Ele15_SW_CaloEleId_L1R","HLT_Ele17_SW_CaloEleId_L1R","HLT_Ele17_SW_TightEleId_L1R","HLT_Ele17_SW_TightEleId_L1R_v2","HLT_Ele17_SW_TightEleId_L1R_v3","HLT_Photon10_L1R","HLT_Photon15_L1R","HTL_Photon15_Cleaned_L1R"};
+  //////
   
   for (int i=0; i<10;i++){
     int pos=(int)triggerNames.triggerIndex(path[i]);
@@ -112,15 +120,15 @@ ZanalyzerFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSetup)
       path[i]=(int) HLTResults->accept(pos);
       if (path[i]==1) {
 	flag=true;
-	cout<<"Matched "<<path[i]<<endl;
+	if (WonnaMatch) cout<<"Matched "<<path[i]<<endl;
       }
     }
   }
 
   if (!flag) 
     {
-      //cout<<"It does not match with HLT triggers, sorry"<<endl;
-      //return false;
+      if (WonnaMatch) cout<<"It does not match with HLT triggers, sorry"<<endl;
+      if (WonnaMatch) return false;
     }
  
   bool isBarrelElectrons;
@@ -137,11 +145,9 @@ ZanalyzerFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSetup)
 
   std::vector<TLorentzVector> LV;
 
-  //Check the numb of electrons in the event
-  //eventMultip->Fill(electronCollection->size());
+  if (electronCollection->size()==1) return false;
 
   for (reco::GsfElectronCollection::const_iterator recoElectron = electronCollection->begin (); recoElectron != electronCollection->end (); recoElectron++) {
-    // if (electronCollection->size()==1) cout<<"One electron event has energy of "<<recoElectron->et()<<endl;
 
     if (recoElectron->et () <= 25)  continue;
  
@@ -149,7 +155,8 @@ ZanalyzerFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSetup)
     double IsoTrk = (recoElectron->dr03TkSumPt () / recoElectron->et ());
     double IsoEcal = (recoElectron->dr03EcalRecHitSumEt () / recoElectron->et ());
     double IsoHcal = (recoElectron->dr03HcalTowerSumEt () / recoElectron->et ());
-    double HE = (recoElectron->hcalOverEcal ());
+    double HE = recoElectron->hadronicOverEm();
+   
 
     //Define ID variables
 
@@ -174,7 +181,7 @@ ZanalyzerFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSetup)
     isIDEndcap = false;
     isConvertedEndcap = false;
  
-  /***** Barrel WP80 Cuts *****/
+    /***** Barrel WP80 Cuts *****/
 
     if (fabs (recoElectron->eta ()) <= 1.4442) {
 
@@ -194,7 +201,7 @@ ZanalyzerFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSetup)
 	  && NumberOfExpectedInnerHits == 0) {
 	isConvertedBarrel = true;
       }
-
+      //cout<<"isIsolatedBarrel "<<isIsolatedBarrel<<" isIDBarrel "<< isIDBarrel<<" isConvertedBarrel "<<isConvertedBarrel<<endl;
     }
 
     if (isIsolatedBarrel && isIDBarrel && isConvertedBarrel) {
@@ -204,7 +211,7 @@ ZanalyzerFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSetup)
       LV.push_back(b_e2);
     }
 
-  /***** Endcap WP80 Cuts *****/
+    /***** Endcap WP80 Cuts *****/
 
     if (fabs (recoElectron->eta ()) >= 1.5660
 	&& fabs (recoElectron->eta ()) <= 2.5000) {
@@ -225,48 +232,38 @@ ZanalyzerFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSetup)
 	  && NumberOfExpectedInnerHits == 0) {
 	isConvertedEndcap = true;
       }
+      //cout<<"isIsolatedEndcap "<<isIsolatedEndcap<<" isIDEndcap "<< isIDEndcap<<" isConvertedEndcap "<<isConvertedEndcap<<endl;
     }
 
     if (isIsolatedEndcap && isIDEndcap && isConvertedEndcap) {
       elIsAccepted++;
       elIsAcceptedEE++;
-       TLorentzVector e_e2(recoElectron->momentum ().x (),recoElectron->momentum ().y (),recoElectron->momentum ().z (), recoElectron->p ());
+      TLorentzVector e_e2(recoElectron->momentum ().x (),recoElectron->momentum ().y (),recoElectron->momentum ().z (), recoElectron->p ());
       LV.push_back(e_e2);
     }
 
   }
   if (elIsAcceptedEB<=1)    return false;
-  TLorentzVector e_pair = LV[0] + LV[1];
-  double e_ee_invMass = e_pair.M ();
-  if (LV.size()==2) h_invMass->Fill(e_ee_invMass);  
+  if (LV.size()==2){
+    TLorentzVector e_pair = LV[0] + LV[1];
+    double e_ee_invMass = e_pair.M ();
+    h_invMass->Fill(e_ee_invMass);
+  }  
   if (elIsAccepted>2) cout<<"In this events we have more than two electrons accpeted!!!!!!!"<<endl;
   eventAccept->Fill(elIsAccepted);
-  
+  LV.clear();
+
   return true;
-  
-  // end of reco electron loop
+ 
 }
 
 
 // ------------ method called once each job just before starting event loop  ------------
 void
 ZanalyzerFilter::beginJob (){
-  //const float pi = 3.14159265;
-      //h_ee_invMass_EB = 0;
-      //h_ee_invMass_EE = 0;
-      //h_ee_invMass_BB = 0;
   fOFile = new TFile("ZAnalysisFilter.root","RECREATE");
-  //eventMultip=new TH1D("eventMultip","Event Multiplicity", 20, 0, 20);
   eventAccept=new TH1D("eventAccept","Good Event Multiplicity", 20, 0, 20);
-  //gsfelEt=new TH1F("gsfelEt","gsf electron tEnergy ", 100, 0, 100);
-  //Conversion=new TH1D("Conversion","NumberOfElectron Not Converted", 3, 0, 3);
-  //Isolation=new TH1D("Isolation","NumberOfElectron Isolated", 3, 0, 3);
-  //Identification=new TH1D("Identification","NumberOfElectron good ID", 3, 0, 3);
-  //Selected=new TH1D("Selected","Number Of Selected electrons", 3, 0, 3);
-  //h_bb_invMass_BB=new TH1F("Z peak - WP80 EB-EB","Z peak - WP80 EB-EB;InvMass (Gev)", 60, 60.0, 120.0);
-  //h_ee_invMass_EB =new TH1F("Z peak - WP80 EB-EE","Z peak - WP80 EB-EE;InvMass (GeV)", 60, 60.0, 120.0);
-  //h_ee_invMass_EE =new TH1F("Z peak - WP80 EE-EE","Z peak - WP80 EE-EE;InvMass (Gev)", 60, 60.0, 120.0);
-  h_invMass =new TH1F("Z peak - WP80","Z peak;InvMass (Gev)", 60, 60.0, 120.0);
+  h_invMass =new TH1F("Z peak - WP80","Z peak;InvMass (Gev)", 140, 0.0, 140.0);
 }
 
 // ------------ method called once each job just after ending the event loop  ------------
@@ -274,16 +271,7 @@ void
 ZanalyzerFilter::endJob ()
 {
   fOFile->cd();
-  //eventMultip->Write();
   eventAccept->Write();
-  //gsfelEt->Write();
-  //Conversion->Write();
-  //Isolation->Write();
-  //Identification->Write();
-  //Selected->Write();
-  //h_bb_invMass_BB->Write();
-  //h_ee_invMass_EB->Write();
-  //h_ee_invMass_EE->Write();
   h_invMass->Write();
 
   fOFile->Write() ;
