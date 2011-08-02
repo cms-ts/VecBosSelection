@@ -63,7 +63,11 @@ ZanalyzerFilter::ZanalyzerFilter (const edm::ParameterSet & parameters)
     parameters.getParameter < InputTag > ("electronCollection");
   std::string outputFile_D = parameters.getUntrackedParameter<std::string>("filename");
   outputFile_ = parameters.getUntrackedParameter<std::string>("outputFile", outputFile_D);
-  triggerCollectionTag_=parameters.getUntrackedParameter<edm::InputTag>("triggerCollectionTag");
+  triggerCollection_=parameters.getUntrackedParameter<edm::InputTag>("triggerCollectionTag");
+  useCombinedPrescales_ = parameters.getParameter<bool>("UseCombinedPrescales");
+  triggerNames_         = parameters.getParameter< std::vector<std::string> > ("TriggerNames");
+  useAllTriggers_       = (triggerNames_.size()==0);
+
 }
 
 
@@ -87,7 +91,7 @@ ZanalyzerFilter::~ZanalyzerFilter ()
 bool
 ZanalyzerFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSetup)
 {
-
+  if (debug) cout<<"------- NEW Event -----"<<endl;
   using namespace edm;
   Handle < GsfElectronCollection > electronCollection;
   iEvent.getByLabel (theElectronCollectionLabel, electronCollection);
@@ -98,37 +102,52 @@ ZanalyzerFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSetup)
   //Match The HLT Trigger
   //////////////////////
 
-  bool WonnaMatch=false;
-
   edm::Handle<edm::TriggerResults> HLTResults;
-  iEvent.getByLabel(triggerCollectionTag_, HLTResults);
+  iEvent.getByLabel(triggerCollection_, HLTResults);
   if (!HLTResults.isValid ()) return false;
   
   const edm::TriggerNames & triggerNames = iEvent.triggerNames(*HLTResults);   
-  int trigger_size = HLTResults->size();
   bool flag=false;
-  
-  string path[10]={"HLT_Ele17_CaloIdL_CaloIsoVL_Ele8_CaloIdL_CaloIsoVL_v3","HLT_Ele17_CaloIdVT_CaloIsoVT_TrkIdT_TrkIsoVT_SC8_Mass30_v3","HLT_Ele17_CaloIdT_TrkIdVL_CaloIsoVL_TrkIsoVL_Ele8_CaloIdT_TrkIdVL_CaloIsoVL_TrkIsoVL_v3","HLT_Ele27_CaloIdVT_CaloIsoT_TrkIdT_TrkIsoT_v3","HLT_Ele32_CaloIdVT_CaloIsoT_TrkIdT_TrkIsoT_v2","HLT_Ele32_CaloIdL_CaloIsoVL_SC17_v3","HLT_Ele45_CaloIdVT_TrkIdT_v3","HLT_Ele15_CaloIdVT_TrkIdT_LooseIsoPFTau15_v4","HLT_Ele15_CaloIdVT_CaloIsoT_TrkIdT_TrkIsoT_LooseIsoPFTau15_v4","HLT_Ele15_CaloIdVT_CaloIsoT_TrkIdT_TrkIsoT_LooseIsoPFTau20_v4"};
-  
-  //old 2010 string  
-  //string path[10]={"HLT_Ele17_CaloIdl_Ele8_CaloIsoIdL_CaloIsoVL_v3","HLT_Ele15_SW_L1R","HLT_Ele15_SW_CaloEleId_L1R","HLT_Ele17_SW_CaloEleId_L1R","HLT_Ele17_SW_TightEleId_L1R","HLT_Ele17_SW_TightEleId_L1R_v2","HLT_Ele17_SW_TightEleId_L1R_v3","HLT_Photon10_L1R","HLT_Photon15_L1R","HTL_Photon15_Cleaned_L1R"};
-  //////
-  
-  for (int i=0; i<10;i++){
-    int pos=(int)triggerNames.triggerIndex(path[i]);
-    if(pos<trigger_size){
-      path[i]=(int) HLTResults->accept(pos);
-      if (path[i]==1) {
-	flag=true;
-	if (WonnaMatch) cout<<"Matched "<<path[i]<<endl;
-      }
-    }
-  }
-
+    
+ if (HLTResults.isValid()) {
+   /// Storing the Prescale information: loop over the triggers and record prescale
+   unsigned int minimalPrescale(10000);
+   unsigned int prescale(0);
+   bool bit(true);
+   std::pair<int,int> prescalepair;
+   std::vector<int>  triggerSubset;
+   for(unsigned int itrig = 0; itrig < triggerNames_.size(); ++itrig) {
+     if(triggerIndices_[itrig]!=2048) {
+       // check trigger response
+       bit = HLTResults->accept(triggerIndices_[itrig]);
+       triggerSubset.push_back(bit);
+       if(bit) {
+	 flag=true;
+	 if (debug) cout<<"Matched "<<triggerNames.triggerName(itrig)<<endl;
+	 int prescaleset = hltConfig_.prescaleSet(iEvent,iSetup);
+	 if(prescaleset!=-1) {
+	   prescalepair = hltConfig_.prescaleValues(iEvent,iSetup,triggerNames_[itrig]);
+	   if (debug) cout<<"prescale.first "<<prescalepair.first<<" prescalepair.second "<<prescalepair.second<<endl;
+	   if((useCombinedPrescales_ && prescalepair.first<0) || prescalepair.second<0) {
+	     edm::LogWarning("ZAnalyzerFilter") << " Unable to get prescale from event for trigger " << triggerNames.triggerName(itrig) << " :" 
+					   << prescalepair.first << ", " << prescalepair.second;
+	   }
+	   prescale = useCombinedPrescales_ ? prescalepair.first*prescalepair.second : prescalepair.second;
+	   minimalPrescale = minimalPrescale <  prescale ? minimalPrescale : prescale;
+	   if (debug) cout<<"prescale "<<prescale<<" minimal Prescale "<<minimalPrescale<<" for trigger "<<triggerNames.triggerName(itrig)<<endl;
+	 } 
+       }
+     }
+     else {
+       // that trigger is presently not in the menu
+       triggerSubset.push_back(false);
+     }
+   }
+ }
+ cout<<"flag is "<<flag<<endl; 
   if (!flag) 
     {
-      if (WonnaMatch) cout<<"It does not match with HLT triggers, sorry"<<endl;
-      if (WonnaMatch) return false;
+      if(!useAllTriggers_) return false;
     }
  
   bool isBarrelElectrons;
@@ -156,7 +175,6 @@ ZanalyzerFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSetup)
     double IsoEcal = (recoElectron->dr03EcalRecHitSumEt () / recoElectron->et ());
     double IsoHcal = (recoElectron->dr03HcalTowerSumEt () / recoElectron->et ());
     double HE = recoElectron->hadronicOverEm();
-   
 
     //Define ID variables
 
@@ -280,6 +298,42 @@ ZanalyzerFilter::beginJob (){
   h_invMassEB =new TH1F("Z peak - WP80 Endcap-Barrel","Z peak;InvMass (Gev)", 140, 0.0, 140.0);
   h_invMassBB =new TH1F("Z peak - WP80 Barrel-Barrel","Z peak;InvMass (Gev)", 140, 0.0, 140.0);
 
+}
+
+// ------------ method called when starting to processes a run  ------------
+bool
+ZanalyzerFilter::beginRun(edm::Run &iRun, edm::EventSetup const& iSetup)
+{
+//HLT names
+   std::vector<std::string>  hlNames;
+   bool changed (true);
+   if (hltConfig_.init(iRun,iSetup,triggerCollection_.process(),changed)) {
+     if (changed) {
+       hlNames = hltConfig_.triggerNames();
+     }
+   } else {
+     edm::LogError("MyAnalyzer") << " HLT config extraction failure with process name " << triggerCollection_.process();
+   }
+   if (debug) cout<<"useAllTriggers?"<<useAllTriggers_<<endl;
+   if(useAllTriggers_) triggerNames_ = hlNames;
+   //triggerNames_ = hlNames;
+   //HLT indices
+   triggerIndices_.clear();
+   for(unsigned int itrig = 0; itrig < triggerNames_.size(); ++itrig) {
+     if(find(hlNames.begin(),hlNames.end(),triggerNames_[itrig])!=hlNames.end())
+       triggerIndices_.push_back(hltConfig_.triggerIndex(triggerNames_[itrig]));
+     else
+       triggerIndices_.push_back(2048);
+   }
+
+   if (debug){
+     // text (debug) output
+     int i=0;
+     for(std::vector<std::string>::const_iterator it = triggerNames_.begin(); it<triggerNames_.end();++it) {
+       std::cout << (i++) << " = " << (*it) << std::endl;
+     } 
+   }
+   return true;
 }
 
 // ------------ method called once each job just after ending the event loop  ------------

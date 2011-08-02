@@ -20,6 +20,9 @@
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "DataFormats/HLTReco/interface/TriggerEvent.h"
 #include "DataFormats/Common/interface/TriggerResults.h"
+#include "HLTrigger/HLTcore/interface/HLTConfigProvider.h"
+
+bool debug=false; //Activate with true if you wonna have verbosity for debug
 
 class ZanalyzerFilter : public edm::EDFilter {
    public:
@@ -27,6 +30,7 @@ class ZanalyzerFilter : public edm::EDFilter {
       ~ZanalyzerFilter();
 
        virtual void beginJob();
+       virtual bool beginRun(edm::Run &, edm::EventSetup const&);
 
    private:
       virtual bool filter(edm::Event&, edm::EventSetup const&);
@@ -35,7 +39,13 @@ class ZanalyzerFilter : public edm::EDFilter {
       // ----------member data ---------------------------
 
 edm::InputTag theElectronCollectionLabel;
-  edm::InputTag triggerCollectionTag_; 
+  edm::InputTag triggerCollection_; 
+      bool useCombinedPrescales_; // switch between HLT only and L1*HLT prescales
+      bool useAllTriggers_; // if no trigger names are provided, use all triggers to find event weight
+      HLTConfigProvider hltConfig_;        // to get configuration for L1s/Pre
+      std::vector<std::string> triggerNames_; // name of the algorithms selected by our analysis
+      std::vector<unsigned int> triggerIndices_; // index of the algorithms selected by our analysis
+
 };
 
   std::string outputFile_;
