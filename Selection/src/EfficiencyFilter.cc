@@ -1,9 +1,9 @@
 // -*- C++ -*-
 //
-// Package:    Zanalyzer
-// Class:      Zanalyzer
+// Package:    Efficiency
+// Class:      Efficiency
 // 
-/**\class Zanalyzer Zanalyzer.cc Zmonitoring/Zanalyzer/src/Zanalyzer.cc
+/**\class Efficiency Efficiency.cc Zmonitoring/Efficiency/src/Efficiency.cc
 
 Description: [one line class summary]
 
@@ -23,7 +23,7 @@ Implementation:
 
 // user include files
 
-#include "VecBosSelection/Selection/interface/ZanalyzerFilter.h"
+#include "VecBosSelection/Selection/interface/EfficiencyFilter.h"
 #include "FWCore/Framework/interface/Frameworkfwd.h"
 #include "FWCore/ServiceRegistry/interface/Service.h"
 #include "DataFormats/Candidate/interface/Candidate.h"
@@ -47,32 +47,43 @@ Implementation:
 #include "DataFormats/GsfTrackReco/interface/GsfTrack.h"
 #include "FWCore/Common/interface/TriggerNames.h"
 #include "DataFormats/Common/interface/TriggerResults.h"
+#include "DataFormats/PatCandidates/interface/PATObject.h"
+#include "DataFormats/EgammaCandidates/interface/Electron.h"
+#include "DataFormats/EgammaCandidates/interface/ElectronFwd.h"
+#include "DataFormats/TrackReco/interface/Track.h"
+#include "DataFormats/EgammaReco/interface/SuperCluster.h"
+#include "DataFormats/HLTReco/interface/TriggerFilterObjectWithRefs.h"
+#include "HLTrigger/HLTcore/interface/TriggerSummaryAnalyzerAOD.h"
+#include "DataFormats/HLTReco/interface/TriggerEvent.h"
 
 
 using namespace std;
 using namespace edm;
 using namespace reco;
+bool Debug=false; //Activate with true if you wonna have verbosity for Debug
 
 
 //
 // constructors and destructor
 //
-ZanalyzerFilter::ZanalyzerFilter (const edm::ParameterSet & parameters)
+EfficiencyFilter::EfficiencyFilter (const edm::ParameterSet & parameters)
 {
   theElectronCollectionLabel =
     parameters.getParameter < InputTag > ("electronCollection");
-  std::string outputFile_D = parameters.getUntrackedParameter<std::string>("filename");
-  outputFile_ = parameters.getUntrackedParameter<std::string>("outputFile", outputFile_D);
+  std::string outputfile_D = parameters.getUntrackedParameter<std::string>("filename");
+  outputfile_ = parameters.getUntrackedParameter<std::string>("outputfile", outputfile_D);
   triggerCollection_=parameters.getUntrackedParameter<edm::InputTag>("triggerCollectionTag");
   useCombinedPrescales_ = parameters.getParameter<bool>("UseCombinedPrescales");
   triggerNames_         = parameters.getParameter< std::vector<std::string> > ("TriggerNames");
   useAllTriggers_       = (triggerNames_.size()==0);
   removePU_             = parameters.getParameter<bool>("removePU");
+  electronIsolatedProducer_ = parameters.getParameter< edm::InputTag > ("electronIsolatedProducer");
+  candTag_ = parameters.getParameter< edm::InputTag > ("candTag");
 }
 
 
 
-ZanalyzerFilter::~ZanalyzerFilter ()
+EfficiencyFilter::~EfficiencyFilter ()
 {
 
   // do anything here that needs to be done at desctruction time
@@ -89,9 +100,9 @@ ZanalyzerFilter::~ZanalyzerFilter ()
 
 // ------------ method called for each event  ------------
 bool
-ZanalyzerFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSetup)
+EfficiencyFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSetup)
 {
-  if (debug) cout<<"------- NEW Event -----"<<endl;
+  if (Debug) cout<<"------- NEW Event -----"<<endl;
   using namespace edm;
   Handle < GsfElectronCollection > electronCollection;
   iEvent.getByLabel (theElectronCollectionLabel, electronCollection);
@@ -123,18 +134,18 @@ ZanalyzerFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSetup)
        triggerSubset.push_back(bit);
        if(bit) {
 	 flag=true;
-	 if (debug) cout<<"Matched "<<triggerNames.triggerName(itrig)<<endl;
+	 if (Debug) cout<<"Matched "<<triggerNames.triggerName(itrig)<<endl;
 	 int prescaleset = hltConfig_.prescaleSet(iEvent,iSetup);
 	 if(prescaleset!=-1) {
 	   prescalepair = hltConfig_.prescaleValues(iEvent,iSetup,triggerNames_[itrig]);
-	   if (debug) cout<<"prescale.first "<<prescalepair.first<<" prescalepair.second "<<prescalepair.second<<endl;
+	   if (Debug) cout<<"prescale.first "<<prescalepair.first<<" prescalepair.second "<<prescalepair.second<<endl;
 	   if((useCombinedPrescales_ && prescalepair.first<0) || prescalepair.second<0) {
-	     edm::LogWarning("ZAnalyzerFilter") << " Unable to get prescale from event for trigger " << triggerNames.triggerName(itrig) << " :" 
+	     edm::LogWarning("ZEfficiencyFilter") << " Unable to get prescale from event for trigger " << triggerNames.triggerName(itrig) << " :" 
 					   << prescalepair.first << ", " << prescalepair.second;
 	   }
 	   prescale = useCombinedPrescales_ ? prescalepair.first*prescalepair.second : prescalepair.second;
 	   minimalPrescale = minimalPrescale <  prescale ? minimalPrescale : prescale;
-	   if (debug) cout<<"prescale "<<prescale<<" minimal Prescale "<<minimalPrescale<<" for trigger "<<triggerNames.triggerName(itrig)<<endl;
+	   if (Debug) cout<<"prescale "<<prescale<<" minimal Prescale "<<minimalPrescale<<" for trigger "<<triggerNames.triggerName(itrig)<<endl;
 	 } 
        }
      }
@@ -163,11 +174,53 @@ ZanalyzerFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSetup)
 
   std::vector<TLorentzVector> LV;
 
-  if (electronCollection->size()==1) return false;
+  //Check the electrons which have been triggered by the HLT
+    edm::Handle<trigger::TriggerEvent> trgEvent;
+    iEvent.getByLabel(InputTag("hltTriggerSummaryAOD","","HLT"), trgEvent);
+    int index=0;
+
+    edm::InputTag myLastFilter = edm::InputTag("hltL1NonIsoHLTNonIsoSingleElectronEt20PixelMatchFilter","","HLT");
+    const trigger::TriggerObjectCollection& TOC( trgEvent->getObjects() );
+    //const TriggerObjectCollection TOC(trgEvent->getObjects());
+    // filterIndex must be less than the size of trgEvent or you get a CMSException: _M_range_check
+    for(int i=0; i != trgEvent->sizeFilters(); ++i) {
+      std::string label(trgEvent->filterTag(i).label());
+      if( label == myLastFilter.label() ) index = i;
+    }
+
+    if ( trgEvent->filterIndex(myLastFilter) < trgEvent->sizeFilters() ) {
+      const trigger::Keys& keys( trgEvent->filterKeys( trgEvent->filterIndex(myLastFilter) ) );
+      for ( unsigned int hlto = 0; hlto < keys.size(); hlto++ ) {
+	int hltf = keys[hlto];
+	const trigger::TriggerObject& L3obj(TOC[hltf]);
+	float pL3obj = L3obj.p(); 
+      }
+    }
+	//   using namespace trigger;
+	//std::auto_ptr<trigger::TriggerFilterObjectWithRefs> filterproduct (new trigger::TriggerFilterObjectWithRefs(path(),module()));
+	//filterproduct->addCollectionTag(electronIsolatedProducer_);
+   //will be a collection of Ref<reco::ElectronCollection> ref;
+
+	//edm::Handle<trigger::TriggerFilterObjectWithRefs> PrevFilterOutput;
+	//iEvent.getByLabel (candTag_,PrevFilterOutput);
+
+	//std::vector<edm::Ref<reco::RecoEcalCandidateCollection> > recoecalcands;
+	//PrevFilterOutput->getObjects(TriggerCluster, recoecalcands);
+
+	//  edm::Handle<ElectronCollection> electronIsolatedHandle;
+	//iEvent.getByLabel(electronIsolatedProducer_,electronIsolatedHandle);
 
   for (reco::GsfElectronCollection::const_iterator recoElectron = electronCollection->begin (); recoElectron != electronCollection->end (); recoElectron++) {
 
-    if (recoElectron->et () <= 25)  continue;
+    //loop over the electrons to find the matching one
+    //for(reco::ElectronCollection::const_iterator iElectron = electronIsolatedHandle->begin(); iElectron != electronIsolatedHandle->end(); iElectron++){
+    //reco::ElectronRef electronref(reco::ElectronRef(electronIsolatedHandle,iElectron - electronIsolatedHandle->begin()));
+    //const reco::SuperClusterRef theClus = electronref->superCluster();
+    //reco::SuperClusterRef recr2 = recoElectron->superCluster();
+      
+    //if(&(*recr2) ==  &(*theClus)) {
+    //} 
+    //}
 
     double IsoTrk = 0;
     double IsoEcal = 0;
@@ -282,28 +335,8 @@ ZanalyzerFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSetup)
     }
 
   }
-  if (elIsAccepted<=1)    return false;
-   double e_ee_invMass=0; 
-   if (elIsAccepted>2) cout<<"WARNING: In this events we have more than two electrons accpeted!!!!!!!"<<endl;
-   if (LV.size()==2){
-     TLorentzVector e_pair = LV[0] + LV[1];
-     e_ee_invMass = e_pair.M ();
-     h_invMass->Fill(e_ee_invMass);
-   }  
-   
-   if (elIsAcceptedEB==2){
-     h_invMassBB->Fill(e_ee_invMass);
-   }
-   if (elIsAcceptedEE==2){
-     h_invMassEE->Fill(e_ee_invMass);
-   }
-   if (elIsAcceptedEB==1 && elIsAcceptedEE==1){
-     h_invMassEB->Fill(e_ee_invMass);
-   }
-   
-  eventAccept->Fill(elIsAccepted);
-  LV.clear();
-  
+  if (elIsAccepted<=0)    return false;
+
   return true;
  
 }
@@ -311,19 +344,13 @@ ZanalyzerFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSetup)
 
 // ------------ method called once each job just before starting event loop  ------------
 void
-ZanalyzerFilter::beginJob (){
-  fOFile = new TFile("ZAnalysisFilter.root","RECREATE");
-  eventAccept=new TH1D("eventAccept","Good Event Multiplicity", 20, 0, 20);
-  h_invMass =new TH1F("Z peak - WP80","Z peak;InvMass (Gev)", 140, 0.0, 140.0);
-  h_invMassEE =new TH1F("Z peak - WP80 Endcap-Endcap","Z peak;InvMass (Gev)", 140, 0.0, 140.0);
-  h_invMassEB =new TH1F("Z peak - WP80 Endcap-Barrel","Z peak;InvMass (Gev)", 140, 0.0, 140.0);
-  h_invMassBB =new TH1F("Z peak - WP80 Barrel-Barrel","Z peak;InvMass (Gev)", 140, 0.0, 140.0);
-
+EfficiencyFilter::beginJob (){
+  fOfile = new TFile("EfficiencyFilter.root","RECREATE");
 }
 
 // ------------ method called when starting to processes a run  ------------
 bool
-ZanalyzerFilter::beginRun(edm::Run &iRun, edm::EventSetup const& iSetup)
+EfficiencyFilter::beginRun(edm::Run &iRun, edm::EventSetup const& iSetup)
 {
 //HLT names
    std::vector<std::string>  hlNames;
@@ -335,7 +362,7 @@ ZanalyzerFilter::beginRun(edm::Run &iRun, edm::EventSetup const& iSetup)
    } else {
      edm::LogError("MyAnalyzer") << " HLT config extraction failure with process name " << triggerCollection_.process();
    }
-   if (debug) cout<<"useAllTriggers?"<<useAllTriggers_<<endl;
+   if (Debug) cout<<"useAllTriggers?"<<useAllTriggers_<<endl;
    if(useAllTriggers_) triggerNames_ = hlNames;
    //triggerNames_ = hlNames;
    //HLT indices
@@ -347,8 +374,8 @@ ZanalyzerFilter::beginRun(edm::Run &iRun, edm::EventSetup const& iSetup)
        triggerIndices_.push_back(2048);
    }
 
-   if (debug){
-     // text (debug) output
+   if (Debug){
+     // text (Debug) output
      int i=0;
      for(std::vector<std::string>::const_iterator it = triggerNames_.begin(); it<triggerNames_.end();++it) {
        std::cout << (i++) << " = " << (*it) << std::endl;
@@ -359,18 +386,11 @@ ZanalyzerFilter::beginRun(edm::Run &iRun, edm::EventSetup const& iSetup)
 
 // ------------ method called once each job just after ending the event loop  ------------
 void
-ZanalyzerFilter::endJob ()
+EfficiencyFilter::endJob ()
 {
-  fOFile->cd();
-  eventAccept->Write();
-  h_invMass->Write();
-  h_invMassEE->Write();
-  h_invMassEB->Write();
-  h_invMassBB->Write();
-
-
-  fOFile->Write() ;
-  fOFile->Close() ;
+  fOfile->cd();
+  fOfile->Write() ;
+  fOfile->Close() ;
 }
 
-DEFINE_FWK_MODULE (ZanalyzerFilter);
+DEFINE_FWK_MODULE (EfficiencyFilter);
