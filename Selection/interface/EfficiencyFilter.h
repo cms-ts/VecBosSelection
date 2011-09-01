@@ -22,12 +22,10 @@
 #include "DataFormats/Common/interface/TriggerResults.h"
 #include "HLTrigger/HLTcore/interface/HLTConfigProvider.h"
 
-bool debug=false; //Activate with true if you wonna have verbosity for debug
-
-class ZanalyzerFilter : public edm::EDFilter {
+class EfficiencyFilter : public edm::EDFilter {
    public:
-      explicit ZanalyzerFilter(const edm::ParameterSet &);
-      ~ZanalyzerFilter();
+      explicit EfficiencyFilter(const edm::ParameterSet &);
+      ~EfficiencyFilter();
 
        virtual void beginJob();
        virtual bool beginRun(edm::Run &, edm::EventSetup const&);
@@ -38,8 +36,10 @@ class ZanalyzerFilter : public edm::EDFilter {
 
       // ----------member data ---------------------------
 
-edm::InputTag theElectronCollectionLabel;
-  edm::InputTag triggerCollection_; 
+      edm::InputTag theElectronCollectionLabel;
+      edm::InputTag triggerCollection_; 
+      edm::InputTag electronIsolatedProducer_;
+      edm::InputTag candTag_ ;
       bool useCombinedPrescales_; // switch between HLT only and L1*HLT prescales
       bool useAllTriggers_; // if no trigger names are provided, use all triggers to find event weight
       HLTConfigProvider hltConfig_;        // to get configuration for L1s/Pre
@@ -48,16 +48,6 @@ edm::InputTag theElectronCollectionLabel;
       bool removePU_;
 };
 
-  std::string outputFile_;
-TFile *fOFile;
-TH1D* eventMultip;
-TH1D* eventAccept;
-TH1F* gsfelEt;
-TH1D* Conversion;
-TH1D* Isolation;
-TH1D* Identification;
-TH1D* Selected;
-TH1F* h_invMass;
-TH1F* h_invMassEE;
-TH1F* h_invMassEB;
-TH1F* h_invMassBB;
+std::string outputfile_;
+TFile *fOfile;
+
