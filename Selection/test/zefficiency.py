@@ -61,7 +61,7 @@ alltriggers    = cms.vstring() # In this way, the HLT string is empty and it wil
 process.load("JetCollections_cfi")
 
 
-process.Selection = cms.EDFilter('ZanalyzerFilter',
+process.Selection = cms.EDFilter('EfficiencyFilter',
                                  electronCollection = cms.InputTag("gsfElectrons"),
                                  triggerCollectionTag = cms.untracked.InputTag("TriggerResults","","HLT"),
                                  filename=cms.untracked.string("ZAnalysisFilter.root"),
