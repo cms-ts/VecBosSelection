@@ -13,7 +13,7 @@ Implementation:
 //
 // Original Author:  Vieri Candelise & Matteo Marone
 //         Created:  Wed May 11 14:53:26 CEST 2011
-// $Id$
+// $Id: EfficiencyFilter.cc,v 1.1 2011/08/31 16:14:01 marone Exp $
 //
 //
 
@@ -160,182 +160,99 @@ EfficiencyFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSetup)
       if(!useAllTriggers_) return false;
     }
  
-  bool isBarrelElectrons;
-  bool isEndcapElectrons;
-  bool isIsolatedBarrel;
-  bool isIDBarrel;
-  bool isConvertedBarrel;
-  bool isIsolatedEndcap;
-  bool isIDEndcap;
-  bool isConvertedEndcap;
-  int elIsAccepted=0;
-  int elIsAcceptedEB=0;
-  int elIsAcceptedEE=0;
+  // ordino gli elettroni in pt 
+  reco::GsfElectronCollection::const_iterator highestptele;
+  reco::GsfElectronCollection::const_iterator secondptele;
 
-  std::vector<TLorentzVector> LV;
-
-  //Check the electrons which have been triggered by the HLT
-    edm::Handle<trigger::TriggerEvent> trgEvent;
-    iEvent.getByLabel(InputTag("hltTriggerSummaryAOD","","HLT"), trgEvent);
-    int index=0;
-
-    edm::InputTag myLastFilter = edm::InputTag("hltL1NonIsoHLTNonIsoSingleElectronEt20PixelMatchFilter","","HLT");
-    const trigger::TriggerObjectCollection& TOC( trgEvent->getObjects() );
-    //const TriggerObjectCollection TOC(trgEvent->getObjects());
-    // filterIndex must be less than the size of trgEvent or you get a CMSException: _M_range_check
-    for(int i=0; i != trgEvent->sizeFilters(); ++i) {
-      std::string label(trgEvent->filterTag(i).label());
-      if( label == myLastFilter.label() ) index = i;
-    }
-
-    if ( trgEvent->filterIndex(myLastFilter) < trgEvent->sizeFilters() ) {
-      const trigger::Keys& keys( trgEvent->filterKeys( trgEvent->filterIndex(myLastFilter) ) );
-      for ( unsigned int hlto = 0; hlto < keys.size(); hlto++ ) {
-	int hltf = keys[hlto];
-	const trigger::TriggerObject& L3obj(TOC[hltf]);
-	float pL3obj = L3obj.p(); 
-      }
-    }
-	//   using namespace trigger;
-	//std::auto_ptr<trigger::TriggerFilterObjectWithRefs> filterproduct (new trigger::TriggerFilterObjectWithRefs(path(),module()));
-	//filterproduct->addCollectionTag(electronIsolatedProducer_);
-   //will be a collection of Ref<reco::ElectronCollection> ref;
-
-	//edm::Handle<trigger::TriggerFilterObjectWithRefs> PrevFilterOutput;
-	//iEvent.getByLabel (candTag_,PrevFilterOutput);
-
-	//std::vector<edm::Ref<reco::RecoEcalCandidateCollection> > recoecalcands;
-	//PrevFilterOutput->getObjects(TriggerCluster, recoecalcands);
-
-	//  edm::Handle<ElectronCollection> electronIsolatedHandle;
-	//iEvent.getByLabel(electronIsolatedProducer_,electronIsolatedHandle);
+  int i=0;
+  
+  if (electronCollection->size()==1) return false;
 
   for (reco::GsfElectronCollection::const_iterator recoElectron = electronCollection->begin (); recoElectron != electronCollection->end (); recoElectron++) {
-
-    //loop over the electrons to find the matching one
-    //for(reco::ElectronCollection::const_iterator iElectron = electronIsolatedHandle->begin(); iElectron != electronIsolatedHandle->end(); iElectron++){
-    //reco::ElectronRef electronref(reco::ElectronRef(electronIsolatedHandle,iElectron - electronIsolatedHandle->begin()));
-    //const reco::SuperClusterRef theClus = electronref->superCluster();
-    //reco::SuperClusterRef recr2 = recoElectron->superCluster();
-      
-    //if(&(*recr2) ==  &(*theClus)) {
-    //} 
-    //}
-
-    double IsoTrk = 0;
-    double IsoEcal = 0;
-    double IsoHcal = 0;
-    double HE = 0;
-
-    if (removePU_){
-      double lepIsoRho;
-      
-      /////// Pileup density "rho" for lepton isolation subtraction /////
-      
-      edm::Handle<double> rhoLepIso;
-      const edm::InputTag eventrhoLepIso("kt6PFJetsForIsolation", "rho");
-      iEvent.getByLabel(eventrhoLepIso, rhoLepIso);
-      if( *rhoLepIso == *rhoLepIso)  lepIsoRho = *rhoLepIso;
-      else  lepIsoRho =  -999999.9;
-      
-      IsoEcal = (recoElectron->dr03EcalRecHitSumEt () - lepIsoRho*0.096) / recoElectron->et ();
-      IsoTrk = (recoElectron->dr03TkSumPt () - lepIsoRho*0.096) / recoElectron->et ();
-      IsoHcal = (recoElectron->dr03HcalTowerSumEt ()  - lepIsoRho*0.096) / recoElectron->et ();
-      HE = recoElectron->hadronicOverEm();
+    cout<<"Electron pt value ->"<<recoElectron->pt()<<endl;
+    if (i==0) highestptele=recoElectron;
+    if (i==1){
+      if (highestptele->pt()<recoElectron->pt()){
+	secondptele=highestptele;
+	highestptele=recoElectron;
     }
-    else{
-      // Define Isolation variables
-      IsoTrk = (recoElectron->dr03TkSumPt () / recoElectron->et ());
-      IsoEcal = (recoElectron->dr03EcalRecHitSumEt () / recoElectron->et ());
-      IsoHcal = (recoElectron->dr03HcalTowerSumEt () / recoElectron->et ());
-      HE = recoElectron->hadronicOverEm();
+      else{
+	secondptele=recoElectron;
+      }
     }
-    //Define ID variables
-    
-    float DeltaPhiTkClu = recoElectron->deltaPhiSuperClusterTrackAtVtx ();
-    float DeltaEtaTkClu = recoElectron->deltaEtaSuperClusterTrackAtVtx ();
-    float sigmaIeIe = recoElectron->sigmaIetaIeta ();
-    
-    //Define Conversion Rejection Variables
-    
-    float Dcot = recoElectron->convDcot ();
-    float Dist = recoElectron->convDist ();
-    int NumberOfExpectedInnerHits = recoElectron->gsfTrack ()->trackerExpectedHitsInner ().numberOfHits ();
-    
-    //quality flags
-
-    isBarrelElectrons = false;
-    isEndcapElectrons = false;
-    isIsolatedBarrel = false;
-    isIDBarrel = false;
-    isConvertedBarrel = false;
-    isIsolatedEndcap = false;
-    isIDEndcap = false;
-    isConvertedEndcap = false;
- 
-    /***** Barrel WP80 Cuts *****/
-
-    if (fabs (recoElectron->eta ()) <= 1.4442) {
-
-      /* Isolation */
-      if (IsoTrk < 0.09 && IsoEcal < 0.07 && IsoHcal < 0.10) {
-	isIsolatedBarrel = true;
+    if (i>1){
+      if (highestptele->pt()<recoElectron->pt()){
+	secondptele=highestptele;
+	highestptele=recoElectron;
       }
-
-      /* Identification */
-      if (fabs (DeltaEtaTkClu) < 0.004 && fabs (DeltaPhiTkClu) < 0.06
-	  && sigmaIeIe < 0.01 && HE < 0.04) {
-	isIDBarrel = true;
+      else{
+	if (secondptele->pt()<recoElectron->pt()) secondptele=recoElectron;
       }
-
-      /* Conversion Rejection */
-      if ((fabs (Dist) >= 0.02 || fabs (Dcot) >= 0.02)
-	  && NumberOfExpectedInnerHits == 0) {
-	isConvertedBarrel = true;
-      }
-      //cout<<"isIsolatedBarrel "<<isIsolatedBarrel<<" isIDBarrel "<< isIDBarrel<<" isConvertedBarrel "<<isConvertedBarrel<<endl;
     }
-
-    if (isIsolatedBarrel && isIDBarrel && isConvertedBarrel) {
-      elIsAccepted++;
-      elIsAcceptedEB++;
-      TLorentzVector b_e2(recoElectron->momentum ().x (),recoElectron->momentum ().y (),recoElectron->momentum ().z (), recoElectron->p ());
-      LV.push_back(b_e2);
-    }
-
-    /***** Endcap WP80 Cuts *****/
-
-    if (fabs (recoElectron->eta ()) >= 1.5660
-	&& fabs (recoElectron->eta ()) <= 2.5000) {
-
-      /* Isolation */
-      if (IsoTrk < 0.04 && IsoEcal < 0.05 && IsoHcal < 0.025) {
-	isIsolatedEndcap = true;
-      }
-
-      /* Identification */
-      if (fabs (DeltaEtaTkClu) < 0.007 && fabs (DeltaPhiTkClu) < 0.03
-	  && sigmaIeIe < 0.03 && HE < 0.15) {
-	isIDEndcap = true;
-      }
-
-      /* Conversion Rejection */
-      if ((fabs (Dcot) > 0.02 || fabs (Dist) > 0.02)
-	  && NumberOfExpectedInnerHits == 0) {
-	isConvertedEndcap = true;
-      }
-      //cout<<"isIsolatedEndcap "<<isIsolatedEndcap<<" isIDEndcap "<< isIDEndcap<<" isConvertedEndcap "<<isConvertedEndcap<<endl;
-    }
-
-    if (isIsolatedEndcap && isIDEndcap && isConvertedEndcap) {
-      elIsAccepted++;
-      elIsAcceptedEE++;
-      TLorentzVector e_e2(recoElectron->momentum ().x (),recoElectron->momentum ().y (),recoElectron->momentum ().z (), recoElectron->p ());
-      LV.push_back(e_e2);
-    }
-
+    i++;
   }
-  if (elIsAccepted<=0)    return false;
+
+  cout<<"First electron "<<highestptele->pt()<<" Second electron "<<secondptele->pt()<<endl;
+
+
+  reco::GsfElectronCollection::const_iterator tag;
+  reco::GsfElectronCollection::const_iterator probe;
+  bool matchHLT=false;
+
+  if ( DoHLTMatch(highestptele,iEvent) ) {
+    tag=highestptele;
+    probe=secondptele;
+    matchHLT=true;
+    cout<<"highest ele is matched by HLT"<<endl;
+  }
+  else{
+    if ( DoHLTMatch(secondptele,iEvent) ) {
+      tag=secondptele;
+      probe=highestptele;
+      matchHLT=true;
+      cout<<"second ele is matched by HLT"<<endl;
+    }
+  }
+
+  if (!matchHLT){
+    cout<<"In this events, none of the two highest electrons (in pt) have triggered...exit"<<endl;
+    return false;
+  }
+
+  TLorentzVector tagv;
+  tagv.SetPtEtaPhiM(tag->pt(),tag->eta(),tag->phi(), 0.0);
+  TLorentzVector probev;
+  probev.SetPtEtaPhiM(probe->pt(),probe->eta(),probe->phi(), 0.0);
+  
+  TLorentzVector e_pair = tagv + probev;
+  double e_ee_invMass = e_pair.M ();
+  
+  if ( DoWP80(tag,iEvent) ){
+    cout<<"Tag is not a WP80 electron..."<<endl;
+    return false;
+  }
+  else{
+    cout<<"Tag IS a WP80 electron..."<<endl;
+  }
+
+  if ( DoWP80(probe,iEvent) ){
+    cout<<"Probe is a WP80 electron..."<<endl;
+    probepass->Fill(e_ee_invMass);
+    probeall->Fill(e_ee_invMass);
+    return false;
+  }
+  else{
+    probefail->Fill(e_ee_invMass);
+    probeall->Fill(e_ee_invMass);
+    cout<<"Probe IS NOT a WP80 electron..."<<endl;
+  }
+
+    //check se HLT (tag) e' WP80, altrimenti esci
+    //check del probe con WP80
+    // fare massa invariante probe-tag
+    // a seconda che tag fallisca o no, riempire due istyogrammi
+    // riempire l'istogramma cumulativo
+
 
   return true;
  
@@ -346,6 +263,9 @@ EfficiencyFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSetup)
 void
 EfficiencyFilter::beginJob (){
   fOfile = new TFile("EfficiencyFilter.root","RECREATE");
+  probefail =new TH1D("Probefail","Invariant mass when probe fails", 140, 0.0, 140.0);
+  probepass =new TH1D("Probepass","Invariant mass when probe passes", 140, 0.0, 140.0);
+  probeall =new TH1D("Probeall","Invariant mass when probe fails or passes", 140, 0.0, 140.0);
 }
 
 // ------------ method called when starting to processes a run  ------------
@@ -384,11 +304,178 @@ EfficiencyFilter::beginRun(edm::Run &iRun, edm::EventSetup const& iSetup)
    return true;
 }
 
+//DO the WP80 analysis
+
+bool EfficiencyFilter::DoWP80(reco::GsfElectronCollection::const_iterator recoElectron,edm::Event& iEvent)
+{
+  double IsoTrk = 0;
+  double IsoEcal = 0;
+  double IsoHcal = 0;
+  double HE = 0;
+  
+  if (removePU_){
+    double lepIsoRho;
+    
+    /////// Pileup density "rho" for lepton isolation subtraction /////
+    
+    edm::Handle<double> rhoLepIso;
+    const edm::InputTag eventrhoLepIso("kt6PFJetsForIsolation", "rho");
+    iEvent.getByLabel(eventrhoLepIso, rhoLepIso);
+    if( *rhoLepIso == *rhoLepIso)  lepIsoRho = *rhoLepIso;
+    else  lepIsoRho =  -999999.9;      
+    IsoEcal = (recoElectron->dr03EcalRecHitSumEt () - lepIsoRho*0.096) / recoElectron->et ();
+    IsoTrk = (recoElectron->dr03TkSumPt () - lepIsoRho*0.096) / recoElectron->et ();
+    IsoHcal = (recoElectron->dr03HcalTowerSumEt ()  - lepIsoRho*0.096) / recoElectron->et ();
+      HE = recoElectron->hadronicOverEm();
+  }
+  else{
+    // Define Isolation variables
+    IsoTrk = (recoElectron->dr03TkSumPt () / recoElectron->et ());
+    IsoEcal = (recoElectron->dr03EcalRecHitSumEt () / recoElectron->et ());
+    IsoHcal = (recoElectron->dr03HcalTowerSumEt () / recoElectron->et ());
+    HE = recoElectron->hadronicOverEm();
+  }
+  //Define ID variables
+  
+  float DeltaPhiTkClu = recoElectron->deltaPhiSuperClusterTrackAtVtx ();
+  float DeltaEtaTkClu = recoElectron->deltaEtaSuperClusterTrackAtVtx ();
+  float sigmaIeIe = recoElectron->sigmaIetaIeta ();
+  
+  //Define Conversion Rejection Variables
+  
+  float Dcot = recoElectron->convDcot ();
+  float Dist = recoElectron->convDist ();
+  int NumberOfExpectedInnerHits = recoElectron->gsfTrack ()->trackerExpectedHitsInner ().numberOfHits ();
+  
+  //quality flags
+
+  bool isBarrelElectrons;
+  bool isEndcapElectrons;
+  bool isIsolatedBarrel;
+  bool isIDBarrel;
+  bool isConvertedBarrel;
+  bool isIsolatedEndcap;
+  bool isIDEndcap;
+  bool isConvertedEndcap;
+  isBarrelElectrons = false;
+  isEndcapElectrons = false;
+  isIsolatedBarrel = false;
+  isIDBarrel = false;
+  isConvertedBarrel = false;
+  isIsolatedEndcap = false;
+  isIDEndcap = false;
+  isConvertedEndcap = false;
+  
+  /***** Barrel WP80 Cuts *****/
+  
+  if (fabs (recoElectron->eta ()) <= 1.4442) {
+    
+    /* Isolation */
+    if (IsoTrk < 0.09 && IsoEcal < 0.07 && IsoHcal < 0.10) {
+      isIsolatedBarrel = true;
+    }
+    
+    /* Identification */
+    if (fabs (DeltaEtaTkClu) < 0.004 && fabs (DeltaPhiTkClu) < 0.06
+	&& sigmaIeIe < 0.01 && HE < 0.04) {
+      isIDBarrel = true;
+    }
+    
+    /* Conversion Rejection */
+      if ((fabs (Dist) >= 0.02 || fabs (Dcot) >= 0.02)
+	  && NumberOfExpectedInnerHits == 0) {
+	isConvertedBarrel = true;
+      }
+      //cout<<"isIsolatedBarrel "<<isIsolatedBarrel<<" isIDBarrel "<< isIDBarrel<<" isConvertedBarrel "<<isConvertedBarrel<<endl;
+  }
+  
+  if (isIsolatedBarrel && isIDBarrel && isConvertedBarrel) {
+    return true;
+  }
+
+    /***** Endcap WP80 Cuts *****/
+
+    if (fabs (recoElectron->eta ()) >= 1.5660
+	&& fabs (recoElectron->eta ()) <= 2.5000) {
+
+      /* Isolation */
+      if (IsoTrk < 0.04 && IsoEcal < 0.05 && IsoHcal < 0.025) {
+	isIsolatedEndcap = true;
+      }
+
+      /* Identification */
+      if (fabs (DeltaEtaTkClu) < 0.007 && fabs (DeltaPhiTkClu) < 0.03
+	  && sigmaIeIe < 0.03 && HE < 0.15) {
+	isIDEndcap = true;
+      }
+
+      /* Conversion Rejection */
+      if ((fabs (Dcot) > 0.02 || fabs (Dist) > 0.02)
+	  && NumberOfExpectedInnerHits == 0) {
+	isConvertedEndcap = true;
+      }
+      //cout<<"isIsolatedEndcap "<<isIsolatedEndcap<<" isIDEndcap "<< isIDEndcap<<" isConvertedEndcap "<<isConvertedEndcap<<endl;
+    }
+
+    if (isIsolatedEndcap && isIDEndcap && isConvertedEndcap) {
+      return true;
+    }
+    return false;
+}
+
+bool EfficiencyFilter::DoHLTMatch(reco::GsfElectronCollection::const_iterator recoElectron,edm::Event& iEvent)
+{
+  //Check the electrons which have been triggered by the HLT
+  edm::Handle<trigger::TriggerEvent> trgEvent;
+  iEvent.getByLabel(InputTag("hltTriggerSummaryAOD","","HLT"), trgEvent);
+  //Variables to be matched after
+  float HLTpt=0;
+  float HLTeta=0;
+  float HLTphi=0;
+  
+  edm::InputTag myLastFilter = edm::InputTag("hltEle17CaloIdLCaloIsoVLPixelMatchFilter","","HLT");
+    const trigger::TriggerObjectCollection& TOC( trgEvent->getObjects() );
+
+    for(int i=0; i != trgEvent->sizeFilters(); ++i) {
+      std::string label(trgEvent->filterTag(i).label());
+      if (Debug) cout<<label<<endl;
+      if (Debug) if( label == myLastFilter.label() ) cout<<"HT FIlter matched ->"<<label<<endl;;
+    }
+
+    if ( trgEvent->filterIndex(myLastFilter) < trgEvent->sizeFilters() ) {
+      const trigger::Keys& keys( trgEvent->filterKeys( trgEvent->filterIndex(myLastFilter) ) );
+      for ( unsigned int hlto = 0; hlto < keys.size(); hlto++ ) {
+	int hltf = keys[hlto];
+	const trigger::TriggerObject& L3obj(TOC[hltf]);
+	HLTpt=L3obj.pt();
+	HLTeta=L3obj.eta();
+	HLTphi=L3obj.phi();
+	if (Debug) cout<<"The matched HLT electron has pt,eta,phi ->"<<L3obj.pt()<<" "<<L3obj.eta()<<" "<<L3obj.phi()<<endl;
+      }
+    }
+    if (Debug) cout<<"this electron has pt,eta,phi->"<<recoElectron->pt()<<" "<<recoElectron->eta()<<" "<<recoElectron->phi()<<endl;
+
+    //Difference between mtached HLT electron and *Electron
+    float diffpt=fabs(HLTpt-recoElectron->pt());
+    float diffeta=fabs(HLTeta-recoElectron->eta());
+    float diffphi=fabs(HLTphi-recoElectron->phi());
+    cout<<"this electron has difference wrt HLT ele of pt,eta,phi->"<<diffpt<<" "<<diffeta<<" "<<diffphi<<endl;
+    if (diffphi<0.1 && diffeta<0.1) {
+      cout<<"This electron is the one who triggers the HLT!"<<endl;
+      return true;
+    }
+    return false;
+}
+
+
 // ------------ method called once each job just after ending the event loop  ------------
 void
 EfficiencyFilter::endJob ()
 {
   fOfile->cd();
+  probefail->Write();
+  probeall->Write();
+  probepass->Write();
   fOfile->Write() ;
   fOfile->Close() ;
 }

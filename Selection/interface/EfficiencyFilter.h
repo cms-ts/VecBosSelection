@@ -33,6 +33,8 @@ class EfficiencyFilter : public edm::EDFilter {
    private:
       virtual bool filter(edm::Event&, edm::EventSetup const&);
       virtual void endJob() ;
+      virtual bool DoWP80(reco::GsfElectronCollection::const_iterator recoElectron,edm::Event& iEvent);
+      virtual bool DoHLTMatch(reco::GsfElectronCollection::const_iterator recoElectron,edm::Event& iEvent);
 
       // ----------member data ---------------------------
 
@@ -50,4 +52,6 @@ class EfficiencyFilter : public edm::EDFilter {
 
 std::string outputfile_;
 TFile *fOfile;
-
+TH1D *probepass;
+TH1D *probefail;
+TH1D *probeall;
