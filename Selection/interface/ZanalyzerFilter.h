@@ -45,7 +45,7 @@ edm::InputTag theElectronCollectionLabel;
       HLTConfigProvider hltConfig_;        // to get configuration for L1s/Pre
       std::vector<std::string> triggerNames_; // name of the algorithms selected by our analysis
       std::vector<unsigned int> triggerIndices_; // index of the algorithms selected by our analysis
-      bool removePU_;
+
 };
 
   std::string outputFile_;

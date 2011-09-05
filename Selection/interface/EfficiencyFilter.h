@@ -42,6 +42,7 @@ class EfficiencyFilter : public edm::EDFilter {
       edm::InputTag triggerCollection_; 
       edm::InputTag electronIsolatedProducer_;
       edm::InputTag candTag_ ;
+      edm::InputTag theJetCollectionLabel_;
       bool useCombinedPrescales_; // switch between HLT only and L1*HLT prescales
       bool useAllTriggers_; // if no trigger names are provided, use all triggers to find event weight
       HLTConfigProvider hltConfig_;        // to get configuration for L1s/Pre
@@ -55,3 +56,8 @@ TFile *fOfile;
 TH1D *probepass;
 TH1D *probefail;
 TH1D *probeall;
+TH1D *probepass1jet;
+TH1D *probepass2jet;
+TH1D *probepass3jet;
+TH1D *probepass4jet;
+TH1D *probepass0jet;

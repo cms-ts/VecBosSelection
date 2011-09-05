@@ -55,6 +55,7 @@ Implementation:
 #include "DataFormats/HLTReco/interface/TriggerFilterObjectWithRefs.h"
 #include "HLTrigger/HLTcore/interface/TriggerSummaryAnalyzerAOD.h"
 #include "DataFormats/HLTReco/interface/TriggerEvent.h"
+#include "DataFormats/JetReco/interface/PFJetCollection.h"
 
 
 using namespace std;
@@ -79,6 +80,7 @@ EfficiencyFilter::EfficiencyFilter (const edm::ParameterSet & parameters)
   removePU_             = parameters.getParameter<bool>("removePU");
   electronIsolatedProducer_ = parameters.getParameter< edm::InputTag > ("electronIsolatedProducer");
   candTag_ = parameters.getParameter< edm::InputTag > ("candTag");
+  theJetCollectionLabel_       = parameters.getParameter<edm::InputTag>("JetCollectionLabel");
 }
 
 
@@ -159,8 +161,8 @@ EfficiencyFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSetup)
     {
       if(!useAllTriggers_) return false;
     }
- 
-  // ordino gli elettroni in pt 
+
+    // ordino gli elettroni in pt 
   reco::GsfElectronCollection::const_iterator highestptele;
   reco::GsfElectronCollection::const_iterator secondptele;
 
@@ -226,20 +228,45 @@ EfficiencyFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSetup)
   
   TLorentzVector e_pair = tagv + probev;
   double e_ee_invMass = e_pair.M ();
+
+
+  //Estraggo il contenuto dei jets
+    int nJet = 0;
+    int jetIndex = 0;
+    Handle<PFJetCollection> pfJets;
+    iEvent.getByLabel(theJetCollectionLabel_, pfJets);
+    if (pfJets.isValid()) {
+      PFJetCollection::const_iterator jet = pfJets->begin ();
+      for (; jet != pfJets->end (); jet++, jetIndex++) {
+	if (fabs(jet->eta())<2.4 && jet->pt()>30 && ((jet->eta()-tag->eta())>0.1 || (jet->phi()-tag->phi())>0.1 ) && ( (jet->eta()-probe->eta())>0.1 || (jet->phi()-probe->phi()>0.1)) ) {
+	  nJet++;
+	  cout<<"Jet eta "<<jet->eta()<<" pt "<<jet->pt()<<endl;
+	}
+      }
+    }
+    else{
+      cout<<"No valid Jets Collection"<<endl;
+    }
+    
+    cout<<"This event has jets #->"<<nJet<<endl;
   
   if ( DoWP80(tag,iEvent) ){
-    cout<<"Tag is not a WP80 electron..."<<endl;
-    return false;
+    cout<<"Tag is a WP80 electron..."<<endl;
   }
   else{
-    cout<<"Tag IS a WP80 electron..."<<endl;
+    cout<<"Tag IS a NOT WP80 electron...Exit"<<endl;
+    return false;
   }
 
   if ( DoWP80(probe,iEvent) ){
     cout<<"Probe is a WP80 electron..."<<endl;
     probepass->Fill(e_ee_invMass);
+    if (nJet==0) probepass0jet->Fill(e_ee_invMass);
+    if (nJet==1) probepass1jet->Fill(e_ee_invMass);
+    if (nJet==2) probepass2jet->Fill(e_ee_invMass);
+    if (nJet==3) probepass3jet->Fill(e_ee_invMass);
+    if (nJet==4) probepass4jet->Fill(e_ee_invMass);
     probeall->Fill(e_ee_invMass);
-    return false;
   }
   else{
     probefail->Fill(e_ee_invMass);
@@ -247,11 +274,6 @@ EfficiencyFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSetup)
     cout<<"Probe IS NOT a WP80 electron..."<<endl;
   }
 
-    //check se HLT (tag) e' WP80, altrimenti esci
-    //check del probe con WP80
-    // fare massa invariante probe-tag
-    // a seconda che tag fallisca o no, riempire due istyogrammi
-    // riempire l'istogramma cumulativo
 
 
   return true;
@@ -263,9 +285,14 @@ EfficiencyFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSetup)
 void
 EfficiencyFilter::beginJob (){
   fOfile = new TFile("EfficiencyFilter.root","RECREATE");
-  probefail =new TH1D("Probefail","Invariant mass when probe fails", 140, 0.0, 140.0);
-  probepass =new TH1D("Probepass","Invariant mass when probe passes", 140, 0.0, 140.0);
-  probeall =new TH1D("Probeall","Invariant mass when probe fails or passes", 140, 0.0, 140.0);
+  probefail =new TH1D("Probefail","Invariant mass when probe fails", 60, 60.0, 120.0);
+  probepass =new TH1D("Probepass","Invariant mass when probe passes", 60, 60.0, 120.0);
+  probeall =new TH1D("Probeall","Invariant mass when probe fails or passes", 60, 60.0, 120.0);
+  probepass0jet =new TH1D("Probepass0Jet","Invariant mass when probe passes + no Jet", 60, 60.0, 120.0);
+  probepass1jet =new TH1D("Probepass1Jet","Invariant mass when probe passes + 1 Jet", 60, 60.0, 120.0);
+  probepass2jet =new TH1D("Probepass2Jet","Invariant mass when probe passes + 2 Jets", 60, 60.0, 120.0);
+  probepass3jet =new TH1D("Probepass3Jet","Invariant mass when probe passes + 3 Jets", 60, 60.0, 120.0);
+  probepass4jet =new TH1D("Probepass4Jet","Invariant mass when probe passes + 4 Jets", 60, 60.0, 120.0);
 }
 
 // ------------ method called when starting to processes a run  ------------
@@ -476,6 +503,11 @@ EfficiencyFilter::endJob ()
   probefail->Write();
   probeall->Write();
   probepass->Write();
+  probepass0jet->Write();
+  probepass1jet->Write();
+  probepass2jet->Write();
+  probepass3jet->Write();
+  probepass4jet->Write();
   fOfile->Write() ;
   fOfile->Close() ;
 }
