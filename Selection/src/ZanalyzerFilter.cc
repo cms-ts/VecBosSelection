@@ -13,7 +13,7 @@ Implementation:
 //
 // Original Author:  Vieri Candelise & Matteo Marone
 //         Created:  Wed May 11 14:53:26 CEST 2011
-// $Id$
+// $Id: ZanalyzerFilter.cc,v 1.5 2011/08/02 14:24:00 marone Exp $
 //
 //
 
@@ -67,7 +67,7 @@ ZanalyzerFilter::ZanalyzerFilter (const edm::ParameterSet & parameters)
   useCombinedPrescales_ = parameters.getParameter<bool>("UseCombinedPrescales");
   triggerNames_         = parameters.getParameter< std::vector<std::string> > ("TriggerNames");
   useAllTriggers_       = (triggerNames_.size()==0);
-  removePU_             = parameters.getParameter<bool>("removePU");
+
 }
 
 
@@ -144,6 +144,7 @@ ZanalyzerFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSetup)
      }
    }
  }
+ cout<<"flag is "<<flag<<endl; 
   if (!flag) 
     {
       if(!useAllTriggers_) return false;
@@ -168,47 +169,25 @@ ZanalyzerFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSetup)
   for (reco::GsfElectronCollection::const_iterator recoElectron = electronCollection->begin (); recoElectron != electronCollection->end (); recoElectron++) {
 
     if (recoElectron->et () <= 25)  continue;
+ 
+    // Define Isolation variables
+    double IsoTrk = (recoElectron->dr03TkSumPt () / recoElectron->et ());
+    double IsoEcal = (recoElectron->dr03EcalRecHitSumEt () / recoElectron->et ());
+    double IsoHcal = (recoElectron->dr03HcalTowerSumEt () / recoElectron->et ());
+    double HE = recoElectron->hadronicOverEm();
 
-    double IsoTrk = 0;
-    double IsoEcal = 0;
-    double IsoHcal = 0;
-    double HE = 0;
-
-    if (removePU_){
-      double lepIsoRho;
-      
-      /////// Pileup density "rho" for lepton isolation subtraction /////
-      
-      edm::Handle<double> rhoLepIso;
-      const edm::InputTag eventrhoLepIso("kt6PFJetsForIsolation", "rho");
-      iEvent.getByLabel(eventrhoLepIso, rhoLepIso);
-      if( *rhoLepIso == *rhoLepIso)  lepIsoRho = *rhoLepIso;
-      else  lepIsoRho =  -999999.9;
-      
-      IsoEcal = (recoElectron->dr03EcalRecHitSumEt () - lepIsoRho*0.096) / recoElectron->et ();
-      IsoTrk = (recoElectron->dr03TkSumPt () - lepIsoRho*0.096) / recoElectron->et ();
-      IsoHcal = (recoElectron->dr03HcalTowerSumEt ()  - lepIsoRho*0.096) / recoElectron->et ();
-      HE = recoElectron->hadronicOverEm();
-    }
-    else{
-      // Define Isolation variables
-      IsoTrk = (recoElectron->dr03TkSumPt () / recoElectron->et ());
-      IsoEcal = (recoElectron->dr03EcalRecHitSumEt () / recoElectron->et ());
-      IsoHcal = (recoElectron->dr03HcalTowerSumEt () / recoElectron->et ());
-      HE = recoElectron->hadronicOverEm();
-    }
     //Define ID variables
-    
+
     float DeltaPhiTkClu = recoElectron->deltaPhiSuperClusterTrackAtVtx ();
     float DeltaEtaTkClu = recoElectron->deltaEtaSuperClusterTrackAtVtx ();
     float sigmaIeIe = recoElectron->sigmaIetaIeta ();
-    
+
     //Define Conversion Rejection Variables
-    
+
     float Dcot = recoElectron->convDcot ();
     float Dist = recoElectron->convDist ();
     int NumberOfExpectedInnerHits = recoElectron->gsfTrack ()->trackerExpectedHitsInner ().numberOfHits ();
-    
+
     //quality flags
 
     isBarrelElectrons = false;
@@ -246,7 +225,9 @@ ZanalyzerFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSetup)
     if (isIsolatedBarrel && isIDBarrel && isConvertedBarrel) {
       elIsAccepted++;
       elIsAcceptedEB++;
-      TLorentzVector b_e2(recoElectron->momentum ().x (),recoElectron->momentum ().y (),recoElectron->momentum ().z (), recoElectron->p ());
+      TLorentzVector b_e2;
+      b_e2.SetPtEtaPhiM(recoElectron->pt(),recoElectron->eta(),recoElectron->phi(), 0.0);
+      //      TLorentzVector b_e2(recoElectron->momentum ().x (),recoElectron->momentum ().y (),recoElectron->momentum ().z (), recoElectron->p ());
       LV.push_back(b_e2);
     }
 
@@ -277,7 +258,8 @@ ZanalyzerFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSetup)
     if (isIsolatedEndcap && isIDEndcap && isConvertedEndcap) {
       elIsAccepted++;
       elIsAcceptedEE++;
-      TLorentzVector e_e2(recoElectron->momentum ().x (),recoElectron->momentum ().y (),recoElectron->momentum ().z (), recoElectron->p ());
+      TLorentzVector e_e2;
+      e_e2.SetPtEtaPhiM(recoElectron->pt(),recoElectron->eta(),recoElectron->phi(), 0.0);
       LV.push_back(e_e2);
     }
 

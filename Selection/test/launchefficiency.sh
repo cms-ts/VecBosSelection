@@ -5,8 +5,10 @@ cwd=`pwd`
 #list=`find /gpfs/grid/srm/cms/store/data/Run2011A/SingleElectron/AOD/May10ReReco-v1/ -type f`
 #list=`find /gpfs/grid/srm/cms/store/data/Run2011A/SingleElectron/RAW-RECO/WElectron-May10ReReco-v1/ -type f`
 list=`find /gpfs/grid/srm/cms/store/data/Run2011A/DoubleElectron/RAW-RECO/ZElectron-May10ReReco-v1 -type f`
+#list=`find /gpfs/grid/srm/cms/store/data/Run2011A/DoubleElectron/RAW-RECO/ZElectron-05Aug2011-v1 -type f`
 #list='/gpfs/grid/srm/cms/store/data/Run2011A/DoubleElectron/RAW-RECO/ZElectron-May10ReReco-v1/0000/EC04DB0E-D97D-E011-B60B-00261894396F.root'
 #list=`find /gpfs/grid/srm/cms/store/data/Run2011A/DoubleElectron/RAW-RECO/ZElectron-PromptSkim-v4 -type f`
+#list=`find /gpfs/grid/srm/cms/store/data/Run2011A/DoubleElectron/RAW-RECO/ZElectron-PromptSkim-v6 -type f`
 
 i=0
 
