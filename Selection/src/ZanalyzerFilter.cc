@@ -13,7 +13,7 @@ Implementation:
 //
 // Original Author:  Vieri Candelise & Matteo Marone
 //         Created:  Wed May 11 14:53:26 CEST 2011
-// $Id: ZanalyzerFilter.cc,v 1.5 2011/08/02 14:24:00 marone Exp $
+// $Id: ZanalyzerFilter.cc,v 1.7 2011/09/05 09:23:25 marone Exp $
 //
 //
 
@@ -54,32 +54,6 @@ using namespace edm;
 using namespace reco;
 
 
-//
-// constructors and destructor
-//
-ZanalyzerFilter::ZanalyzerFilter (const edm::ParameterSet & parameters)
-{
-  theElectronCollectionLabel =
-    parameters.getParameter < InputTag > ("electronCollection");
-  std::string outputFile_D = parameters.getUntrackedParameter<std::string>("filename");
-  outputFile_ = parameters.getUntrackedParameter<std::string>("outputFile", outputFile_D);
-  triggerCollection_=parameters.getUntrackedParameter<edm::InputTag>("triggerCollectionTag");
-  useCombinedPrescales_ = parameters.getParameter<bool>("UseCombinedPrescales");
-  triggerNames_         = parameters.getParameter< std::vector<std::string> > ("TriggerNames");
-  useAllTriggers_       = (triggerNames_.size()==0);
-
-}
-
-
-
-ZanalyzerFilter::~ZanalyzerFilter ()
-{
-
-  // do anything here that needs to be done at desctruction time
-  // (e.g. close files, deallocate resources etc.)
-
-}
-
 
 
 
@@ -108,8 +82,8 @@ ZanalyzerFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSetup)
   
   const edm::TriggerNames & triggerNames = iEvent.triggerNames(*HLTResults);   
   bool flag=false;
-    
- if (HLTResults.isValid()) {
+   
+   if (HLTResults.isValid() && doTheHLTAnalysis_) {
    /// Storing the Prescale information: loop over the triggers and record prescale
    unsigned int minimalPrescale(10000);
    unsigned int prescale(0);
@@ -144,7 +118,7 @@ ZanalyzerFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSetup)
      }
    }
  }
- cout<<"flag is "<<flag<<endl; 
+  
   if (!flag) 
     {
       if(!useAllTriggers_) return false;
@@ -294,7 +268,7 @@ ZanalyzerFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSetup)
 // ------------ method called once each job just before starting event loop  ------------
 void
 ZanalyzerFilter::beginJob (){
-  fOFile = new TFile("ZAnalysisFilter.root","RECREATE");
+  //fOFile = new TFile("ZAnalysisFilter.root","RECREATE");
   eventAccept=new TH1D("eventAccept","Good Event Multiplicity", 20, 0, 20);
   h_invMass =new TH1F("Z peak - WP80","Z peak;InvMass (Gev)", 140, 0.0, 140.0);
   h_invMassEE =new TH1F("Z peak - WP80 Endcap-Endcap","Z peak;InvMass (Gev)", 140, 0.0, 140.0);
@@ -343,16 +317,11 @@ ZanalyzerFilter::beginRun(edm::Run &iRun, edm::EventSetup const& iSetup)
 void
 ZanalyzerFilter::endJob ()
 {
-  fOFile->cd();
   eventAccept->Write();
   h_invMass->Write();
   h_invMassEE->Write();
   h_invMassEB->Write();
   h_invMassBB->Write();
-
-
-  fOFile->Write() ;
-  fOFile->Close() ;
 }
 
 DEFINE_FWK_MODULE (ZanalyzerFilter);

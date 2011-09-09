@@ -25,31 +25,59 @@
 bool debug=false; //Activate with true if you wonna have verbosity for debug
 
 class ZanalyzerFilter : public edm::EDFilter {
-   public:
-      explicit ZanalyzerFilter(const edm::ParameterSet &);
-      ~ZanalyzerFilter();
+	public:
+		explicit ZanalyzerFilter(const edm::ParameterSet &);
+		~ZanalyzerFilter();
 
-       virtual void beginJob();
-       virtual bool beginRun(edm::Run &, edm::EventSetup const&);
+		virtual void beginJob();
+		virtual bool beginRun(edm::Run &, edm::EventSetup const&);
 
-   private:
-      virtual bool filter(edm::Event&, edm::EventSetup const&);
-      virtual void endJob() ;
+	private:
+		virtual bool filter(edm::Event&, edm::EventSetup const&);
+		virtual void endJob() ;
 
-      // ----------member data ---------------------------
+		// ----------member data ---------------------------
 
-edm::InputTag theElectronCollectionLabel;
-  edm::InputTag triggerCollection_; 
-      bool useCombinedPrescales_; // switch between HLT only and L1*HLT prescales
-      bool useAllTriggers_; // if no trigger names are provided, use all triggers to find event weight
-      HLTConfigProvider hltConfig_;        // to get configuration for L1s/Pre
-      std::vector<std::string> triggerNames_; // name of the algorithms selected by our analysis
-      std::vector<unsigned int> triggerIndices_; // index of the algorithms selected by our analysis
+		edm::InputTag theElectronCollectionLabel;
+		edm::InputTag triggerCollection_; 
+		bool useCombinedPrescales_; // switch between HLT only and L1*HLT prescales
+		bool useAllTriggers_; // if no trigger names are provided, use all triggers to find event weight
+		HLTConfigProvider hltConfig_;        // to get configuration for L1s/Pre
+		std::vector<std::string> triggerNames_; // name of the algorithms selected by our analysis
+		std::vector<unsigned int> triggerIndices_; // index of the algorithms selected by our analysis
+		bool doTheHLTAnalysis_;
 
 };
 
-  std::string outputFile_;
-TFile *fOFile;
+
+
+//
+// constructors and destructor
+//
+ZanalyzerFilter::ZanalyzerFilter (const edm::ParameterSet & parameters)
+{
+	theElectronCollectionLabel = parameters.getParameter <edm::InputTag> ("electronCollection");
+	triggerCollection_	= parameters.getUntrackedParameter<edm::InputTag>("triggerCollectionTag");
+	useCombinedPrescales_ = parameters.getParameter<bool>("UseCombinedPrescales");
+	triggerNames_         = parameters.getParameter< std::vector<std::string> > ("TriggerNames");
+	useAllTriggers_       = (triggerNames_.size()==0);
+	doTheHLTAnalysis_     = parameters.getParameter<bool>("doTheHLTAnalysis");
+
+
+}
+
+
+
+ZanalyzerFilter::~ZanalyzerFilter ()
+{
+
+	// do anything here that needs to be done at desctruction time
+	// (e.g. close files, deallocate resources etc.)
+
+}
+
+
+//  std::string outputFile_;
 TH1D* eventMultip;
 TH1D* eventAccept;
 TH1F* gsfelEt;
@@ -61,3 +89,6 @@ TH1F* h_invMass;
 TH1F* h_invMassEE;
 TH1F* h_invMassEB;
 TH1F* h_invMassBB;
+
+
+
