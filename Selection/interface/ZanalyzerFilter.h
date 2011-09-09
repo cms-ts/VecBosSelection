@@ -47,6 +47,22 @@ class ZanalyzerFilter : public edm::EDFilter {
 		std::vector<unsigned int> triggerIndices_; // index of the algorithms selected by our analysis
 		bool doTheHLTAnalysis_;
 
+
+
+		//  std::string outputFile_;
+		TH1D* eventMultip;
+		TH1D* eventAccept;
+		TH1F* gsfelEt;
+		TH1D* Conversion;
+		TH1D* Isolation;
+		TH1D* Identification;
+		TH1D* Selected;
+		TH1F* h_invMass;
+		TH1F* h_invMassEE;
+		TH1F* h_invMassEB;
+		TH1F* h_invMassBB;
+
+
 };
 
 
@@ -64,6 +80,19 @@ ZanalyzerFilter::ZanalyzerFilter (const edm::ParameterSet & parameters)
 	doTheHLTAnalysis_     = parameters.getParameter<bool>("doTheHLTAnalysis");
 
 
+
+  //Initializations...
+  edm::Service<TFileService> fs;
+
+  eventAccept= fs->make<TH1D>("eventAccept","Good Event Multiplicity", 20, 0, 20);
+  h_invMass = fs->make<TH1F>("Z peak - WP80","Z peak;InvMass (Gev)", 140, 0.0, 140.0);
+  h_invMassEE =  fs->make<TH1F>("Z peak - WP80 Endcap-Endcap","Z peak;InvMass (Gev)", 140, 0.0, 140.0);
+  h_invMassEB = fs->make<TH1F>("Z peak - WP80 Endcap-Barrel","Z peak;InvMass (Gev)", 140, 0.0, 140.0);
+  h_invMassBB = fs->make<TH1F>("Z peak - WP80 Barrel-Barrel","Z peak;InvMass (Gev)", 140, 0.0, 140.0);
+
+
+
+
 }
 
 
@@ -75,20 +104,5 @@ ZanalyzerFilter::~ZanalyzerFilter ()
 	// (e.g. close files, deallocate resources etc.)
 
 }
-
-
-//  std::string outputFile_;
-TH1D* eventMultip;
-TH1D* eventAccept;
-TH1F* gsfelEt;
-TH1D* Conversion;
-TH1D* Isolation;
-TH1D* Identification;
-TH1D* Selected;
-TH1F* h_invMass;
-TH1F* h_invMassEE;
-TH1F* h_invMassEB;
-TH1F* h_invMassBB;
-
 
 

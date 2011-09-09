@@ -13,7 +13,7 @@ Implementation:
 //
 // Original Author:  Vieri Candelise & Matteo Marone
 //         Created:  Wed May 11 14:53:26 CEST 2011
-// $Id: EfficiencyFilter.cc,v 1.1 2011/08/31 16:14:01 marone Exp $
+// $Id: EfficiencyFilter.cc,v 1.3 2011/09/05 09:15:32 marone Exp $
 //
 //
 
@@ -62,36 +62,6 @@ using namespace std;
 using namespace edm;
 using namespace reco;
 bool Debug=false; //Activate with true if you wonna have verbosity for Debug
-
-
-//
-// constructors and destructor
-//
-EfficiencyFilter::EfficiencyFilter (const edm::ParameterSet & parameters)
-{
-  theElectronCollectionLabel =
-    parameters.getParameter < InputTag > ("electronCollection");
-  std::string outputfile_D = parameters.getUntrackedParameter<std::string>("filename");
-  outputfile_ = parameters.getUntrackedParameter<std::string>("outputfile", outputfile_D);
-  triggerCollection_=parameters.getUntrackedParameter<edm::InputTag>("triggerCollectionTag");
-  useCombinedPrescales_ = parameters.getParameter<bool>("UseCombinedPrescales");
-  triggerNames_         = parameters.getParameter< std::vector<std::string> > ("TriggerNames");
-  useAllTriggers_       = (triggerNames_.size()==0);
-  removePU_             = parameters.getParameter<bool>("removePU");
-  electronIsolatedProducer_ = parameters.getParameter< edm::InputTag > ("electronIsolatedProducer");
-  candTag_ = parameters.getParameter< edm::InputTag > ("candTag");
-  theJetCollectionLabel_       = parameters.getParameter<edm::InputTag>("JetCollectionLabel");
-}
-
-
-
-EfficiencyFilter::~EfficiencyFilter ()
-{
-
-  // do anything here that needs to be done at desctruction time
-  // (e.g. close files, deallocate resources etc.)
-
-}
 
 
 
@@ -284,15 +254,9 @@ EfficiencyFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSetup)
 // ------------ method called once each job just before starting event loop  ------------
 void
 EfficiencyFilter::beginJob (){
-  fOfile = new TFile("EfficiencyFilter.root","RECREATE");
-  probefail =new TH1D("Probefail","Invariant mass when probe fails", 60, 60.0, 120.0);
-  probepass =new TH1D("Probepass","Invariant mass when probe passes", 60, 60.0, 120.0);
-  probeall =new TH1D("Probeall","Invariant mass when probe fails or passes", 60, 60.0, 120.0);
-  probepass0jet =new TH1D("Probepass0Jet","Invariant mass when probe passes + no Jet", 60, 60.0, 120.0);
-  probepass1jet =new TH1D("Probepass1Jet","Invariant mass when probe passes + 1 Jet", 60, 60.0, 120.0);
-  probepass2jet =new TH1D("Probepass2Jet","Invariant mass when probe passes + 2 Jets", 60, 60.0, 120.0);
-  probepass3jet =new TH1D("Probepass3Jet","Invariant mass when probe passes + 3 Jets", 60, 60.0, 120.0);
-  probepass4jet =new TH1D("Probepass4Jet","Invariant mass when probe passes + 4 Jets", 60, 60.0, 120.0);
+
+//beginJob
+
 }
 
 // ------------ method called when starting to processes a run  ------------
@@ -499,17 +463,9 @@ bool EfficiencyFilter::DoHLTMatch(reco::GsfElectronCollection::const_iterator re
 void
 EfficiencyFilter::endJob ()
 {
-  fOfile->cd();
-  probefail->Write();
-  probeall->Write();
-  probepass->Write();
-  probepass0jet->Write();
-  probepass1jet->Write();
-  probepass2jet->Write();
-  probepass3jet->Write();
-  probepass4jet->Write();
-  fOfile->Write() ;
-  fOfile->Close() ;
+
+//endJob
+
 }
 
 DEFINE_FWK_MODULE (EfficiencyFilter);

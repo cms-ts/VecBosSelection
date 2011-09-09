@@ -268,14 +268,11 @@ ZanalyzerFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSetup)
 // ------------ method called once each job just before starting event loop  ------------
 void
 ZanalyzerFilter::beginJob (){
-  //fOFile = new TFile("ZAnalysisFilter.root","RECREATE");
-  eventAccept=new TH1D("eventAccept","Good Event Multiplicity", 20, 0, 20);
-  h_invMass =new TH1F("Z peak - WP80","Z peak;InvMass (Gev)", 140, 0.0, 140.0);
-  h_invMassEE =new TH1F("Z peak - WP80 Endcap-Endcap","Z peak;InvMass (Gev)", 140, 0.0, 140.0);
-  h_invMassEB =new TH1F("Z peak - WP80 Endcap-Barrel","Z peak;InvMass (Gev)", 140, 0.0, 140.0);
-  h_invMassBB =new TH1F("Z peak - WP80 Barrel-Barrel","Z peak;InvMass (Gev)", 140, 0.0, 140.0);
+
+//beginJob
 
 }
+
 
 // ------------ method called when starting to processes a run  ------------
 bool
@@ -317,11 +314,9 @@ ZanalyzerFilter::beginRun(edm::Run &iRun, edm::EventSetup const& iSetup)
 void
 ZanalyzerFilter::endJob ()
 {
-  eventAccept->Write();
-  h_invMass->Write();
-  h_invMassEE->Write();
-  h_invMassEB->Write();
-  h_invMassBB->Write();
+
+//endJob
+
 }
 
 DEFINE_FWK_MODULE (ZanalyzerFilter);

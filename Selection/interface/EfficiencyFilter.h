@@ -49,15 +49,60 @@ class EfficiencyFilter : public edm::EDFilter {
       std::vector<std::string> triggerNames_; // name of the algorithms selected by our analysis
       std::vector<unsigned int> triggerIndices_; // index of the algorithms selected by our analysis
       bool removePU_;
+
+      TH1D *probepass;
+      TH1D *probefail;
+      TH1D *probeall;
+      TH1D *probepass1jet;
+      TH1D *probepass2jet;
+      TH1D *probepass3jet;
+      TH1D *probepass4jet;
+      TH1D *probepass0jet;
+
 };
 
-std::string outputfile_;
-TFile *fOfile;
-TH1D *probepass;
-TH1D *probefail;
-TH1D *probeall;
-TH1D *probepass1jet;
-TH1D *probepass2jet;
-TH1D *probepass3jet;
-TH1D *probepass4jet;
-TH1D *probepass0jet;
+//
+// constructors and destructor
+//
+EfficiencyFilter::EfficiencyFilter (const edm::ParameterSet & parameters)
+{
+  theElectronCollectionLabel = parameters.getParameter < edm::InputTag > ("electronCollection");
+  std::string outputfile_D = parameters.getUntrackedParameter<std::string>("filename");
+  triggerCollection_=parameters.getUntrackedParameter<edm::InputTag>("triggerCollectionTag");
+  useCombinedPrescales_ = parameters.getParameter<bool>("UseCombinedPrescales");
+  triggerNames_         = parameters.getParameter< std::vector<std::string> > ("TriggerNames");
+  useAllTriggers_       = (triggerNames_.size()==0);
+  removePU_             = parameters.getParameter<bool>("removePU");
+  electronIsolatedProducer_ = parameters.getParameter< edm::InputTag > ("electronIsolatedProducer");
+  candTag_ = parameters.getParameter< edm::InputTag > ("candTag");
+  theJetCollectionLabel_       = parameters.getParameter<edm::InputTag>("JetCollectionLabel");
+
+
+
+
+  //Initializations...
+  edm::Service<TFileService> fs;
+  probefail = fs->make<TH1D>("Probefail","Invariant mass when probe fails", 60, 60.0, 120.0);
+  probepass = fs->make<TH1D>("Probepass","Invariant mass when probe passes", 60, 60.0, 120.0);
+  probeall = fs->make<TH1D>("Probeall","Invariant mass when probe fails or passes", 60, 60.0, 120.0);
+  probepass0jet = fs->make<TH1D>("Probepass0Jet","Invariant mass when probe passes + no Jet", 60, 60.0, 120.0);
+  probepass1jet = fs->make<TH1D>("Probepass1Jet","Invariant mass when probe passes + 1 Jet", 60, 60.0, 120.0);
+  probepass2jet = fs->make<TH1D>("Probepass2Jet","Invariant mass when probe passes + 2 Jets", 60, 60.0, 120.0);
+  probepass3jet = fs->make<TH1D>("Probepass3Jet","Invariant mass when probe passes + 3 Jets", 60, 60.0, 120.0);
+  probepass4jet = fs->make<TH1D>("Probepass4Jet","Invariant mass when probe passes + 4 Jets", 60, 60.0, 120.0);
+
+
+}
+
+
+
+EfficiencyFilter::~EfficiencyFilter ()
+{
+
+  // do anything here that needs to be done at desctruction time
+  // (e.g. close files, deallocate resources etc.)
+
+}
+
+
+
