@@ -73,7 +73,7 @@ class ZanalyzerFilter : public edm::EDFilter {
 ZanalyzerFilter::ZanalyzerFilter (const edm::ParameterSet & parameters)
 {
 	theElectronCollectionLabel = parameters.getParameter <edm::InputTag> ("electronCollection");
-	triggerCollection_	= parameters.getUntrackedParameter<edm::InputTag>("triggerCollectionTag");
+	triggerCollection_	= parameters.getParameter<edm::InputTag>("triggerCollectionTag");
 	useCombinedPrescales_ = parameters.getParameter<bool>("UseCombinedPrescales");
 	triggerNames_         = parameters.getParameter< std::vector<std::string> > ("TriggerNames");
 	useAllTriggers_       = (triggerNames_.size()==0);
