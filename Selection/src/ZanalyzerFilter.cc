@@ -13,7 +13,7 @@ Implementation:
 //
 // Original Author:  Vieri Candelise & Matteo Marone
 //         Created:  Wed May 11 14:53:26 CEST 2011
-// $Id: ZanalyzerFilter.cc,v 1.9 2011/09/09 15:05:50 dscaini Exp $
+// $Id: ZanalyzerFilter.cc,v 1.10 2011/10/25 15:41:11 dscaini Exp $
 //
 //
 
@@ -78,6 +78,7 @@ ZanalyzerFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSetup)
 	Handle<TriggerResults> HLTResults;
 	iEvent.getByLabel(triggerCollection_, HLTResults);
 	const edm::TriggerNames & triggerNames = iEvent.triggerNames(*HLTResults);
+	bool flag=false;
 
 	if (HLTResults.isValid() && doTheHLTAnalysis_) {
 		/// Storing the Prescale information: loop over the triggers and record prescale
@@ -94,8 +95,8 @@ ZanalyzerFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSetup)
 				triggerSubset.push_back(bit);
 
 				if(bit) {
-
-						//If path is accepted, then together with its prescale it is stored in a map.
+				  flag=true;
+				  //If path is accepted, then together with its prescale it is stored in a map.
 						int prescaleset = hltConfig_.prescaleSet(iEvent,iSetup);
 						if(prescaleset!=-1) {
 							prescalepair = hltConfig_.prescaleValues(iEvent,iSetup,triggerNames_[itrig]);
@@ -127,13 +128,11 @@ ZanalyzerFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSetup)
 	} //chiusura HLT studies
 
 
-
-
-
-
-
-
-
+	if (!flag) 
+	  {
+	    if(!useAllTriggers_) return false;
+	  }
+ 
 
 //===========================
 
