@@ -13,7 +13,7 @@ Implementation:
 //
 // Original Author:  Vieri Candelise & Matteo Marone
 //         Created:  Wed May 11 14:53:26 CEST 2011
-// $Id: ZanalyzerFilter.cc,v 1.11 2011/11/04 14:09:35 marone Exp $
+// $Id: ZanalyzerFilter.cc,v 1.12 2011/11/09 10:18:43 marone Exp $
 //
 //
 
@@ -48,13 +48,15 @@ Implementation:
 #include "FWCore/Common/interface/TriggerNames.h"
 #include "DataFormats/Common/interface/TriggerResults.h"
 
+#include "TString.h"
 
 using namespace std;
 using namespace edm;
 using namespace reco;
 
 
-
+bool hltispresent=1;
+bool davdebug=0;
 
 
 //
@@ -65,72 +67,95 @@ using namespace reco;
 bool
 ZanalyzerFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSetup)
 {
-  debug=true;
-  if (debug) cout<<"------- NEW Event -----"<<endl;
-  using namespace edm;
-  Handle < GsfElectronCollection > electronCollection;
-  iEvent.getByLabel (theElectronCollectionLabel, electronCollection);
-  if (!electronCollection.isValid ()) return false;
+	if (debug) cout<<"------- NEW Event -----"<<endl;
+	using namespace edm;
+	Handle < GsfElectronCollection > electronCollection;
+	iEvent.getByLabel (theElectronCollectionLabel, electronCollection);
+	if (!electronCollection.isValid ())
+		return false;
 
-  //Match The HLT Trigger
-  using edm::TriggerResults;
-  Handle<TriggerResults> HLTResults;
-  iEvent.getByLabel(triggerCollection_, HLTResults);
-  const edm::TriggerNames & triggerNames = iEvent.triggerNames(*HLTResults);
-  bool flag=false;
 
-  if (HLTResults.isValid() && doTheHLTAnalysis_) {
-    /// Storing the Prescale information: loop over the triggers and record prescale
+	//Match The HLT Trigger
+	using edm::TriggerResults;
+	Handle<TriggerResults> HLTResults;
+	iEvent.getByLabel(triggerCollection_, HLTResults);
+	const edm::TriggerNames & triggerNames = iEvent.triggerNames(*HLTResults);
+	bool flag=false;
 
-    unsigned int minimalPrescale(10000);
-    unsigned int prescale(0);
-    bool bit(true);
-    std::pair<int,int> prescalepair;
-    std::vector<int>  triggerSubset;
-    for(unsigned int itrig = 0; itrig < triggerNames_.size(); ++itrig) {
-      if(triggerIndices_[itrig]!=2048) {
-	// check trigger response
-	bit = HLTResults->accept(triggerIndices_[itrig]);
-	triggerSubset.push_back(bit);
+	if (HLTResults.isValid() && doTheHLTAnalysis_) {
+		/// Storing the Prescale information: loop over the triggers and record prescale
 
-	if(bit) {
-	  flag=true;
-	  //If path is accepted, then together with its prescale it is stored in a map.
-	  int prescaleset = hltConfig_.prescaleSet(iEvent,iSetup);
-	  if(prescaleset!=-1) {
-	    prescalepair = hltConfig_.prescaleValues(iEvent,iSetup,triggerNames_[itrig]);
-	    if (debug) cout<<"prescale.first "<<prescalepair.first<<" prescalepair.second "<<prescalepair.second<<endl;
-	    //getting prescale info
-	    prescale = useCombinedPrescales_ ? prescalepair.first*prescalepair.second : prescalepair.second;
-	    if((useCombinedPrescales_ && prescalepair.first<0) || prescalepair.second<0) {
-	      edm::LogWarning("MyAnalyzer") << " Unable to get prescale from event for trigger " << triggerNames.triggerName(itrig) << " :" << prescalepair.first << ", " << prescalepair.second;
-	      prescale = -999;
-	    }
+		// Matching the HLT information event per event if no hlt info is present in iRun
+		if(hltispresent==false){
+			std::vector<std::string>  hlNames;
+			hlNames.clear();
+			hlNames=triggerNames.triggerNames();
+			triggerIndices_.clear();
 
-	    if(prescalepair.first<0 || prescalepair.second<0) { prescale = -999; }
+
+			for(unsigned int itrig = 0; itrig < triggerNames_.size(); ++itrig) {
+				if(find(hlNames.begin(),hlNames.end(),triggerNames_[itrig])!=hlNames.end()){
+					triggerIndices_.push_back(hltConfig_.triggerIndex(triggerNames_[itrig]));
+				}
+				else{
+					triggerIndices_.push_back(2048);
+				}
+			}
+
+
+		}
+
+		unsigned int minimalPrescale(10000);
+		unsigned int prescale(0);
+		bool bit(true);
+		std::pair<int,int> prescalepair;
+		std::vector<int>  triggerSubset;
+		for(unsigned int itrig = 0; itrig < triggerNames_.size(); ++itrig) {
+			if(triggerIndices_[itrig]!=2048) {
+
+				// check trigger response
+				bit = HLTResults->accept(triggerIndices_[itrig]);
+				triggerSubset.push_back(bit);
+
+				if(bit) {
+				  flag=true;
+cout << "il valore della flag " << flag << " should be quite always 1 \n";
+				  //If path is accepted, then together with its prescale it is stored in a map.
+						int prescaleset = hltConfig_.prescaleSet(iEvent,iSetup);
+						if(prescaleset!=-1) {
+							prescalepair = hltConfig_.prescaleValues(iEvent,iSetup,triggerNames_[itrig]);
+							if (debug) cout<<"prescale.first "<<prescalepair.first<<" prescalepair.second "<<prescalepair.second<<endl;
+							//getting prescale info
+							prescale = useCombinedPrescales_ ? prescalepair.first*prescalepair.second : prescalepair.second;
+							if((useCombinedPrescales_ && prescalepair.first<0) || prescalepair.second<0) {
+								edm::LogWarning("MyAnalyzer") << " Unable to get prescale from event for trigger " << triggerNames.triggerName(itrig) << " :" << prescalepair.first << ", " << prescalepair.second;
+								prescale = -999;
+							}
+
+							if(prescalepair.first<0 || prescalepair.second<0) { prescale = -999; }
+						}
+
+						minimalPrescale = minimalPrescale <  prescale ? minimalPrescale : prescale;
+						if (debug) cout<<"prescale "<<prescale<<" minimal Prescale "<<minimalPrescale<<" for trigger "<<triggerNames.triggerName(itrig)<<endl;
+
+
+				} //Chiusura del if(bit)
+				else {
+					//edm::LogError("HistoProducer") << " Unable to get prescale set from event. Check that L1 data products are present.";
+				}
+			}
+			else {
+				// that trigger is presently not in the menu
+				triggerSubset.push_back(false);
+			}
+		} //chiusura for
+	} //chiusura HLT studies
+
+	if (!flag) 
+	  {
+	    if(!useAllTriggers_) return false;
+
 	  }
-
-	  minimalPrescale = minimalPrescale <  prescale ? minimalPrescale : prescale;
-	  if (debug) cout<<"prescale "<<prescale<<" minimal Prescale "<<minimalPrescale<<" for trigger "<<triggerNames.triggerName(itrig)<<endl;
-
-
-	} //Chiusura del if(bit)
-	else {
-	  //edm::LogError("HistoProducer") << " Unable to get prescale set from event. Check that L1 data products are present.";
-	}
-      }
-      else {
-	// that trigger is presently not in the menu
-	triggerSubset.push_back(false);
-      }
-    } //chiusura for
-  } //chiusura HLT studies
-
-
-  if (!flag) 
-    {
-      if(!useAllTriggers_) return false;
-    }
  
 
   //===========================
@@ -327,39 +352,45 @@ bool
 ZanalyzerFilter::beginRun(edm::Run &iRun, edm::EventSetup const& iSetup)
 {
 
-  //HLT names
-  std::vector<std::string>  hlNames;
-  bool changed (true);
-  if (hltConfig_.init(iRun,iSetup,triggerCollection_.process(),changed)) {
-    if (changed) {
-      hlNames = hltConfig_.triggerNames();
-    }
-  } else {
-    edm::LogError("MyAnalyzer") << " HLT config extraction failure with process name " << triggerCollection_.process();
-  }
-  if (debug) cout<<"useAllTriggers?"<<useAllTriggers_<<endl;
-  if(useAllTriggers_) triggerNames_ = hlNames;
-  //triggerNames_ = hlNames;
-  //HLT indices
-  triggerIndices_.clear();
-  for(unsigned int itrig = 0; itrig < triggerNames_.size(); ++itrig) {
-    if(find(hlNames.begin(),hlNames.end(),triggerNames_[itrig])!=hlNames.end())
-      triggerIndices_.push_back(hltConfig_.triggerIndex(triggerNames_[itrig]));
-    else
-      triggerIndices_.push_back(2048);
-  }
+hltispresent=true;
+	//HLT names
+	std::vector<std::string>  hlNames;
+	hlNames.clear();
+	bool changed (true);
+	if (hltConfig_.init(iRun,iSetup,triggerCollection_.process(),changed)) {
+		if (changed) {
+			hlNames = hltConfig_.triggerNames();
+		}
+	} else {
+		edm::LogError("MyAnalyzer") << " HLT config extraction failure with process name " << triggerCollection_.process();
+	}
 
-  if (debug){
-    // text (debug) output
-    int i=0;
-    for(std::vector<std::string>::const_iterator it = triggerNames_.begin(); it<triggerNames_.end();++it) {
-      std::cout << (i++) << " = " << (*it) << std::endl;
-    } 
-  }
+	//debug dav
+	if(hlNames.size()==0) { 
+		hltispresent=false;
+	}
+
+	if (debug) cout<<"useAllTriggers? "<<useAllTriggers_<<endl;
+	if(useAllTriggers_) triggerNames_ = hlNames;
+	//triggerNames_ = hlNames;
+	//HLT indices
+	triggerIndices_.clear();
 
 
+unsigned int myflag=0;
 
-  return true;
+	for(unsigned int itrig = 0; itrig < triggerNames_.size(); ++itrig) {
+		if(find(hlNames.begin(),hlNames.end(),triggerNames_[itrig])!=hlNames.end()){
+			triggerIndices_.push_back(hltConfig_.triggerIndex(triggerNames_[itrig]));
+		}
+		else{
+			triggerIndices_.push_back(2048);
+			myflag++;
+		}
+	}
+	return true;
+
+	//qui sarebbe piÃ¹ intelligente tornare false se nella lista dei path hlt non c'Ã¨ quello che ci interessa cosÃ¬ eviti di andare comunque ogni evento in cerca di lui (ovvio devi verificare che doTheHLTanalysis sia true qui!)
 }
 
 // ------------ method called once each job just after ending the event loop  ------------
