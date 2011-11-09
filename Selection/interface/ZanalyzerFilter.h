@@ -22,7 +22,7 @@
 #include "DataFormats/Common/interface/TriggerResults.h"
 #include "HLTrigger/HLTcore/interface/HLTConfigProvider.h"
 
-bool debug=false; //Activate with true if you wonna have verbosity for debug
+bool debug=true; //Activate with true if you wonna have verbosity for debug
 
 class ZanalyzerFilter : public edm::EDFilter {
 	public:
@@ -46,7 +46,7 @@ class ZanalyzerFilter : public edm::EDFilter {
 		std::vector<std::string> triggerNames_; // name of the algorithms selected by our analysis
 		std::vector<unsigned int> triggerIndices_; // index of the algorithms selected by our analysis
 		bool doTheHLTAnalysis_;
-
+		bool removePU_;
 
 
 		//  std::string outputFile_;
@@ -78,6 +78,7 @@ ZanalyzerFilter::ZanalyzerFilter (const edm::ParameterSet & parameters)
 	triggerNames_         = parameters.getParameter< std::vector<std::string> > ("TriggerNames");
 	useAllTriggers_       = (triggerNames_.size()==0);
 	doTheHLTAnalysis_     = parameters.getParameter<bool>("doTheHLTAnalysis");
+	removePU_             = parameters.getParameter<bool>("removePU");
 
 
 
