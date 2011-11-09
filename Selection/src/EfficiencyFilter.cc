@@ -13,7 +13,7 @@ Implementation:
 //
 // Original Author:  Vieri Candelise & Matteo Marone
 //         Created:  Wed May 11 14:53:26 CEST 2011
-// $Id: EfficiencyFilter.cc,v 1.3 2011/09/05 09:15:32 marone Exp $
+// $Id: EfficiencyFilter.cc,v 1.4 2011/09/09 15:05:03 dscaini Exp $
 //
 //
 
@@ -81,58 +81,6 @@ EfficiencyFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSetup)
   if (!electronCollection.isValid ())
     return false;
 
-  //////////////////////
-  //Match The HLT Trigger
-  //////////////////////
-
-  edm::Handle<edm::TriggerResults> HLTResults;
-  iEvent.getByLabel(triggerCollection_, HLTResults);
-  if (!HLTResults.isValid ()) return false;
-  
-  const edm::TriggerNames & triggerNames = iEvent.triggerNames(*HLTResults);   
-  bool flag=false;
-    
- if (HLTResults.isValid()) {
-   /// Storing the Prescale information: loop over the triggers and record prescale
-   unsigned int minimalPrescale(10000);
-   unsigned int prescale(0);
-   bool bit(true);
-   std::pair<int,int> prescalepair;
-   std::vector<int>  triggerSubset;
-   for(unsigned int itrig = 0; itrig < triggerNames_.size(); ++itrig) {
-     if(triggerIndices_[itrig]!=2048) {
-       // check trigger response
-       bit = HLTResults->accept(triggerIndices_[itrig]);
-       triggerSubset.push_back(bit);
-       if(bit) {
-	 flag=true;
-	 if (Debug) cout<<"Matched "<<triggerNames.triggerName(itrig)<<endl;
-	 int prescaleset = hltConfig_.prescaleSet(iEvent,iSetup);
-	 if(prescaleset!=-1) {
-	   prescalepair = hltConfig_.prescaleValues(iEvent,iSetup,triggerNames_[itrig]);
-	   if (Debug) cout<<"prescale.first "<<prescalepair.first<<" prescalepair.second "<<prescalepair.second<<endl;
-	   if((useCombinedPrescales_ && prescalepair.first<0) || prescalepair.second<0) {
-	     edm::LogWarning("ZEfficiencyFilter") << " Unable to get prescale from event for trigger " << triggerNames.triggerName(itrig) << " :" 
-					   << prescalepair.first << ", " << prescalepair.second;
-	   }
-	   prescale = useCombinedPrescales_ ? prescalepair.first*prescalepair.second : prescalepair.second;
-	   minimalPrescale = minimalPrescale <  prescale ? minimalPrescale : prescale;
-	   if (Debug) cout<<"prescale "<<prescale<<" minimal Prescale "<<minimalPrescale<<" for trigger "<<triggerNames.triggerName(itrig)<<endl;
-	 } 
-       }
-     }
-     else {
-       // that trigger is presently not in the menu
-       triggerSubset.push_back(false);
-     }
-   }
- }
-  if (!flag) 
-    {
-      if(!useAllTriggers_) return false;
-    }
-
-    // ordino gli elettroni in pt 
   reco::GsfElectronCollection::const_iterator highestptele;
   reco::GsfElectronCollection::const_iterator secondptele;
 
@@ -141,7 +89,7 @@ EfficiencyFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSetup)
   if (electronCollection->size()==1) return false;
 
   for (reco::GsfElectronCollection::const_iterator recoElectron = electronCollection->begin (); recoElectron != electronCollection->end (); recoElectron++) {
-    cout<<"Electron pt value ->"<<recoElectron->pt()<<endl;
+    if (Debug) cout<<"Electron pt value ->"<<recoElectron->pt()<<endl;
     if (i==0) highestptele=recoElectron;
     if (i==1){
       if (highestptele->pt()<recoElectron->pt()){
@@ -164,7 +112,7 @@ EfficiencyFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSetup)
     i++;
   }
 
-  cout<<"First electron "<<highestptele->pt()<<" Second electron "<<secondptele->pt()<<endl;
+  if (Debug) cout<<"First electron "<<highestptele->pt()<<" Second electron "<<secondptele->pt()<<endl;
 
 
   reco::GsfElectronCollection::const_iterator tag;
@@ -175,19 +123,19 @@ EfficiencyFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSetup)
     tag=highestptele;
     probe=secondptele;
     matchHLT=true;
-    cout<<"highest ele is matched by HLT"<<endl;
+    if (Debug) cout<<"highest ele is matched by HLT"<<endl;
   }
   else{
     if ( DoHLTMatch(secondptele,iEvent) ) {
       tag=secondptele;
       probe=highestptele;
       matchHLT=true;
-      cout<<"second ele is matched by HLT"<<endl;
+      if (Debug) cout<<"second ele is matched by HLT"<<endl;
     }
   }
 
   if (!matchHLT){
-    cout<<"In this events, none of the two highest electrons (in pt) have triggered...exit"<<endl;
+    if (Debug) cout<<"In this events, none of the two highest electrons (in pt) have triggered...exit"<<endl;
     return false;
   }
 
@@ -210,7 +158,7 @@ EfficiencyFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSetup)
       for (; jet != pfJets->end (); jet++, jetIndex++) {
 	if (fabs(jet->eta())<2.4 && jet->pt()>30 && ((jet->eta()-tag->eta())>0.1 || (jet->phi()-tag->phi())>0.1 ) && ( (jet->eta()-probe->eta())>0.1 || (jet->phi()-probe->phi()>0.1)) ) {
 	  nJet++;
-	  cout<<"Jet eta "<<jet->eta()<<" pt "<<jet->pt()<<endl;
+	  if (Debug) cout<<"Jet eta "<<jet->eta()<<" pt "<<jet->pt()<<endl;
 	}
       }
     }
@@ -218,18 +166,18 @@ EfficiencyFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSetup)
       cout<<"No valid Jets Collection"<<endl;
     }
     
-    cout<<"This event has jets #->"<<nJet<<endl;
+    if (Debug) cout<<"This event has jets #->"<<nJet<<endl;
   
   if ( DoWP80(tag,iEvent) ){
-    cout<<"Tag is a WP80 electron..."<<endl;
+    if (Debug) cout<<"Tag is a WP80 electron..."<<endl;
   }
   else{
-    cout<<"Tag IS a NOT WP80 electron...Exit"<<endl;
+    if (Debug) cout<<"Tag IS a NOT WP80 electron...Exit"<<endl;
     return false;
   }
 
   if ( DoWP80(probe,iEvent) ){
-    cout<<"Probe is a WP80 electron..."<<endl;
+    if (Debug) cout<<"Probe is a WP80 electron..."<<endl;
     probepass->Fill(e_ee_invMass);
     if (nJet==0) probepass0jet->Fill(e_ee_invMass);
     if (nJet==1) probepass1jet->Fill(e_ee_invMass);
@@ -241,7 +189,7 @@ EfficiencyFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSetup)
   else{
     probefail->Fill(e_ee_invMass);
     probeall->Fill(e_ee_invMass);
-    cout<<"Probe IS NOT a WP80 electron..."<<endl;
+    if (Debug) cout<<"Probe IS NOT a WP80 electron..."<<endl;
   }
 
 
@@ -450,9 +398,9 @@ bool EfficiencyFilter::DoHLTMatch(reco::GsfElectronCollection::const_iterator re
     float diffpt=fabs(HLTpt-recoElectron->pt());
     float diffeta=fabs(HLTeta-recoElectron->eta());
     float diffphi=fabs(HLTphi-recoElectron->phi());
-    cout<<"this electron has difference wrt HLT ele of pt,eta,phi->"<<diffpt<<" "<<diffeta<<" "<<diffphi<<endl;
+    if (Debug) cout<<"this electron has difference wrt HLT ele of pt,eta,phi->"<<diffpt<<" "<<diffeta<<" "<<diffphi<<endl;
     if (diffphi<0.1 && diffeta<0.1) {
-      cout<<"This electron is the one who triggers the HLT!"<<endl;
+      if (Debug) cout<<"This electron is the one who triggers the HLT!"<<endl;
       return true;
     }
     return false;
