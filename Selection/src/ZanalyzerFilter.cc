@@ -13,7 +13,7 @@ Implementation:
 //
 // Original Author:  Vieri Candelise & Matteo Marone
 //         Created:  Wed May 11 14:53:26 CEST 2011
-// $Id: ZanalyzerFilter.cc,v 1.12 2011/11/09 10:18:43 marone Exp $
+// $Id: ZanalyzerFilter.cc,v 1.13 2011/11/09 10:51:54 dscaini Exp $
 //
 //
 
@@ -149,15 +149,17 @@ cout << "il valore della flag " << flag << " should be quite always 1 \n";
 				triggerSubset.push_back(false);
 			}
 		} //chiusura for
+
+
+		if (!flag) 
+		{
+			if(!useAllTriggers_) return false;
+
+		}
+
 	} //chiusura HLT studies
 
-	if (!flag) 
-	  {
-	    if(!useAllTriggers_) return false;
-
-	  }
- 
-
+	
   //===========================
 
   bool isBarrelElectrons;
@@ -377,7 +379,6 @@ hltispresent=true;
 	triggerIndices_.clear();
 
 
-unsigned int myflag=0;
 
 	for(unsigned int itrig = 0; itrig < triggerNames_.size(); ++itrig) {
 		if(find(hlNames.begin(),hlNames.end(),triggerNames_[itrig])!=hlNames.end()){
@@ -385,7 +386,6 @@ unsigned int myflag=0;
 		}
 		else{
 			triggerIndices_.push_back(2048);
-			myflag++;
 		}
 	}
 	return true;
