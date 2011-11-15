@@ -13,7 +13,7 @@ Implementation:
 //
 // Original Author:  Vieri Candelise & Matteo Marone
 //         Created:  Wed May 11 14:53:26 CEST 2011
-// $Id: ZanalyzerFilter.cc,v 1.13 2011/11/09 10:51:54 dscaini Exp $
+// $Id: ZanalyzerFilter.cc,v 1.14 2011/11/11 14:41:06 dscaini Exp $
 //
 //
 
@@ -313,7 +313,8 @@ cout << "il valore della flag " << flag << " should be quite always 1 \n";
     }
 
   }
-  if (elIsAccepted<=1)    return false;
+  if (elIsAccepted<=1)    return false; //cut on the number of electrons
+
   double e_ee_invMass=0; 
   if (elIsAccepted>2) cout<<"WARNING: In this events we have more than two electrons accpeted!!!!!!!"<<endl;
   if (LV.size()==2){
@@ -322,6 +323,8 @@ cout << "il valore della flag " << flag << " should be quite always 1 \n";
     h_invMass->Fill(e_ee_invMass);
   }  
 
+  if (e_ee_invMass>120 || e_ee_invMass<60) return false;  //Remove Z out of 60-120 mass range
+  
   if (elIsAcceptedEB==2){
     h_invMassBB->Fill(e_ee_invMass);
   }

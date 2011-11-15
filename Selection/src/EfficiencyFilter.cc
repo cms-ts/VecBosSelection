@@ -13,7 +13,7 @@ Implementation:
 //
 // Original Author:  Vieri Candelise & Matteo Marone
 //         Created:  Wed May 11 14:53:26 CEST 2011
-// $Id: EfficiencyFilter.cc,v 1.4 2011/09/09 15:05:03 dscaini Exp $
+// $Id: EfficiencyFilter.cc,v 1.5 2011/11/09 14:32:04 marone Exp $
 //
 //
 
@@ -373,12 +373,13 @@ bool EfficiencyFilter::DoHLTMatch(reco::GsfElectronCollection::const_iterator re
   float HLTphi=0;
   
   edm::InputTag myLastFilter = edm::InputTag("hltEle17CaloIdLCaloIsoVLPixelMatchFilter","","HLT");
+  edm::InputTag myLastFilter2 = edm::InputTag("hltEle17CaloIdIsoEle8CaloIdIsoPixelMatchDoubleFilter","","HLT");
     const trigger::TriggerObjectCollection& TOC( trgEvent->getObjects() );
 
     for(int i=0; i != trgEvent->sizeFilters(); ++i) {
       std::string label(trgEvent->filterTag(i).label());
       if (Debug) cout<<label<<endl;
-      if (Debug) if( label == myLastFilter.label() ) cout<<"HT FIlter matched ->"<<label<<endl;;
+      if (Debug) if( label == myLastFilter.label() || label == myLastFilter2.label()  ) cout<<"HT FIlter matched ->"<<label<<endl;;
     }
 
     if ( trgEvent->filterIndex(myLastFilter) < trgEvent->sizeFilters() ) {
