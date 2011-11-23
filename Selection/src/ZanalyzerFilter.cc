@@ -13,7 +13,7 @@ Implementation:
 //
 // Original Author:  Vieri Candelise & Matteo Marone
 //         Created:  Wed May 11 14:53:26 CEST 2011
-// $Id: ZanalyzerFilter.cc,v 1.14 2011/11/11 14:41:06 dscaini Exp $
+// $Id: ZanalyzerFilter.cc,v 1.15 2011/11/15 10:23:51 marone Exp $
 //
 //
 
@@ -119,7 +119,6 @@ ZanalyzerFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSetup)
 
 				if(bit) {
 				  flag=true;
-cout << "il valore della flag " << flag << " should be quite always 1 \n";
 				  //If path is accepted, then together with its prescale it is stored in a map.
 						int prescaleset = hltConfig_.prescaleSet(iEvent,iSetup);
 						if(prescaleset!=-1) {
