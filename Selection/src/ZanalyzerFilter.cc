@@ -13,7 +13,7 @@ Implementation:
 //
 // Original Author:  Vieri Candelise & Matteo Marone
 //         Created:  Wed May 11 14:53:26 CEST 2011
-// $Id: ZanalyzerFilter.cc,v 1.15 2011/11/15 10:23:51 marone Exp $
+// $Id: ZanalyzerFilter.cc,v 1.16 2011/11/23 13:57:31 marone Exp $
 //
 //
 
@@ -67,14 +67,14 @@ bool davdebug=0;
 bool
 ZanalyzerFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSetup)
 {
-	if (debug) cout<<"------- NEW Event -----"<<endl;
-	using namespace edm;
+  
+  if (debug) cout<<"------- NEW Event -----"<<endl;
+  using namespace edm;
 	Handle < GsfElectronCollection > electronCollection;
 	iEvent.getByLabel (theElectronCollectionLabel, electronCollection);
 	if (!electronCollection.isValid ())
-		return false;
-
-
+	  return false;
+	
 	//Match The HLT Trigger
 	using edm::TriggerResults;
 	Handle<TriggerResults> HLTResults;
