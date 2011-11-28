@@ -21,6 +21,9 @@
 #include "DataFormats/HLTReco/interface/TriggerEvent.h"
 #include "DataFormats/Common/interface/TriggerResults.h"
 #include "HLTrigger/HLTcore/interface/HLTConfigProvider.h"
+#include "DataFormats/PatCandidates/interface/CompositeCandidate.h"
+#include "DataFormats/PatCandidates/interface/Muon.h"
+#include "DataFormats/PatCandidates/interface/Electron.h"
 
 class EfficiencyFilter : public edm::EDFilter {
    public:
@@ -33,8 +36,8 @@ class EfficiencyFilter : public edm::EDFilter {
    private:
       virtual bool filter(edm::Event&, edm::EventSetup const&);
       virtual void endJob() ;
-      virtual bool DoWP80(reco::GsfElectronCollection::const_iterator recoElectron,edm::Event& iEvent);
-      virtual bool DoHLTMatch(reco::GsfElectronCollection::const_iterator recoElectron,edm::Event& iEvent);
+      virtual bool DoWP80(pat::ElectronCollection::const_iterator recoElectron,edm::Event& iEvent);
+      virtual bool DoHLTMatch(pat::ElectronCollection::const_iterator recoElectron,edm::Event& iEvent);
 
       // ----------member data ---------------------------
 
@@ -76,7 +79,7 @@ EfficiencyFilter::EfficiencyFilter (const edm::ParameterSet & parameters)
   electronIsolatedProducer_ = parameters.getParameter< edm::InputTag > ("electronIsolatedProducer");
   candTag_ = parameters.getParameter< edm::InputTag > ("candTag");
   theJetCollectionLabel_       = parameters.getParameter<edm::InputTag>("JetCollectionLabel");
-
+  triggerNames_         = parameters.getParameter< std::vector<std::string> > ("TriggerNames");
 
 
 

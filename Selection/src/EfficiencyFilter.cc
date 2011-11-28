@@ -12,10 +12,9 @@ Implementation:
 */
 //
 // Original Author:  Vieri Candelise & Matteo Marone
-//         Created:  Wed May 11 14:53:26 CEST 2011
+//         Created:  Wed May 11 14:53:26 CESDo2011
 // $Id: EfficiencyFilter.cc,v 1.5 2011/11/09 14:32:04 marone Exp $
-//
-//
+
 
 
 // system include files
@@ -61,10 +60,8 @@ Implementation:
 using namespace std;
 using namespace edm;
 using namespace reco;
-bool Debug=false; //Activate with true if you wonna have verbosity for Debug
 
-
-
+bool Debug=true; //Activate with true if you wonna have verbosity for Debug
 
 //
 // member functions
@@ -76,29 +73,34 @@ EfficiencyFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSetup)
 {
   if (Debug) cout<<"------- NEW Event -----"<<endl;
   using namespace edm;
-  Handle < GsfElectronCollection > electronCollection;
-  iEvent.getByLabel (theElectronCollectionLabel, electronCollection);
-  if (!electronCollection.isValid ())
-    return false;
 
-  reco::GsfElectronCollection::const_iterator highestptele;
-  reco::GsfElectronCollection::const_iterator secondptele;
+  //Get Pattuple... Yes, we gave up....
+  Handle < pat::ElectronCollection > electronCollection;
+  iEvent.getByLabel (theElectronCollectionLabel, electronCollection);
+  if (!electronCollection.isValid ()) return false;
+
+
+  pat::ElectronCollection::const_iterator highestptele;
+  pat::ElectronCollection::const_iterator secondptele;
 
   int i=0;
-  
-  if (electronCollection->size()==1) return false;
 
-  for (reco::GsfElectronCollection::const_iterator recoElectron = electronCollection->begin (); recoElectron != electronCollection->end (); recoElectron++) {
+  if (electronCollection->size()==1) return false;
+  bool protection=false;
+
+  for (pat::ElectronCollection::const_iterator recoElectron = electronCollection->begin (); recoElectron != electronCollection->end (); recoElectron++) {
+    protection=true;
     if (Debug) cout<<"Electron pt value ->"<<recoElectron->pt()<<endl;
+    if (Debug) cout<<" MMMM ele trigger size "<<recoElectron->triggerObjectMatches().size()<<endl;
     if (i==0) highestptele=recoElectron;
     if (i==1){
       if (highestptele->pt()<recoElectron->pt()){
 	secondptele=highestptele;
 	highestptele=recoElectron;
-    }
-      else{
-	secondptele=recoElectron;
       }
+	else{
+	  secondptele=recoElectron;
+	}
     }
     if (i>1){
       if (highestptele->pt()<recoElectron->pt()){
@@ -112,11 +114,16 @@ EfficiencyFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSetup)
     i++;
   }
 
+  if (!protection) {
+    cout<<"problems with PAT collection... Please check..."<<endl;    
+    return false;
+  }
+
   if (Debug) cout<<"First electron "<<highestptele->pt()<<" Second electron "<<secondptele->pt()<<endl;
+  
 
-
-  reco::GsfElectronCollection::const_iterator tag;
-  reco::GsfElectronCollection::const_iterator probe;
+  pat::ElectronCollection::const_iterator tag;
+  pat::ElectronCollection::const_iterator probe;
   bool matchHLT=false;
 
   if ( DoHLTMatch(highestptele,iEvent) ) {
@@ -148,15 +155,25 @@ EfficiencyFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSetup)
   double e_ee_invMass = e_pair.M ();
 
 
+  //cut on the tag and probe mass...
+  if (e_ee_invMass>120 || e_ee_invMass<60) return false;
+
+
   //Estraggo il contenuto dei jets
     int nJet = 0;
     int jetIndex = 0;
+    double deltaRCone=0.3;
+
     Handle<PFJetCollection> pfJets;
     iEvent.getByLabel(theJetCollectionLabel_, pfJets);
     if (pfJets.isValid()) {
       PFJetCollection::const_iterator jet = pfJets->begin ();
+       
       for (; jet != pfJets->end (); jet++, jetIndex++) {
-	if (fabs(jet->eta())<2.4 && jet->pt()>30 && ((jet->eta()-tag->eta())>0.1 || (jet->phi()-tag->phi())>0.1 ) && ( (jet->eta()-probe->eta())>0.1 || (jet->phi()-probe->phi()>0.1)) ) {
+       // check if the jet is equal to one of the isolated electrons
+	double deltaR1= sqrt( pow(jet->eta()-probe->eta(),2)+pow(jet->phi()-probe->phi(),2) );
+	double deltaR2= sqrt( pow(jet->eta()-tag->eta(),2)+pow(jet->phi()-tag->phi(),2) );
+	if (deltaR1 > deltaRCone && deltaR2 > deltaRCone && fabs(jet->eta())<2.4 && jet->pt()>30) {
 	  nJet++;
 	  if (Debug) cout<<"Jet eta "<<jet->eta()<<" pt "<<jet->pt()<<endl;
 	}
@@ -167,35 +184,41 @@ EfficiencyFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSetup)
     }
     
     if (Debug) cout<<"This event has jets #->"<<nJet<<endl;
-  
-  if ( DoWP80(tag,iEvent) ){
-    if (Debug) cout<<"Tag is a WP80 electron..."<<endl;
-  }
-  else{
-    if (Debug) cout<<"Tag IS a NOT WP80 electron...Exit"<<endl;
-    return false;
-  }
+    
+    //Checking the WP80 cuts...
 
-  if ( DoWP80(probe,iEvent) ){
-    if (Debug) cout<<"Probe is a WP80 electron..."<<endl;
-    probepass->Fill(e_ee_invMass);
-    if (nJet==0) probepass0jet->Fill(e_ee_invMass);
-    if (nJet==1) probepass1jet->Fill(e_ee_invMass);
-    if (nJet==2) probepass2jet->Fill(e_ee_invMass);
-    if (nJet==3) probepass3jet->Fill(e_ee_invMass);
-    if (nJet==4) probepass4jet->Fill(e_ee_invMass);
-    probeall->Fill(e_ee_invMass);
-  }
-  else{
-    probefail->Fill(e_ee_invMass);
-    probeall->Fill(e_ee_invMass);
-    if (Debug) cout<<"Probe IS NOT a WP80 electron..."<<endl;
-  }
-
-
-
-  return true;
- 
+    bool isTAGWP80=true;
+    
+    if ( DoWP80(tag,iEvent) ){
+      if (Debug) cout<<"Tag is a WP80 electron..."<<endl;
+    }
+    else{
+      if (Debug) cout<<"Tag IS a NOT WP80 electron...Exit"<<endl;
+      isTAGWP80=false;
+    }
+    
+    if (isTAGWP80){
+      if ( DoWP80(probe,iEvent) ){
+	if (Debug) cout<<"Probe is a WP80 electron..."<<endl;
+	probepass->Fill(e_ee_invMass);
+	if (nJet==0) probepass0jet->Fill(e_ee_invMass);
+	if (nJet==1) probepass1jet->Fill(e_ee_invMass);
+	if (nJet==2) probepass2jet->Fill(e_ee_invMass);
+	if (nJet==3) probepass3jet->Fill(e_ee_invMass);
+	if (nJet==4) probepass4jet->Fill(e_ee_invMass);
+	probeall->Fill(e_ee_invMass);
+      }
+      else{
+	probefail->Fill(e_ee_invMass);
+	probeall->Fill(e_ee_invMass);
+	if (Debug) cout<<"Probe IS NOT a WP80 electron..."<<endl;
+      }
+    }
+    
+    
+    
+    return true;
+    
 }
 
 
@@ -245,7 +268,7 @@ EfficiencyFilter::beginRun(edm::Run &iRun, edm::EventSetup const& iSetup)
 
 //DO the WP80 analysis
 
-bool EfficiencyFilter::DoWP80(reco::GsfElectronCollection::const_iterator recoElectron,edm::Event& iEvent)
+bool EfficiencyFilter::DoWP80(pat::ElectronCollection::const_iterator recoElectron,edm::Event& iEvent)
 {
   double IsoTrk = 0;
   double IsoEcal = 0;
@@ -362,49 +385,19 @@ bool EfficiencyFilter::DoWP80(reco::GsfElectronCollection::const_iterator recoEl
     return false;
 }
 
-bool EfficiencyFilter::DoHLTMatch(reco::GsfElectronCollection::const_iterator recoElectron,edm::Event& iEvent)
+
+bool EfficiencyFilter::DoHLTMatch(pat::ElectronCollection::const_iterator recoElectron,edm::Event& iEvent)
 {
-  //Check the electrons which have been triggered by the HLT
-  edm::Handle<trigger::TriggerEvent> trgEvent;
-  iEvent.getByLabel(InputTag("hltTriggerSummaryAOD","","HLT"), trgEvent);
-  //Variables to be matched after
-  float HLTpt=0;
-  float HLTeta=0;
-  float HLTphi=0;
-  
-  edm::InputTag myLastFilter = edm::InputTag("hltEle17CaloIdLCaloIsoVLPixelMatchFilter","","HLT");
-  edm::InputTag myLastFilter2 = edm::InputTag("hltEle17CaloIdIsoEle8CaloIdIsoPixelMatchDoubleFilter","","HLT");
-    const trigger::TriggerObjectCollection& TOC( trgEvent->getObjects() );
+  bool match=false;
+  //DOesnt work, after chatting with Marco M.
+  //for(std::vector<std::string>::const_iterator it = triggerNames_.begin(); it<triggerNames_.end();++it) {
+  //string stringa=(string) *it;
+  //if (recoElectron->triggerObjectMatchesByPath(stringa).size()>0) match=true;
+  if (Debug) cout<<"electron trigger Object Size ->"<<recoElectron->triggerObjectMatches().size()<<endl;
+  //} 
+  if (recoElectron->triggerObjectMatches().size()>0) match=true;
 
-    for(int i=0; i != trgEvent->sizeFilters(); ++i) {
-      std::string label(trgEvent->filterTag(i).label());
-      if (Debug) cout<<label<<endl;
-      if (Debug) if( label == myLastFilter.label() || label == myLastFilter2.label()  ) cout<<"HT FIlter matched ->"<<label<<endl;;
-    }
-
-    if ( trgEvent->filterIndex(myLastFilter) < trgEvent->sizeFilters() ) {
-      const trigger::Keys& keys( trgEvent->filterKeys( trgEvent->filterIndex(myLastFilter) ) );
-      for ( unsigned int hlto = 0; hlto < keys.size(); hlto++ ) {
-	int hltf = keys[hlto];
-	const trigger::TriggerObject& L3obj(TOC[hltf]);
-	HLTpt=L3obj.pt();
-	HLTeta=L3obj.eta();
-	HLTphi=L3obj.phi();
-	if (Debug) cout<<"The matched HLT electron has pt,eta,phi ->"<<L3obj.pt()<<" "<<L3obj.eta()<<" "<<L3obj.phi()<<endl;
-      }
-    }
-    if (Debug) cout<<"this electron has pt,eta,phi->"<<recoElectron->pt()<<" "<<recoElectron->eta()<<" "<<recoElectron->phi()<<endl;
-
-    //Difference between mtached HLT electron and *Electron
-    float diffpt=fabs(HLTpt-recoElectron->pt());
-    float diffeta=fabs(HLTeta-recoElectron->eta());
-    float diffphi=fabs(HLTphi-recoElectron->phi());
-    if (Debug) cout<<"this electron has difference wrt HLT ele of pt,eta,phi->"<<diffpt<<" "<<diffeta<<" "<<diffphi<<endl;
-    if (diffphi<0.1 && diffeta<0.1) {
-      if (Debug) cout<<"This electron is the one who triggers the HLT!"<<endl;
-      return true;
-    }
-    return false;
+  return match;
 }
 
 
