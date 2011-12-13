@@ -13,7 +13,7 @@ Implementation:
 //
 // Original Author:  Vieri Candelise & Matteo Marone
 //         Created:  Wed May 11 14:53:26 CESDo2011
-// $Id: EfficiencyFilter.cc,v 1.5 2011/11/09 14:32:04 marone Exp $
+// $Id: EfficiencyFilter.cc,v 1.7 2011/11/28 15:47:28 marone Exp $
 
 
 
@@ -61,7 +61,7 @@ using namespace std;
 using namespace edm;
 using namespace reco;
 
-bool Debug=true; //Activate with true if you wonna have verbosity for Debug
+bool Debug=false; //Activate with true if you wonna have verbosity for Debug
 
 //
 // member functions
@@ -115,7 +115,7 @@ EfficiencyFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSetup)
   }
 
   if (!protection) {
-    cout<<"problems with PAT collection... Please check..."<<endl;    
+    cout<<"problems with PAT collection, in Efficiency.cc-->... Please check..."<<endl;    
     return false;
   }
 
@@ -125,11 +125,15 @@ EfficiencyFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSetup)
   pat::ElectronCollection::const_iterator tag;
   pat::ElectronCollection::const_iterator probe;
   bool matchHLT=false;
+  int NumbOfmatchedHLT=0;
 
   if ( DoHLTMatch(highestptele,iEvent) ) {
     tag=highestptele;
     probe=secondptele;
     matchHLT=true;
+    NumbOfmatchedHLT++;
+    //Check if also the other ele is fired!
+    if ( DoHLTMatch(secondptele,iEvent) ) NumbOfmatchedHLT++;  
     if (Debug) cout<<"highest ele is matched by HLT"<<endl;
   }
   else{
@@ -137,6 +141,7 @@ EfficiencyFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSetup)
       tag=secondptele;
       probe=highestptele;
       matchHLT=true;
+      NumbOfmatchedHLT++;
       if (Debug) cout<<"second ele is matched by HLT"<<endl;
     }
   }
@@ -146,6 +151,8 @@ EfficiencyFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSetup)
     return false;
   }
 
+
+  //Calculating tag & probe stuff
   TLorentzVector tagv;
   tagv.SetPtEtaPhiM(tag->pt(),tag->eta(),tag->phi(), 0.0);
   TLorentzVector probev;
@@ -185,6 +192,16 @@ EfficiencyFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSetup)
     
     if (Debug) cout<<"This event has jets #->"<<nJet<<endl;
     
+
+    //Fill HLT plot..
+    if (Debug) cout<<"In this event "<<NumbOfmatchedHLT<<" have fired the HLT.."<<endl;
+    HLTEfficiency->Fill(NumbOfmatchedHLT);
+    if (nJet==0) HLTEfficiency0Jet->Fill(NumbOfmatchedHLT);
+    if (nJet==1) HLTEfficiency1Jet->Fill(NumbOfmatchedHLT);
+    if (nJet==2) HLTEfficiency2Jet->Fill(NumbOfmatchedHLT);
+    if (nJet==3) HLTEfficiency3Jet->Fill(NumbOfmatchedHLT);
+    if (nJet==4) HLTEfficiency4Jet->Fill(NumbOfmatchedHLT);
+
     //Checking the WP80 cuts...
 
     bool isTAGWP80=true;
@@ -197,20 +214,72 @@ EfficiencyFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSetup)
       isTAGWP80=false;
     }
     
+
+    //Filling same "preliminary" distributions
+    //Where is probe in eta
+    if (fabs(probe->eta()) <=1.44) probeinEB->Fill(e_ee_invMass);
+    if (fabs(probe->eta()) >1.44) probeinEE->Fill(e_ee_invMass);
+    //probe and tag pt
+    probept->Fill(probe->pt());
+    tagpt->Fill(tag->pt());
+    //probe as a function of pt
+    if (probe->pt()<=35) probept_0_35->Fill(e_ee_invMass);
+    if (probe->pt()>35 && probe->pt()<=45) probept_35_45->Fill(e_ee_invMass);
+    if (probe->pt()>45 && probe->pt()<=55) probept_45_55->Fill(e_ee_invMass);
+    if (probe->pt()>55) probept_55_inf->Fill(e_ee_invMass);
+
+
     if (isTAGWP80){
       if ( DoWP80(probe,iEvent) ){
-	if (Debug) cout<<"Probe is a WP80 electron..."<<endl;
+	if (Debug) cout<<"Probe is a WP80 electron->.."<<endl;
 	probepass->Fill(e_ee_invMass);
 	if (nJet==0) probepass0jet->Fill(e_ee_invMass);
 	if (nJet==1) probepass1jet->Fill(e_ee_invMass);
 	if (nJet==2) probepass2jet->Fill(e_ee_invMass);
 	if (nJet==3) probepass3jet->Fill(e_ee_invMass);
 	if (nJet==4) probepass4jet->Fill(e_ee_invMass);
+	//Geometrically in the Barrel
+	if (probe->eta()<=1.44){
+	  if (nJet==0) probepass0jetEB->Fill(e_ee_invMass);
+	  if (nJet==1) probepass1jetEB->Fill(e_ee_invMass);
+	  if (nJet==2) probepass2jetEB->Fill(e_ee_invMass);
+	  if (nJet==3) probepass3jetEB->Fill(e_ee_invMass);
+	  if (nJet==4) probepass4jetEB->Fill(e_ee_invMass);
+	}
+	else{
+	//Geometrically in the Endcap
+	  if (nJet==0) probepass0jetEE->Fill(e_ee_invMass);
+	  if (nJet==1) probepass1jetEE->Fill(e_ee_invMass);
+	  if (nJet==2) probepass2jetEE->Fill(e_ee_invMass);
+	  if (nJet==3) probepass3jetEE->Fill(e_ee_invMass);
+	  if (nJet==4) probepass4jetEE->Fill(e_ee_invMass);
+	}
 	probeall->Fill(e_ee_invMass);
       }
       else{
 	probefail->Fill(e_ee_invMass);
 	probeall->Fill(e_ee_invMass);
+	if (nJet==0) probefailed0jet->Fill(e_ee_invMass);
+	if (nJet==1) probefailed1jet->Fill(e_ee_invMass);
+	if (nJet==2) probefailed2jet->Fill(e_ee_invMass);
+	if (nJet==3) probefailed3jet->Fill(e_ee_invMass);
+	if (nJet==4) probefailed4jet->Fill(e_ee_invMass);
+	//Geometrically in the Barrel
+	if (probe->eta()<=1.44){
+	  if (nJet==0) probefailed0jetEB->Fill(e_ee_invMass);
+	  if (nJet==1) probefailed1jetEB->Fill(e_ee_invMass);
+	  if (nJet==2) probefailed2jetEB->Fill(e_ee_invMass);
+	  if (nJet==3) probefailed3jetEB->Fill(e_ee_invMass);
+	  if (nJet==4) probefailed4jetEB->Fill(e_ee_invMass);
+	}
+	else{
+	  //Geometrically in the Endcap
+	  if (nJet==0) probefailed0jetEE->Fill(e_ee_invMass);
+	  if (nJet==1) probefailed1jetEE->Fill(e_ee_invMass);
+	  if (nJet==2) probefailed2jetEE->Fill(e_ee_invMass);
+	  if (nJet==3) probefailed3jetEE->Fill(e_ee_invMass);
+	  if (nJet==4) probefailed4jetEE->Fill(e_ee_invMass);
+	}
 	if (Debug) cout<<"Probe IS NOT a WP80 electron..."<<endl;
       }
     }
