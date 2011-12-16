@@ -55,9 +55,8 @@ using namespace edm;
 using namespace reco;
 
 
-bool hltispresent2=1;
-bool davdebug=0;
-bool Debug2=true; //Activate with true if you wonna have verbosity for Debug
+bool hltispresent2=1; //Necessary to correctly match the HLT
+bool Debug2=false;    //Activate with true if you wonna have verbosity for Debug
 
   using namespace edm;
 
@@ -174,7 +173,7 @@ ZpatFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSetup)
   pat::ElectronCollection::const_iterator secondptele;
 
   int i=0;
-  if (electronCollection->size()==1) return false;
+  if (electronCollection->size()<=1) return false;
   bool protection=false;
 
 
@@ -281,7 +280,7 @@ bool
 ZpatFilter::beginRun(edm::Run &iRun, edm::EventSetup const& iSetup)
 {
 
-hltispresent2=true;
+	hltispresent2=true;
 	//HLT names
 	std::vector<std::string>  hlNames;
 	hlNames.clear();
