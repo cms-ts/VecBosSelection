@@ -25,8 +25,9 @@
 #include "DataFormats/PatCandidates/interface/CompositeCandidate.h"
 #include "DataFormats/PatCandidates/interface/Muon.h"
 #include "DataFormats/PatCandidates/interface/Electron.h"
+#include "../interface/SelectionUtils.h"
 
-class EfficiencyFilter : public edm::EDFilter {
+class EfficiencyFilter : public edm::EDFilter, public SelectionUtils {
    public:
       explicit EfficiencyFilter(const edm::ParameterSet &);
       ~EfficiencyFilter();
@@ -37,8 +38,6 @@ class EfficiencyFilter : public edm::EDFilter {
    private:
       virtual bool filter(edm::Event&, edm::EventSetup const&);
       virtual void endJob() ;
-      virtual bool DoWP80(pat::ElectronCollection::const_iterator recoElectron,edm::Event& iEvent);
-      virtual bool DoHLTMatch(pat::ElectronCollection::const_iterator recoElectron,edm::Event& iEvent);
 
       // ----------member data ---------------------------
 

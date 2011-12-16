@@ -13,7 +13,7 @@ Implementation:
 //
 // Original Author:  Vieri Candelise & Matteo Marone
 //         Created:  Wed May 11 14:53:26 CESDo2011
-// $Id: EfficiencyFilter.cc,v 1.8 2011/12/13 10:33:55 marone Exp $
+// $Id: EfficiencyFilter.cc,v 1.9 2011/12/16 13:23:44 schizzi Exp $
 
 
 
@@ -96,8 +96,8 @@ EfficiencyFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSetup)
     if (Debug) cout<<"Electron pt value ->"<<recoElectron->pt()<<endl;
     if (Debug) cout<<" MMMM ele trigger size "<<recoElectron->triggerObjectMatches().size()<<endl;
     if (i==0) highestptele=recoElectron;
-    if ( DoHLTMatch(recoElectron,iEvent) ) HLTmatches_SUM++;
-    if ( !DoHLTMatch(recoElectron,iEvent) ) HLTmatches_FAIL++;
+    if ( SelectionUtils::DoHLTMatch(recoElectron,iEvent) ) HLTmatches_SUM++;
+    if ( !SelectionUtils::DoHLTMatch(recoElectron,iEvent) ) HLTmatches_FAIL++;
     HLTmatches_TOTALELE++;
     if (i==1){
       if (highestptele->pt()<recoElectron->pt()){
@@ -175,10 +175,10 @@ EfficiencyFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSetup)
 
 
 
-    if (DoWP80(highestptele,iEvent)){
+    if (SelectionUtils::DoWP80(highestptele,iEvent)){
       probept->Fill(secondptele->pt());
       probeall->Fill(e_ee_invMass);
-      if ( DoWP80(secondptele,iEvent) ){
+      if ( SelectionUtils::DoWP80(secondptele,iEvent) ){
 	if (Debug) cout<<"Probe is a WP80 electron->.."<<endl;
 	probept_passWP80->Fill(secondptele->pt());
 	WP80_probepass->Fill(e_ee_invMass);
@@ -197,7 +197,7 @@ EfficiencyFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSetup)
 	if (nJet==3) WP80_probefail3jet->Fill(e_ee_invMass);
 	if (nJet==4) WP80_probefail4jet->Fill(e_ee_invMass);
       }
-      if ( DoHLTMatch(secondptele,iEvent) ){
+      if ( SelectionUtils::DoHLTMatch(secondptele,iEvent) ){
 	if (Debug) cout<<"Probe is a WP80 electron->.."<<endl;
 	HLT_probepass->Fill(e_ee_invMass);
 	if (nJet==0) HLT_probepass0jet->Fill(e_ee_invMass);
@@ -217,10 +217,10 @@ EfficiencyFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSetup)
     }
 
 
-    if (DoWP80(secondptele,iEvent)){
+    if (SelectionUtils::DoWP80(secondptele,iEvent)){
       tagpt->Fill(highestptele->pt());
       tagall->Fill(e_ee_invMass);
-      if ( DoWP80(highestptele,iEvent) ){
+      if ( SelectionUtils::DoWP80(highestptele,iEvent) ){
 	if (Debug) cout<<"Probe is a WP80 electron->.."<<endl;
 	tagpt_passWP80->Fill(highestptele->pt());
 	WP80_tagpass->Fill(e_ee_invMass);
@@ -239,7 +239,7 @@ EfficiencyFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSetup)
 	if (nJet==3) WP80_tagfail3jet->Fill(e_ee_invMass);
 	if (nJet==4) WP80_tagfail4jet->Fill(e_ee_invMass);
       }
-      if ( DoHLTMatch(highestptele,iEvent) ){
+      if ( SelectionUtils::DoHLTMatch(highestptele,iEvent) ){
 	if (Debug) cout<<"Probe is a WP80 electron->.."<<endl;
 	HLT_tagpass->Fill(e_ee_invMass);
 	if (nJet==0) HLT_tagpass0jet->Fill(e_ee_invMass);
@@ -307,139 +307,6 @@ EfficiencyFilter::beginRun(edm::Run &iRun, edm::EventSetup const& iSetup)
    return true;
 }
 
-//DO the WP80 analysis
-
-bool EfficiencyFilter::DoWP80(pat::ElectronCollection::const_iterator recoElectron,edm::Event& iEvent)
-{
-  double IsoTrk = 0;
-  double IsoEcal = 0;
-  double IsoHcal = 0;
-  double HE = 0;
-  
-  if (removePU_){
-    double lepIsoRho;
-    
-    /////// Pileup density "rho" for lepton isolation subtraction /////
-    
-    edm::Handle<double> rhoLepIso;
-    const edm::InputTag eventrhoLepIso("kt6PFJetsForIsolation", "rho");
-    iEvent.getByLabel(eventrhoLepIso, rhoLepIso);
-    if( *rhoLepIso == *rhoLepIso)  lepIsoRho = *rhoLepIso;
-    else  lepIsoRho =  -999999.9;      
-    IsoEcal = (recoElectron->dr03EcalRecHitSumEt () - lepIsoRho*0.096) / recoElectron->et ();
-    IsoTrk = (recoElectron->dr03TkSumPt () - lepIsoRho*0.096) / recoElectron->et ();
-    IsoHcal = (recoElectron->dr03HcalTowerSumEt ()  - lepIsoRho*0.096) / recoElectron->et ();
-      HE = recoElectron->hadronicOverEm();
-  }
-  else{
-    // Define Isolation variables
-    IsoTrk = (recoElectron->dr03TkSumPt () / recoElectron->et ());
-    IsoEcal = (recoElectron->dr03EcalRecHitSumEt () / recoElectron->et ());
-    IsoHcal = (recoElectron->dr03HcalTowerSumEt () / recoElectron->et ());
-    HE = recoElectron->hadronicOverEm();
-  }
-  //Define ID variables
-  
-  float DeltaPhiTkClu = recoElectron->deltaPhiSuperClusterTrackAtVtx ();
-  float DeltaEtaTkClu = recoElectron->deltaEtaSuperClusterTrackAtVtx ();
-  float sigmaIeIe = recoElectron->sigmaIetaIeta ();
-  
-  //Define Conversion Rejection Variables
-  
-  float Dcot = recoElectron->convDcot ();
-  float Dist = recoElectron->convDist ();
-  int NumberOfExpectedInnerHits = recoElectron->gsfTrack ()->trackerExpectedHitsInner ().numberOfHits ();
-  
-  //quality flags
-
-  bool isBarrelElectrons;
-  bool isEndcapElectrons;
-  bool isIsolatedBarrel;
-  bool isIDBarrel;
-  bool isConvertedBarrel;
-  bool isIsolatedEndcap;
-  bool isIDEndcap;
-  bool isConvertedEndcap;
-  isBarrelElectrons = false;
-  isEndcapElectrons = false;
-  isIsolatedBarrel = false;
-  isIDBarrel = false;
-  isConvertedBarrel = false;
-  isIsolatedEndcap = false;
-  isIDEndcap = false;
-  isConvertedEndcap = false;
-  
-  /***** Barrel WP80 Cuts *****/
-  
-  if (fabs (recoElectron->eta ()) <= 1.4442) {
-    
-    /* Isolation */
-    if (IsoTrk < 0.09 && IsoEcal < 0.07 && IsoHcal < 0.10) {
-      isIsolatedBarrel = true;
-    }
-    
-    /* Identification */
-    if (fabs (DeltaEtaTkClu) < 0.004 && fabs (DeltaPhiTkClu) < 0.06
-	&& sigmaIeIe < 0.01 && HE < 0.04) {
-      isIDBarrel = true;
-    }
-    
-    /* Conversion Rejection */
-      if ((fabs (Dist) >= 0.02 || fabs (Dcot) >= 0.02)
-	  && NumberOfExpectedInnerHits == 0) {
-	isConvertedBarrel = true;
-      }
-      //cout<<"isIsolatedBarrel "<<isIsolatedBarrel<<" isIDBarrel "<< isIDBarrel<<" isConvertedBarrel "<<isConvertedBarrel<<endl;
-  }
-  
-  if (isIsolatedBarrel && isIDBarrel && isConvertedBarrel) {
-    return true;
-  }
-
-    /***** Endcap WP80 Cuts *****/
-
-    if (fabs (recoElectron->eta ()) >= 1.5660
-	&& fabs (recoElectron->eta ()) <= 2.5000) {
-
-      /* Isolation */
-      if (IsoTrk < 0.04 && IsoEcal < 0.05 && IsoHcal < 0.025) {
-	isIsolatedEndcap = true;
-      }
-
-      /* Identification */
-      if (fabs (DeltaEtaTkClu) < 0.007 && fabs (DeltaPhiTkClu) < 0.03
-	  && sigmaIeIe < 0.03 && HE < 0.15) {
-	isIDEndcap = true;
-      }
-
-      /* Conversion Rejection */
-      if ((fabs (Dcot) > 0.02 || fabs (Dist) > 0.02)
-	  && NumberOfExpectedInnerHits == 0) {
-	isConvertedEndcap = true;
-      }
-      //cout<<"isIsolatedEndcap "<<isIsolatedEndcap<<" isIDEndcap "<< isIDEndcap<<" isConvertedEndcap "<<isConvertedEndcap<<endl;
-    }
-
-    if (isIsolatedEndcap && isIDEndcap && isConvertedEndcap) {
-      return true;
-    }
-    return false;
-}
-
-
-bool EfficiencyFilter::DoHLTMatch(pat::ElectronCollection::const_iterator recoElectron,edm::Event& iEvent)
-{
-  bool match=false;
-  //DOesnt work, after chatting with Marco M.
-  //for(std::vector<std::string>::const_iterator it = triggerNames_.begin(); it<triggerNames_.end();++it) {
-  //string stringa=(string) *it;
-  //if (recoElectron->triggerObjectMatchesByPath(stringa).size()>0) match=true;
-  if (Debug) cout<<"electron trigger Object Size ->"<<recoElectron->triggerObjectMatches().size()<<endl;
-  //} 
-  if (recoElectron->triggerObjectMatches().size()>0) match=true;
-
-  return match;
-}
 
 
 // ------------ method called once each job just after ending the event loop  ------------
