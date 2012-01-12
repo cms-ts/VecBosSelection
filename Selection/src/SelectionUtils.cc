@@ -8,7 +8,10 @@ bool SelectionUtils::DoWP80(pat::ElectronCollection::const_iterator recoElectron
   double IsoEcal = 0;
   double IsoHcal = 0;
   double HE = 0;
-  
+
+  if (recoElectron->et () <= 25) return false;
+
+
   if (removePU_){
     double lepIsoRho;
     
