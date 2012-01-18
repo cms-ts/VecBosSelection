@@ -13,7 +13,7 @@ Implementation:
 //
 // Original Author:  Vieri Candelise, Matteo Marone & Davide Scaini
 //         Created:  Thu Dec 11 10:46:26 CEST 2011
-// $Id: ZpatFilter.cc,v 1.17 2011/11/28 16:11:42 marone Exp $
+// $Id: ZpatFilter.cc,v 1.2 2011/12/16 11:07:20 dscaini Exp $
 //
 //
 
@@ -184,7 +184,7 @@ ZpatFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSetup)
 
 	  protection=true;
 
-	  if ( SelectionUtils::DoWP80(recoElectron,iEvent) && SelectionUtils::DoHLTMatch(recoElectron,iEvent)){
+	  if ( SelectionUtils::DoWP80(recoElectron,iEvent) && SelectionUtils::DoHLTMatch(recoElectron,iEvent) && recoElectron->pt()>25.0){
 		  if (Debug2) cout<<"Tag is a WP80 electron..."<<endl;
 
 		  //Sort in Pt
