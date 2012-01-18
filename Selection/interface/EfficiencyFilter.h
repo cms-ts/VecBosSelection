@@ -118,10 +118,6 @@ class EfficiencyFilter : public edm::EDFilter, public SelectionUtils {
       TH1D *tagpt_passWP80;
       TH1D *tagpt_failWP80;
 
-      TH1D *HLTnumberOfMatches_PASS;
-      TH1D *HLTnumberOfMatches_FAIL;
-      TH1D *HLTnumberOfMatches_TOTALELE;
-
 };
 
 //
