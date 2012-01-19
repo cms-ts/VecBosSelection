@@ -211,9 +211,6 @@ EfficiencyFilter::EfficiencyFilter (const edm::ParameterSet & parameters)
   tagpt_passWP80= fs->make<TH1D>("tagpt_passWP80","Pt of the electron tag when passing WP80", 120, 0, 120.0);
   tagpt_failWP80= fs->make<TH1D>("tagpt_failWP80","Pt of the electron tag when failing WP80", 120, 0, 120.0);
 
-  HLTnumberOfMatches_PASS    = fs->make<TH1D>("HLTnumberOfMatches_PASS","Total # of electron matching the HLT",100,0,100);
-  HLTnumberOfMatches_FAIL    = fs->make<TH1D>("HLTnumberOfMatches_FAIL","Total # of electron NOT matching the HLT",100,0,100);
-  HLTnumberOfMatches_TOTALELE= fs->make<TH1D>("HLTnumberOfMatches_TOTALELE","Total # of electrons per event",100,0,100);
 }
 
 
