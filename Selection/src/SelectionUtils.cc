@@ -1,6 +1,8 @@
 #include <iostream>
 #include "VecBosSelection/Selection/interface/SelectionUtils.h"
 
+
+
 //DO the WP80 analysis
 bool SelectionUtils::DoWP80(pat::ElectronCollection::const_iterator recoElectron,edm::Event& iEvent)
 {
@@ -64,10 +66,11 @@ bool SelectionUtils::DoWP80(pat::ElectronCollection::const_iterator recoElectron
   isIsolatedEndcap = false;
   isIDEndcap = false;
   isConvertedEndcap = false;
+ 
+
+/***** Barrel WP80 Cuts *****/
   
-  /***** Barrel WP80 Cuts *****/
-  
-  if (fabs (recoElectron->eta ()) <= 1.4442) {
+  if (fabs (recoElectron ->superCluster()->eta()) <= 1.4442) {
     
     /* Isolation */
     if (IsoTrk < 0.09 && IsoEcal < 0.07 && IsoHcal < 0.10) {
@@ -94,8 +97,8 @@ bool SelectionUtils::DoWP80(pat::ElectronCollection::const_iterator recoElectron
 
     /***** Endcap WP80 Cuts *****/
 
-    if (fabs (recoElectron->eta ()) >= 1.5660
-	&& fabs (recoElectron->eta ()) <= 2.5000) {
+    if (fabs (recoElectron ->superCluster()->eta()) >= 1.5660
+	&& fabs (recoElectron ->superCluster()->eta()) <= 2.5000) {
 
       /* Isolation */
       if (IsoTrk < 0.04 && IsoEcal < 0.05 && IsoHcal < 0.025) {
