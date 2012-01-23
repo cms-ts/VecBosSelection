@@ -13,7 +13,7 @@ Implementation:
 //
 // Original Author:  Vieri Candelise & Matteo Marone
 //         Created:  Wed May 11 14:53:26 CESDo2011
-// $Id: EfficiencyFilter.cc,v 1.11 2012/01/18 10:42:15 schizzi Exp $
+// $Id: EfficiencyFilter.cc,v 1.12 2012/01/19 09:02:56 schizzi Exp $
 
 
 
@@ -211,19 +211,31 @@ EfficiencyFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSetup)
       if ( SelectionUtils::DoHLTMatch(secondptele,iEvent) ){
 	if (Debug) cout<<"Probe is a WP80 electron->.."<<endl;
 	HLT_probepass->Fill(e_ee_invMass);
+	RECO_probepass->Fill(e_ee_invMass);
 	if (nJet==0) HLT_probepass0jet->Fill(e_ee_invMass);
 	if (nJet==1) HLT_probepass1jet->Fill(e_ee_invMass);
 	if (nJet==2) HLT_probepass2jet->Fill(e_ee_invMass);
 	if (nJet==3) HLT_probepass3jet->Fill(e_ee_invMass);
 	if (nJet==4) HLT_probepass4jet->Fill(e_ee_invMass);
+	if (nJet==0) RECO_probepass0jet->Fill(e_ee_invMass);
+	if (nJet==1) RECO_probepass1jet->Fill(e_ee_invMass);
+	if (nJet==2) RECO_probepass2jet->Fill(e_ee_invMass);
+	if (nJet==3) RECO_probepass3jet->Fill(e_ee_invMass);
+	if (nJet==4) RECO_probepass4jet->Fill(e_ee_invMass);
       }
       else{
 	HLT_probefail->Fill(e_ee_invMass);
+	RECO_probefail->Fill(e_ee_invMass);
 	if (nJet==0) HLT_probefail0jet->Fill(e_ee_invMass);
 	if (nJet==1) HLT_probefail1jet->Fill(e_ee_invMass);
 	if (nJet==2) HLT_probefail2jet->Fill(e_ee_invMass);
 	if (nJet==3) HLT_probefail3jet->Fill(e_ee_invMass);
 	if (nJet==4) HLT_probefail4jet->Fill(e_ee_invMass);
+	if (nJet==0) RECO_probefail0jet->Fill(e_ee_invMass);
+	if (nJet==1) RECO_probefail1jet->Fill(e_ee_invMass);
+	if (nJet==2) RECO_probefail2jet->Fill(e_ee_invMass);
+	if (nJet==3) RECO_probefail3jet->Fill(e_ee_invMass);
+	if (nJet==4) RECO_probefail4jet->Fill(e_ee_invMass);
       }
     }
 
@@ -253,19 +265,31 @@ EfficiencyFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSetup)
       if ( SelectionUtils::DoHLTMatch(highestptele,iEvent) ){
 	if (Debug) cout<<"Probe is a WP80 electron->.."<<endl;
 	HLT_tagpass->Fill(e_ee_invMass);
+	RECO_tagpass->Fill(e_ee_invMass);
 	if (nJet==0) HLT_tagpass0jet->Fill(e_ee_invMass);
 	if (nJet==1) HLT_tagpass1jet->Fill(e_ee_invMass);
 	if (nJet==2) HLT_tagpass2jet->Fill(e_ee_invMass);
 	if (nJet==3) HLT_tagpass3jet->Fill(e_ee_invMass);
 	if (nJet==4) HLT_tagpass4jet->Fill(e_ee_invMass);
+	if (nJet==0) RECO_tagpass0jet->Fill(e_ee_invMass);
+	if (nJet==1) RECO_tagpass1jet->Fill(e_ee_invMass);
+	if (nJet==2) RECO_tagpass2jet->Fill(e_ee_invMass);
+	if (nJet==3) RECO_tagpass3jet->Fill(e_ee_invMass);
+	if (nJet==4) RECO_tagpass4jet->Fill(e_ee_invMass);
       }
       else{
 	HLT_tagfail->Fill(e_ee_invMass);
+	RECO_tagfail->Fill(e_ee_invMass);
 	if (nJet==0) HLT_tagfail0jet->Fill(e_ee_invMass);
 	if (nJet==1) HLT_tagfail1jet->Fill(e_ee_invMass);
 	if (nJet==2) HLT_tagfail2jet->Fill(e_ee_invMass);
 	if (nJet==3) HLT_tagfail3jet->Fill(e_ee_invMass);
 	if (nJet==4) HLT_tagfail4jet->Fill(e_ee_invMass);
+	if (nJet==0) RECO_tagfail0jet->Fill(e_ee_invMass);
+	if (nJet==1) RECO_tagfail1jet->Fill(e_ee_invMass);
+	if (nJet==2) RECO_tagfail2jet->Fill(e_ee_invMass);
+	if (nJet==3) RECO_tagfail3jet->Fill(e_ee_invMass);
+	if (nJet==4) RECO_tagfail4jet->Fill(e_ee_invMass);
       }
     }
     
