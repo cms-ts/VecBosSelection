@@ -13,7 +13,7 @@ Implementation:
 //
 // Original Author:  Vieri Candelise, Matteo Marone & Davide Scaini
 //         Created:  Thu Dec 11 10:46:26 CEST 2011
-// $Id: ZpatFilter.cc,v 1.3 2012/01/18 10:08:00 schizzi Exp $
+// $Id: ZpatFilter.cc,v 1.4 2012/01/19 09:15:24 schizzi Exp $
 //
 //
 
@@ -166,8 +166,7 @@ ZpatFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSetup)
   //Get Pattuple... Yes, we gave up....
   Handle < pat::ElectronCollection > electronCollection;
   iEvent.getByLabel (theElectronCollectionLabel, electronCollection);
-  if (!electronCollection.isValid ()) return false;
-
+  if (!electronCollection.isValid ())  return false;
 
   pat::ElectronCollection::const_iterator highestptele;
   pat::ElectronCollection::const_iterator secondptele;
@@ -176,27 +175,36 @@ ZpatFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSetup)
   if (electronCollection->size()<=1) return false;
   bool protection=false;
 
-
   protection=false;
   /// NEW DS
   // Cutting on WP80
   for (pat::ElectronCollection::const_iterator recoElectron = electronCollection->begin (); recoElectron != electronCollection->end (); recoElectron++) {
     protection=true;
-    if ( SelectionUtils::DoWP80(recoElectron,iEvent) && SelectionUtils::DoHLTMatch(recoElectron,iEvent) && recoElectron->pt()>20.0){
+    if ( SelectionUtils::DoWP80(recoElectron,iEvent) && SelectionUtils::DoHLTMatch(recoElectron,iEvent) && recoElectron->pt()>10.0){
       if (Debug2) cout<<"Tag is a WP80 electron..."<<endl;
       //Sort in Pt
       if (Debug2) cout<<"Electron pt value ->"<<recoElectron->pt()<<endl;
       if (Debug2) cout<<" MMMM ele trigger size "<<recoElectron->triggerObjectMatches().size()<<endl;
-      if (i==0) {
-	highestptele=recoElectron;
-	i++;
-      }
-      if (i>0) {
-	if (highestptele->pt()<recoElectron->pt()) {
+      if (i==0) highestptele=recoElectron;
+      if (i==1){
+	if (highestptele->pt()<recoElectron->pt()){
+	  secondptele=highestptele;
 	  highestptele=recoElectron;
-	  i++;
+	}
+	else{
+	  secondptele=recoElectron;
 	}
       }
+      if (i>1){
+	if (highestptele->pt()<recoElectron->pt()){
+	  secondptele=highestptele;
+	  highestptele=recoElectron;
+	}
+	else{
+	  if (secondptele->pt()<recoElectron->pt()) secondptele=recoElectron;
+	}
+      }
+      i++;
     } else {
       if (Debug2) cout<<"Tag IS NOT a WP80 electron...Exit"<<endl;
     }
@@ -207,38 +215,7 @@ ZpatFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSetup)
     return false;
   }
 
-  int j=0;
-  protection=false;
-  /// NEW DS
-  // Cutting on WP80
-  for (pat::ElectronCollection::const_iterator recoElectron = electronCollection->begin (); recoElectron != electronCollection->end (); recoElectron++) {
-    protection=true;
-    if ( SelectionUtils::DoWP80(recoElectron,iEvent) && SelectionUtils::DoHLTMatch(recoElectron,iEvent) && recoElectron->pt()>10.0){
-      if (Debug2) cout<<"Probe is a WP80 electron..."<<endl;
-      //Sort in Pt
-      if (Debug2) cout<<"Electron pt value ->"<<recoElectron->pt()<<endl;
-      if (Debug2) cout<<" MMMM ele trigger size "<<recoElectron->triggerObjectMatches().size()<<endl;
-      if (j==0 && highestptele->pt()>recoElectron->pt()) {
-	secondptele=recoElectron;
-	j++;
-      }
-      if (j>0) {
-	if (secondptele->pt()<recoElectron->pt() && highestptele->pt()>recoElectron->pt()) {
-	  secondptele=recoElectron;
-	  j++;
-	}
-      }
-    } else {
-      if (Debug2) cout<<"Probe IS NOT a WP80 electron...Exit"<<endl;
-    }
-  }
-
-  if (!protection) {
-    cout<<"problems with PAT collection, in Efficiency.cc-->... Please check..."<<endl;    
-    return false;
-  }
-
-  if(i<1 || j<1) return false; //you NEED at least two electrons :)
+  if(i<2 || highestptele->pt()<20.0) return false; //you NEED at least two electrons :)
 
   //--------------
   // Match the HLT

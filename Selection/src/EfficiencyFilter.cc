@@ -13,7 +13,7 @@ Implementation:
 //
 // Original Author:  Vieri Candelise & Matteo Marone
 //         Created:  Wed May 11 14:53:26 CESDo2011
-// $Id: EfficiencyFilter.cc,v 1.12 2012/01/19 09:02:56 schizzi Exp $
+// $Id: EfficiencyFilter.cc,v 1.13 2012/01/23 10:49:09 schizzi Exp $
 
 
 
@@ -84,7 +84,6 @@ EfficiencyFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSetup)
   pat::ElectronCollection::const_iterator secondptele;
 
   int i=0;
-
   if (electronCollection->size()==1) return false;
   bool protection=false;
 
@@ -92,53 +91,37 @@ EfficiencyFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSetup)
     protection=true;
     if (Debug) cout<<"Electron pt value ->"<<recoElectron->pt()<<endl;
     if (Debug) cout<<" MMMM ele trigger size "<<recoElectron->triggerObjectMatches().size()<<endl;
-    if (recoElectron->pt()>20.0) {
-      if (i==0) {
-	highestptele=recoElectron;
-	i++;
-      }
-      if (i>0) {
-	if (highestptele->pt()<recoElectron->pt()) {
-	  highestptele=recoElectron;
-	  i++;
-	}
-      }
-    }
-  }
-  
-  if (!protection) {
-    cout<<"problems with PAT collection, in Efficiency.cc-->... Please check..."<<endl;    
-    return false;
-
-  }
-
-  int j=0;
-  protection=false;
-
-  for (pat::ElectronCollection::const_iterator recoElectron = electronCollection->begin (); recoElectron != electronCollection->end (); recoElectron++) {
-    protection=true;
-    if (Debug) cout<<"Electron pt value ->"<<recoElectron->pt()<<endl;
-    if (Debug) cout<<" MMMM ele trigger size "<<recoElectron->triggerObjectMatches().size()<<endl;
     if (recoElectron->pt()>10.0) {
-      if (j==0 && highestptele->pt()>recoElectron->pt()) {
-	secondptele=recoElectron;
-	j++;
-      }
-      if (j>0) {
-	if (secondptele->pt()<recoElectron->pt() && highestptele->pt()>recoElectron->pt()) {
+      if (i==0) highestptele=recoElectron;
+      if (i==1){
+	if (highestptele->pt()<recoElectron->pt()){
+	  secondptele=highestptele;
+	  highestptele=recoElectron;
+	}
+	else{
 	  secondptele=recoElectron;
-	  j++;
 	}
       }
-    }
+      if (i>1){
+	if (highestptele->pt()<recoElectron->pt()){
+	  secondptele=highestptele;
+	  highestptele=recoElectron;
+	}
+	else{
+	  if (secondptele->pt()<recoElectron->pt()) secondptele=recoElectron;
+	}
+      }
+      i++;
+      }
   }
   
   if (!protection) {
     cout<<"problems with PAT collection, in Efficiency.cc-->... Please check..."<<endl;    
     return false;
+
   }
 
-  if(i<1 || j<1) return false; // ...you NEED at least two electrons :)  
+  if(i<2 || highestptele->pt()<20.0) return false; //you NEED at least two electrons :)
 
   if (Debug) cout<<"First electron "<<highestptele->pt()<<" Second electron "<<secondptele->pt()<<endl;
 
