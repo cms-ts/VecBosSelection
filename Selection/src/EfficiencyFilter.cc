@@ -13,7 +13,7 @@ Implementation:
 //
 // Original Author:  Vieri Candelise & Matteo Marone
 //         Created:  Wed May 11 14:53:26 CESDo2011
-// $Id: EfficiencyFilter.cc,v 1.13 2012/01/23 10:49:09 schizzi Exp $
+// $Id: EfficiencyFilter.cc,v 1.14 2012/01/24 11:03:01 schizzi Exp $
 
 
 
@@ -84,8 +84,10 @@ EfficiencyFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSetup)
   pat::ElectronCollection::const_iterator secondptele;
 
   int i=0;
-  if (electronCollection->size()==1) return false;
+  if (electronCollection->size()<=1) return false;
   bool protection=false;
+  int jj=0;
+  int sizePat=electronCollection->size();
 
   for (pat::ElectronCollection::const_iterator recoElectron = electronCollection->begin (); recoElectron != electronCollection->end (); recoElectron++) {
     protection=true;
@@ -116,6 +118,7 @@ EfficiencyFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSetup)
   }
   
   if (!protection) {
+    cout<<"size pat is "<<sizePat<<" while jj is "<<jj<<" and protection "<<protection<<endl;
     cout<<"problems with PAT collection, in Efficiency.cc-->... Please check..."<<endl;    
     return false;
 
