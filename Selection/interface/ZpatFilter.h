@@ -62,7 +62,7 @@ class ZpatFilter : public edm::EDFilter, public SelectionUtils {
 		TH1F* h_invMassEE;
 		TH1F* h_invMassEB;
 		TH1F* h_invMassBB;
-
+		TH1I* passIDEleCriteria;
 
 };
 
@@ -91,10 +91,7 @@ ZpatFilter::ZpatFilter (const edm::ParameterSet & parameters)
   h_invMassEE =  fs->make<TH1F>("Z peak - WP80 Endcap-Endcap","Z peak;InvMass (Gev)", 140, 0.0, 140.0);
   h_invMassEB = fs->make<TH1F>("Z peak - WP80 Endcap-Barrel","Z peak;InvMass (Gev)", 140, 0.0, 140.0);
   h_invMassBB = fs->make<TH1F>("Z peak - WP80 Barrel-Barrel","Z peak;InvMass (Gev)", 140, 0.0, 140.0);
-
-
-
-
+  passIDEleCriteria = fs->make<TH1I>("passIDEleCriteria","Ele Id pass/not pass... 3 entries each ele", 3, 0, 3);
 }
 
 
