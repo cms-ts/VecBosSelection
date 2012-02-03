@@ -13,7 +13,7 @@ Implementation:
 //
 // Original Author:  Vieri Candelise & Matteo Marone
 //         Created:  Wed May 11 14:53:26 CESDo2011
-// $Id: EfficiencyFilter.cc,v 1.14 2012/01/24 11:03:01 schizzi Exp $
+// $Id: EfficiencyFilter.cc,v 1.15 2012/01/31 21:27:15 marone Exp $
 
 
 
@@ -83,17 +83,24 @@ EfficiencyFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSetup)
   pat::ElectronCollection::const_iterator highestptele;
   pat::ElectronCollection::const_iterator secondptele;
 
+  int HLTmatches_PASS=0;
+  int HLTmatches_TOTAL=0;
+  int HLTmatches_FAIL=0;
+
   int i=0;
   if (electronCollection->size()<=1) return false;
   bool protection=false;
   int jj=0;
   int sizePat=electronCollection->size();
 
+  // WP80 efficiency measurement, with HLT matching:
   for (pat::ElectronCollection::const_iterator recoElectron = electronCollection->begin (); recoElectron != electronCollection->end (); recoElectron++) {
     protection=true;
     if (Debug) cout<<"Electron pt value ->"<<recoElectron->pt()<<endl;
     if (Debug) cout<<" MMMM ele trigger size "<<recoElectron->triggerObjectMatches().size()<<endl;
-    if (recoElectron->pt()>10.0) {
+    HLTmatches_TOTAL++;
+    if ( SelectionUtils::DoHLTMatch(recoElectron,iEvent) ) {HLTmatches_PASS++;} else {HLTmatches_FAIL++;}
+    if (recoElectron->pt()>10.0 && ((WP80_efficiency_ && SelectionUtils::DoHLTMatch(recoElectron,iEvent)) || HLTele17_efficiency_ || HLTele8NOTele17_efficiency_)) {
       if (i==0) highestptele=recoElectron;
       if (i==1){
 	if (highestptele->pt()<recoElectron->pt()){
@@ -114,15 +121,17 @@ EfficiencyFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSetup)
 	}
       }
       i++;
-      }
+    }
   }
-  
   if (!protection) {
     cout<<"size pat is "<<sizePat<<" while jj is "<<jj<<" and protection "<<protection<<endl;
     cout<<"problems with PAT collection, in Efficiency.cc-->... Please check..."<<endl;    
     return false;
-
   }
+  
+  HLTnumberOfMatches_PASS->Fill(HLTmatches_PASS);
+  HLTnumberOfMatches_FAIL->Fill(HLTmatches_FAIL);
+  HLTnumberOfMatches_TOTALELE->Fill(HLTmatches_TOTAL);
 
   if(i<2 || highestptele->pt()<20.0) return false; //you NEED at least two electrons :)
 
@@ -143,35 +152,36 @@ EfficiencyFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSetup)
 
 
   //Estraggo il contenuto dei jets
-    int nJet = 0;
-    int jetIndex = 0;
-    double deltaRCone=0.3;
-
-    Handle<PFJetCollection> pfJets;
-    iEvent.getByLabel(theJetCollectionLabel_, pfJets);
-    if (pfJets.isValid()) {
-      PFJetCollection::const_iterator jet = pfJets->begin ();
-       
-      for (; jet != pfJets->end (); jet++, jetIndex++) {
-       // check if the jet is equal to one of the isolated electrons
-	double deltaR1= sqrt( pow(jet->eta()-secondptele->eta(),2)+pow(jet->phi()-secondptele->phi(),2) );
-	double deltaR2= sqrt( pow(jet->eta()-highestptele->eta(),2)+pow(jet->phi()-highestptele->phi(),2) );
-	if (deltaR1 > deltaRCone && deltaR2 > deltaRCone && fabs(jet->eta())<2.4 && jet->pt()>30) {
-	  nJet++;
-	  if (Debug) cout<<"Jet eta "<<jet->eta()<<" pt "<<jet->pt()<<endl;
-	}
+  int nJet = 0;
+  int jetIndex = 0;
+  double deltaRCone=0.3;
+  
+  Handle<PFJetCollection> pfJets;
+  iEvent.getByLabel(theJetCollectionLabel_, pfJets);
+  if (pfJets.isValid()) {
+    PFJetCollection::const_iterator jet = pfJets->begin ();
+    
+    for (; jet != pfJets->end (); jet++, jetIndex++) {
+      // check if the jet is equal to one of the isolated electrons
+      double deltaR1= sqrt( pow(jet->eta()-secondptele->eta(),2)+pow(jet->phi()-secondptele->phi(),2) );
+      double deltaR2= sqrt( pow(jet->eta()-highestptele->eta(),2)+pow(jet->phi()-highestptele->phi(),2) );
+      if (deltaR1 > deltaRCone && deltaR2 > deltaRCone && fabs(jet->eta())<2.4 && jet->pt()>30) {
+	nJet++;
+	if (Debug) cout<<"Jet eta "<<jet->eta()<<" pt "<<jet->pt()<<endl;
       }
     }
-    else{
-      cout<<"No valid Jets Collection"<<endl;
-    }
-    
-    if (Debug) cout<<"This event has jets #->"<<nJet<<endl;
-    
-    //Filling TAP distributions:
+  }
+  else{
+    cout<<"No valid Jets Collection"<<endl;
+  }
+  
+  if (Debug) cout<<"This event has jets #->"<<nJet<<endl;
+  
+  
+  
+  //Filling TAP distributions:
 
-
-
+  if (WP80_efficiency_) {
     if (SelectionUtils::DoWP80(highestptele,iEvent)){
       probept->Fill(secondptele->pt());
       probeall->Fill(e_ee_invMass);
@@ -194,38 +204,7 @@ EfficiencyFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSetup)
 	if (nJet==3) WP80_probefail3jet->Fill(e_ee_invMass);
 	if (nJet==4) WP80_probefail4jet->Fill(e_ee_invMass);
       }
-      if ( SelectionUtils::DoHLTMatch(secondptele,iEvent) ){
-	if (Debug) cout<<"Probe is a WP80 electron->.."<<endl;
-	HLT_probepass->Fill(e_ee_invMass);
-	RECO_probepass->Fill(e_ee_invMass);
-	if (nJet==0) HLT_probepass0jet->Fill(e_ee_invMass);
-	if (nJet==1) HLT_probepass1jet->Fill(e_ee_invMass);
-	if (nJet==2) HLT_probepass2jet->Fill(e_ee_invMass);
-	if (nJet==3) HLT_probepass3jet->Fill(e_ee_invMass);
-	if (nJet==4) HLT_probepass4jet->Fill(e_ee_invMass);
-	if (nJet==0) RECO_probepass0jet->Fill(e_ee_invMass);
-	if (nJet==1) RECO_probepass1jet->Fill(e_ee_invMass);
-	if (nJet==2) RECO_probepass2jet->Fill(e_ee_invMass);
-	if (nJet==3) RECO_probepass3jet->Fill(e_ee_invMass);
-	if (nJet==4) RECO_probepass4jet->Fill(e_ee_invMass);
-      }
-      else{
-	HLT_probefail->Fill(e_ee_invMass);
-	RECO_probefail->Fill(e_ee_invMass);
-	if (nJet==0) HLT_probefail0jet->Fill(e_ee_invMass);
-	if (nJet==1) HLT_probefail1jet->Fill(e_ee_invMass);
-	if (nJet==2) HLT_probefail2jet->Fill(e_ee_invMass);
-	if (nJet==3) HLT_probefail3jet->Fill(e_ee_invMass);
-	if (nJet==4) HLT_probefail4jet->Fill(e_ee_invMass);
-	if (nJet==0) RECO_probefail0jet->Fill(e_ee_invMass);
-	if (nJet==1) RECO_probefail1jet->Fill(e_ee_invMass);
-	if (nJet==2) RECO_probefail2jet->Fill(e_ee_invMass);
-	if (nJet==3) RECO_probefail3jet->Fill(e_ee_invMass);
-	if (nJet==4) RECO_probefail4jet->Fill(e_ee_invMass);
-      }
-    }
-
-
+    }  
     if (SelectionUtils::DoWP80(secondptele,iEvent)){
       tagpt->Fill(highestptele->pt());
       tagall->Fill(e_ee_invMass);
@@ -248,41 +227,97 @@ EfficiencyFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSetup)
 	if (nJet==3) WP80_tagfail3jet->Fill(e_ee_invMass);
 	if (nJet==4) WP80_tagfail4jet->Fill(e_ee_invMass);
       }
-      if ( SelectionUtils::DoHLTMatch(highestptele,iEvent) ){
+    }
+  }
+
+  // HLT ele17:
+
+  if (HLTele17_efficiency_) {
+    if ( SelectionUtils::DoWP80(highestptele,iEvent) ){
+      if ( SelectionUtils::DoHLTMatch(secondptele,iEvent) ){
 	if (Debug) cout<<"Probe is a WP80 electron->.."<<endl;
-	HLT_tagpass->Fill(e_ee_invMass);
-	RECO_tagpass->Fill(e_ee_invMass);
-	if (nJet==0) HLT_tagpass0jet->Fill(e_ee_invMass);
-	if (nJet==1) HLT_tagpass1jet->Fill(e_ee_invMass);
-	if (nJet==2) HLT_tagpass2jet->Fill(e_ee_invMass);
-	if (nJet==3) HLT_tagpass3jet->Fill(e_ee_invMass);
-	if (nJet==4) HLT_tagpass4jet->Fill(e_ee_invMass);
-	if (nJet==0) RECO_tagpass0jet->Fill(e_ee_invMass);
-	if (nJet==1) RECO_tagpass1jet->Fill(e_ee_invMass);
-	if (nJet==2) RECO_tagpass2jet->Fill(e_ee_invMass);
-	if (nJet==3) RECO_tagpass3jet->Fill(e_ee_invMass);
-	if (nJet==4) RECO_tagpass4jet->Fill(e_ee_invMass);
+	HLT_ele17_probepass->Fill(e_ee_invMass);
+	if (nJet==0) HLT_ele17_probepass0jet->Fill(e_ee_invMass);
+	if (nJet==1) HLT_ele17_probepass1jet->Fill(e_ee_invMass);
+	if (nJet==2) HLT_ele17_probepass2jet->Fill(e_ee_invMass);
+	if (nJet==3) HLT_ele17_probepass3jet->Fill(e_ee_invMass);
+	if (nJet==4) HLT_ele17_probepass4jet->Fill(e_ee_invMass);
       }
       else{
-	HLT_tagfail->Fill(e_ee_invMass);
-	RECO_tagfail->Fill(e_ee_invMass);
-	if (nJet==0) HLT_tagfail0jet->Fill(e_ee_invMass);
-	if (nJet==1) HLT_tagfail1jet->Fill(e_ee_invMass);
-	if (nJet==2) HLT_tagfail2jet->Fill(e_ee_invMass);
-	if (nJet==3) HLT_tagfail3jet->Fill(e_ee_invMass);
-	if (nJet==4) HLT_tagfail4jet->Fill(e_ee_invMass);
-	if (nJet==0) RECO_tagfail0jet->Fill(e_ee_invMass);
-	if (nJet==1) RECO_tagfail1jet->Fill(e_ee_invMass);
-	if (nJet==2) RECO_tagfail2jet->Fill(e_ee_invMass);
-	if (nJet==3) RECO_tagfail3jet->Fill(e_ee_invMass);
-	if (nJet==4) RECO_tagfail4jet->Fill(e_ee_invMass);
+	HLT_ele17_probefail->Fill(e_ee_invMass);
+	if (nJet==0) HLT_ele17_probefail0jet->Fill(e_ee_invMass);
+	if (nJet==1) HLT_ele17_probefail1jet->Fill(e_ee_invMass);
+	if (nJet==2) HLT_ele17_probefail2jet->Fill(e_ee_invMass);
+	if (nJet==3) HLT_ele17_probefail3jet->Fill(e_ee_invMass);
+	if (nJet==4) HLT_ele17_probefail4jet->Fill(e_ee_invMass);
       }
     }
-    
-    
-    
-    return true;
-    
+    if ( SelectionUtils::DoWP80(secondptele,iEvent) ){    
+      if ( SelectionUtils::DoHLTMatch(highestptele,iEvent) ){
+	if (Debug) cout<<"Probe is a WP80 electron->.."<<endl;
+	HLT_ele17_tagpass->Fill(e_ee_invMass);
+	if (nJet==0) HLT_ele17_tagpass0jet->Fill(e_ee_invMass);
+	if (nJet==1) HLT_ele17_tagpass1jet->Fill(e_ee_invMass);
+	if (nJet==2) HLT_ele17_tagpass2jet->Fill(e_ee_invMass);
+	if (nJet==3) HLT_ele17_tagpass3jet->Fill(e_ee_invMass);
+	if (nJet==4) HLT_ele17_tagpass4jet->Fill(e_ee_invMass);
+      }
+      else{
+	HLT_ele17_tagfail->Fill(e_ee_invMass);
+	if (nJet==0) HLT_ele17_tagfail0jet->Fill(e_ee_invMass);
+	if (nJet==1) HLT_ele17_tagfail1jet->Fill(e_ee_invMass);
+	if (nJet==2) HLT_ele17_tagfail2jet->Fill(e_ee_invMass);
+	if (nJet==3) HLT_ele17_tagfail3jet->Fill(e_ee_invMass);
+	if (nJet==4) HLT_ele17_tagfail4jet->Fill(e_ee_invMass);
+      }
+    }
+  }
+
+  // HLT ele8 !ele17:
+
+  if (HLTele8NOTele17_efficiency_) {
+    if ( SelectionUtils::DoWP80(highestptele,iEvent) ){
+      if ( SelectionUtils::DoHLTMatch(secondptele,iEvent) ){
+	if (Debug) cout<<"Probe is a WP80 electron->.."<<endl;
+	HLT_ele8NOTele17_probepass->Fill(e_ee_invMass);
+	if (nJet==0) HLT_ele8NOTele17_probepass0jet->Fill(e_ee_invMass);
+	if (nJet==1) HLT_ele8NOTele17_probepass1jet->Fill(e_ee_invMass);
+	if (nJet==2) HLT_ele8NOTele17_probepass2jet->Fill(e_ee_invMass);
+	if (nJet==3) HLT_ele8NOTele17_probepass3jet->Fill(e_ee_invMass);
+	if (nJet==4) HLT_ele8NOTele17_probepass4jet->Fill(e_ee_invMass);
+      }
+      else{
+	HLT_ele8NOTele17_probefail->Fill(e_ee_invMass);
+	if (nJet==0) HLT_ele8NOTele17_probefail0jet->Fill(e_ee_invMass);
+	if (nJet==1) HLT_ele8NOTele17_probefail1jet->Fill(e_ee_invMass);
+	if (nJet==2) HLT_ele8NOTele17_probefail2jet->Fill(e_ee_invMass);
+	if (nJet==3) HLT_ele8NOTele17_probefail3jet->Fill(e_ee_invMass);
+	if (nJet==4) HLT_ele8NOTele17_probefail4jet->Fill(e_ee_invMass);
+      }
+    }
+    if ( SelectionUtils::DoWP80(secondptele,iEvent) ){    
+      if ( SelectionUtils::DoHLTMatch(highestptele,iEvent) ){
+	if (Debug) cout<<"Probe is a WP80 electron->.."<<endl;
+	HLT_ele8NOTele17_tagpass->Fill(e_ee_invMass);
+	if (nJet==0) HLT_ele8NOTele17_tagpass0jet->Fill(e_ee_invMass);
+	if (nJet==1) HLT_ele8NOTele17_tagpass1jet->Fill(e_ee_invMass);
+	if (nJet==2) HLT_ele8NOTele17_tagpass2jet->Fill(e_ee_invMass);
+	if (nJet==3) HLT_ele8NOTele17_tagpass3jet->Fill(e_ee_invMass);
+	if (nJet==4) HLT_ele8NOTele17_tagpass4jet->Fill(e_ee_invMass);
+      }
+      else{
+	HLT_ele8NOTele17_tagfail->Fill(e_ee_invMass);
+	if (nJet==0) HLT_ele8NOTele17_tagfail0jet->Fill(e_ee_invMass);
+	if (nJet==1) HLT_ele8NOTele17_tagfail1jet->Fill(e_ee_invMass);
+	if (nJet==2) HLT_ele8NOTele17_tagfail2jet->Fill(e_ee_invMass);
+	if (nJet==3) HLT_ele8NOTele17_tagfail3jet->Fill(e_ee_invMass);
+	if (nJet==4) HLT_ele8NOTele17_tagfail4jet->Fill(e_ee_invMass);
+      }
+    }
+  }
+
+  return true;
+  
 }
 
 
