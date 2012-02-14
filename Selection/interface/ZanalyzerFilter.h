@@ -22,7 +22,7 @@
 #include "DataFormats/Common/interface/TriggerResults.h"
 #include "HLTrigger/HLTcore/interface/HLTConfigProvider.h"
 
-bool debug=true; //Activate with true if you wonna have verbosity for debug
+bool debug=false; //Activate with true if you wonna have verbosity for debug
 
 class ZanalyzerFilter : public edm::EDFilter {
 	public:
