@@ -13,7 +13,7 @@ Implementation:
 //
 // Original Author:  Vieri Candelise, Matteo Marone & Davide Scaini
 //         Created:  Thu Dec 11 10:46:26 CEST 2011
-// $Id: ZpatFilter.cc,v 1.5 2012/01/24 11:03:10 schizzi Exp $
+// $Id: ZpatFilter.cc,v 1.6 2012/01/31 21:29:49 marone Exp $
 //
 //
 
@@ -171,6 +171,12 @@ ZpatFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSetup)
   pat::ElectronCollection::const_iterator highestptele;
   pat::ElectronCollection::const_iterator secondptele;
 
+  double secondEleEnThrhold=secondEleEnThrhold_;
+  double firstEleEnThrhold=firstEleEnThrhold_;  
+  double lowZmassLimit=lowZmassLimit_;
+  double highZmassLimit=highZmassLimit_;
+  double maxEtaForElectron=maxEtaForElectron_;
+
   int i=0;
   if (electronCollection->size()<=1) return false;
   bool protection=false;
@@ -182,6 +188,10 @@ ZpatFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSetup)
   for (pat::ElectronCollection::const_iterator recoElectron = electronCollection->begin (); recoElectron != electronCollection->end (); recoElectron++) {
     protection=true;
     jj++;
+
+    //Check whether the electron is within the acceptance
+    if (fabs(recoElectron ->superCluster()->eta()) > maxEtaForElectron) continue;
+
     //Perform checks on each ele ID criteria
     // Here you get a plot full of information. Each electron contributes with one entry (so total numer of entries = 3* #electrons)
     // To have the "%", each bin value shold be divided by total numer of entries/3
@@ -190,7 +200,7 @@ ZpatFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSetup)
     if (result[1]) passIDEleCriteria->SetBinContent(2,passIDEleCriteria->GetBinContent(2)+1);
     if (result[2]) passIDEleCriteria->SetBinContent(3,passIDEleCriteria->GetBinContent(3)+1);
 
-    if ( SelectionUtils::DoWP80(recoElectron,iEvent) && SelectionUtils::DoHLTMatch(recoElectron,iEvent) && recoElectron->pt()>10.0){
+    if ( SelectionUtils::DoWP80(recoElectron,iEvent) && SelectionUtils::DoHLTMatch(recoElectron,iEvent) && recoElectron->pt()>secondEleEnThrhold){
       if (Debug2) cout<<"Tag is a WP80 electron..."<<endl;
       //Sort in Pt
       if (Debug2) cout<<"Electron pt value ->"<<recoElectron->pt()<<endl;
@@ -226,7 +236,7 @@ ZpatFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSetup)
     return false;
   }
 
-  if(i<2 || highestptele->pt()<20.0) return false; //you NEED at least two electrons :)
+  if(i<2 || highestptele->pt()<firstEleEnThrhold) return false; //you NEED at least two electrons :)
 
   //--------------
   // Match the HLT
@@ -247,7 +257,7 @@ ZpatFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSetup)
 
 
   //Cut on the tag and probe mass...
-  if (e_ee_invMass>120 || e_ee_invMass<60) return false;
+  if (e_ee_invMass>highZmassLimit || e_ee_invMass<lowZmassLimit) return false;
 
   //Filling Histograms
   h_invMass->Fill(e_ee_invMass);
@@ -271,9 +281,19 @@ ZpatFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSetup)
 // ------------ method called once each job just before starting event loop  ------------
 void
 ZpatFilter::beginJob (){
-
-  //beginJob
-
+  cout<<endl;
+  cout<<"##############################"<<endl;
+  cout<<"#   Z Selection Parameters   #"<<endl;
+  cout<<"##############################"<<endl;
+  cout<<endl; 
+  cout<<"Transverse Energy cut on first Ele="<<firstEleEnThrhold_<<"GeV, and "<<secondEleEnThrhold_<<"GeV on the second"<<endl;
+  cout<<"Z invariant mass limit: low="<<lowZmassLimit_<<"GeV, high="<<highZmassLimit_<<"GeV"<<endl;
+  cout<<"Electron max acceptance="<<maxEtaForElectron_<<endl;
+  cout<<"List of triggers being included:"<<endl;
+  for(unsigned int itrig = 0; itrig < triggerNames_.size(); ++itrig) {
+    cout<<triggerNames_[itrig]<<" ";
+  }
+  cout<<endl;
 }
 
 

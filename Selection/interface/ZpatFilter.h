@@ -48,7 +48,11 @@ class ZpatFilter : public edm::EDFilter, public SelectionUtils {
 		std::vector<unsigned int> triggerIndices_; // index of the algorithms selected by our analysis
 		bool doTheHLTAnalysis_;
 		bool removePU_;
-
+		double secondEleEnThrhold_; 
+		double firstEleEnThrhold_;
+		double lowZmassLimit_;
+		double highZmassLimit_;
+		double maxEtaForElectron_;
 
 		//  std::string outputFile_;
 		TH1D* eventMultip;
@@ -80,9 +84,11 @@ ZpatFilter::ZpatFilter (const edm::ParameterSet & parameters)
 	useAllTriggers_       = (triggerNames_.size()==0);
 	doTheHLTAnalysis_     = parameters.getParameter<bool>("doTheHLTAnalysis");
 	removePU_             = parameters.getParameter<bool>("removePU");
-
-
-
+	secondEleEnThrhold_   = parameters.getParameter<double>("secondEleEnThrhold");
+	firstEleEnThrhold_    = parameters.getParameter<double>("firstEleEnThrhold");
+	lowZmassLimit_        = parameters.getParameter<double>("lowZmassLimit");
+	highZmassLimit_       = parameters.getParameter<double>("highZmassLimit");
+	maxEtaForElectron_    = parameters.getParameter<double>("maxEtaForElectron");
   //Initializations...
   edm::Service<TFileService> fs;
 
