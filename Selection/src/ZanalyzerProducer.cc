@@ -32,15 +32,25 @@ ZanalyzerProducer::produce(edm::Event & iEvent, edm::EventSetup const & iSetup)
 
      int i=0;
      bool protection=false;
-     
+     int jj=0;
+     int sizePat=electronCollection->size();    
      protection=false;
+     passSelection = true;
      /// NEW DS
      // Cutting on WP80
-     for (pat::ElectronCollection::const_iterator recoElectron = electronCollection->begin (); recoElectron != electronCollection->end (); recoElectron++) {
-	
+     for (pat::ElectronCollection::const_iterator recoElectron = electronCollection->begin (); recoElectron != electronCollection->end (); recoElectron++) {	
 	protection=true;
+	jj++;
+	//Perform checks on each ele ID criteria
+	// Here you get a plot full of information. Each electron contributes with one entry (so total numer of entries = 3* #electrons)
+	// To have the "%", each bin value shold be divided by total numer of entries/3
+	std::vector<bool> result=SelectionUtils::MakeEleIDAnalysis(recoElectron,iEvent); 
+	if (result[0]) passIDEleCriteria->SetBinContent(1,passIDEleCriteria->GetBinContent(1)+1);
+	if (result[1]) passIDEleCriteria->SetBinContent(2,passIDEleCriteria->GetBinContent(2)+1);
+	if (result[2]) passIDEleCriteria->SetBinContent(3,passIDEleCriteria->GetBinContent(3)+1);
 	
-	if ( SelectionUtils::DoWP80(recoElectron,iEvent) && SelectionUtils::DoHLTMatch(recoElectron,iEvent)){
+	if ( SelectionUtils::DoWP80(recoElectron,iEvent) && SelectionUtils::DoHLTMatch(recoElectron,iEvent) && recoElectron->pt()>10.0){
+	//if ( SelectionUtils::DoWP80(recoElectron,iEvent) && SelectionUtils::DoHLTMatch(recoElectron,iEvent)){
 	   if (Debug2) cout<<"Tag is a WP80 electron..."<<endl;
 	   
 	   //Sort in Pt
@@ -66,21 +76,20 @@ ZanalyzerProducer::produce(edm::Event & iEvent, edm::EventSetup const & iSetup)
 	      }
 	   }
 	   i++;
-	}
-	
-	else{
+	} else{
 	   if (Debug2) cout<<"Tag IS a NOT WP80 electron...Exit"<<endl;
 	}
 	
      }
      
      if (!protection) {
+	cout<<"size pat is "<<sizePat<<" while jj is "<<jj<<" and protection "<<protection<<endl;
 	cout<<"problems with PAT collection, in Efficiency.cc-->... Please check..."<<endl;    
 	passSelection = false;
      }
      
      
-     if(i>1) { //you NEED at least two electrons :)
+     if(i>1 && highestptele->pt()>=20.0) { //you NEED at least two electrons :)
 	
 	//--------------
 	// Match the HLT
@@ -115,6 +124,9 @@ ZanalyzerProducer::produce(edm::Event & iEvent, edm::EventSetup const & iSetup)
 		   fabs(gsfElectron->eta() - tag->eta())<delta &&
 		   fabs(gsfElectron->phi() - tag->phi())<delta ) {
 		 pOutput->push_back(*gsfElectron);
+		 h_electronEn->Fill(gsfElectron->energy());
+		 h_electronEta->Fill(gsfElectron->eta());
+		 h_electronPt->Fill(gsfElectron->pt());
 		 cont++;
 		 continue;
 	      }
@@ -122,6 +134,9 @@ ZanalyzerProducer::produce(edm::Event & iEvent, edm::EventSetup const & iSetup)
 		   fabs(gsfElectron->eta() - probe->eta())<delta &&
 		   fabs(gsfElectron->phi() - probe->phi())<delta ) {
 		 pOutput->push_back(*gsfElectron);
+		 h_electronEn->Fill(gsfElectron->energy());
+		 h_electronEta->Fill(gsfElectron->eta());
+		 h_electronPt->Fill(gsfElectron->pt());
 		 cont++;
 		 continue;
 	      }
@@ -129,10 +144,12 @@ ZanalyzerProducer::produce(edm::Event & iEvent, edm::EventSetup const & iSetup)
 	}
 
 	
+	h_electronInvMass->Fill(e_ee_invMass);
+	if (cont==2) h_electronInvMassPass->Fill(e_ee_invMass); 
      }  // if at least two electron
   } // if electronCollection is valid
   
-  eventAccept->Fill(cont); 
+  eventAccept->Fill(cont);
   iEvent.put( pOutput );
   
 }
