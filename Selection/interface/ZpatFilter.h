@@ -55,8 +55,6 @@ class ZpatFilter : public edm::EDFilter, public SelectionUtils {
 		double maxEtaForElectron_;
 
 		//  std::string outputFile_;
-		TH1D* eventMultip;
-		TH1D* eventAccept;
 		TH1F* gsfelEt;
 		TH1D* Conversion;
 		TH1D* Isolation;
@@ -67,7 +65,7 @@ class ZpatFilter : public edm::EDFilter, public SelectionUtils {
 		TH1F* h_invMassEB;
 		TH1F* h_invMassBB;
 		TH1I* passIDEleCriteria;
-
+		TH1I*  eleSelStepByStep;
 };
 
 
@@ -92,12 +90,12 @@ ZpatFilter::ZpatFilter (const edm::ParameterSet & parameters)
   //Initializations...
   edm::Service<TFileService> fs;
 
-  eventAccept= fs->make<TH1D>("eventAccept","Good Event Multiplicity", 20, 0, 20);
   h_invMass = fs->make<TH1F>("Z peak - WP80","Z peak;InvMass (Gev)", 140, 0.0, 140.0);
   h_invMassEE =  fs->make<TH1F>("Z peak - WP80 Endcap-Endcap","Z peak;InvMass (Gev)", 140, 0.0, 140.0);
   h_invMassEB = fs->make<TH1F>("Z peak - WP80 Endcap-Barrel","Z peak;InvMass (Gev)", 140, 0.0, 140.0);
   h_invMassBB = fs->make<TH1F>("Z peak - WP80 Barrel-Barrel","Z peak;InvMass (Gev)", 140, 0.0, 140.0);
-  passIDEleCriteria = fs->make<TH1I>("passIDEleCriteria","Ele Id pass/not pass... 3 entries each ele", 3, 0, 3);
+  passIDEleCriteria = fs->make<TH1I>("passIDEleCriteria","Ele Id pass/not pass... 3 entries each ele", 4, 0, 4);
+  eleSelStepByStep = fs->make<TH1I>("eleSelStepByStep","History of selected/rejected ele", 8, 0, 8);
 }
 
 
