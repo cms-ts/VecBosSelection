@@ -13,7 +13,7 @@ Implementation:
 //
 // Original Author:  Vieri Candelise, Matteo Marone & Davide Scaini
 //         Created:  Thu Dec 11 10:46:26 CEST 2011
-// $Id: ZpatFilterPf.cc,v 1.6 2012/01/31 21:29:49 marone Exp $
+// $Id: ZpatFilterPf.cc,v 1.1.2.1 2012/02/29 18:34:29 montanin Exp $
 //
 //
 
@@ -345,13 +345,13 @@ void
 ZpatFilterPf::endJob ()
 {
 
-   cout << "Number of events passing the trigger = " << totCont<< endl;
-   cout << "Number of events in which PAT != PF = " << pfPatDiff<< endl;
-   cout << "Number of events in which PAT < PF = " << pfPatDiffMinus<< endl;
-   cout << "Number of events in which PAT > PF = " << pfPatDiffPlus<< endl;
-   cout << "Number of events in which PF != GSF = " << pfGsfDiff<< endl;
-   cout << "Number of events in which PF > GSF = " << pfGsfDiffMinus<< endl;
-   cout << "Number of events in which PF < GSF = " << pfGsfDiffPlus<< endl;
+   // cout << "Number of events passing the trigger = " << totCont<< endl;
+//    cout << "Number of events in which PAT != PF = " << pfPatDiff<< endl;
+//    cout << "Number of events in which PAT < PF = " << pfPatDiffMinus<< endl;
+//    cout << "Number of events in which PAT > PF = " << pfPatDiffPlus<< endl;
+//    cout << "Number of events in which PF != GSF = " << pfGsfDiff<< endl;
+//    cout << "Number of events in which PF > GSF = " << pfGsfDiffMinus<< endl;
+//    cout << "Number of events in which PF < GSF = " << pfGsfDiffPlus<< endl;
   //endJob
 
 }
