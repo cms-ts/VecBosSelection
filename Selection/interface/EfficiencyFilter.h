@@ -42,10 +42,13 @@ class EfficiencyFilter : public edm::EDFilter, public SelectionUtils {
       // ----------member data ---------------------------
 
       edm::InputTag theElectronCollectionLabel;
+      edm::InputTag superClusterCollection_EB_;
+      edm::InputTag superClusterCollection_EE_;
       edm::InputTag triggerCollection_; 
       edm::InputTag electronIsolatedProducer_;
       edm::InputTag candTag_ ;
       edm::InputTag theJetCollectionLabel_;
+      edm::InputTag VertexCollectionTag_;
       bool useCombinedPrescales_; // switch between HLT only and L1*HLT prescales
       bool useAllTriggers_; // if no trigger names are provided, use all triggers to find event weight
       HLTConfigProvider hltConfig_;        // to get configuration for L1s/Pre
@@ -56,101 +59,69 @@ class EfficiencyFilter : public edm::EDFilter, public SelectionUtils {
       bool WP80_efficiency_;
       bool HLTele8NOTele17_efficiency_;
       bool HLTele17_efficiency_;
+      bool RECO_efficiency_;
 
-      TH1D *probeall;
+      TH1D *probeall_mee;
+      TH1D *probepass_mee;
+      TH1D *probefail_mee;
 
-      TH1D *WP80_probepass;
-      TH1D *WP80_probefail;
-      TH1D *HLT_ele8NOTele17_probepass;
-      TH1D *HLT_ele8NOTele17_probefail;
-      TH1D *HLT_ele17_probepass;
-      TH1D *HLT_ele17_probefail;
+      TH1D *probeall_pt;
+      TH1D *probepass_pt;
+      TH1D *probefail_pt;
 
-      TH1D *WP80_probepass1jet;
-      TH1D *WP80_probepass2jet;
-      TH1D *WP80_probepass3jet;
-      TH1D *WP80_probepass4jet;
-      TH1D *WP80_probepass0jet;
-      TH1D *WP80_probefail0jet ;
-      TH1D *WP80_probefail1jet ;
-      TH1D *WP80_probefail2jet ;
-      TH1D *WP80_probefail3jet ;
-      TH1D *WP80_probefail4jet; 
+      TH1D *probeall_eta;
+      TH1D *probepass_eta;
+      TH1D *probefail_eta;
 
-      TH1D *HLT_ele17_probepass1jet;
-      TH1D *HLT_ele17_probepass2jet;
-      TH1D *HLT_ele17_probepass3jet;
-      TH1D *HLT_ele17_probepass4jet;
-      TH1D *HLT_ele17_probepass0jet;
-      TH1D *HLT_ele17_probefail0jet ;
-      TH1D *HLT_ele17_probefail1jet ;
-      TH1D *HLT_ele17_probefail2jet ;
-      TH1D *HLT_ele17_probefail3jet ;
-      TH1D *HLT_ele17_probefail4jet; 
+      TH1D *probepass1jet;
+      TH1D *probepass2jet;
+      TH1D *probepass3jet;
+      TH1D *probepass4jet;
+      TH1D *probepass0jet;
+      TH1D *probefail0jet ;
+      TH1D *probefail1jet ;
+      TH1D *probefail2jet ;
+      TH1D *probefail3jet ;
+      TH1D *probefail4jet; 
 
-      TH1D *HLT_ele8NOTele17_probepass1jet;
-      TH1D *HLT_ele8NOTele17_probepass2jet;
-      TH1D *HLT_ele8NOTele17_probepass3jet;
-      TH1D *HLT_ele8NOTele17_probepass4jet;
-      TH1D *HLT_ele8NOTele17_probepass0jet;
-      TH1D *HLT_ele8NOTele17_probefail0jet ;
-      TH1D *HLT_ele8NOTele17_probefail1jet ;
-      TH1D *HLT_ele8NOTele17_probefail2jet ;
-      TH1D *HLT_ele8NOTele17_probefail3jet ;
-      TH1D *HLT_ele8NOTele17_probefail4jet; 
+      TH1D *probepassLowPU; 
+      TH1D *probefailLowPU; 
+      TH1D *probepassHighPU; 
+      TH1D *probefailHighPU; 
 
-      TH1D *tagall;
+      TH1D *tagall_mee;
+      TH1D *tagpass_mee;
+      TH1D *tagfail_mee;
 
-      TH1D *WP80_tagpass;
-      TH1D *WP80_tagfail;
-      TH1D *HLT_ele8NOTele17_tagpass;
-      TH1D *HLT_ele8NOTele17_tagfail;
-      TH1D *HLT_ele17_tagpass;
-      TH1D *HLT_ele17_tagfail;
+      TH1D *tagall_pt;
+      TH1D *tagpass_pt;
+      TH1D *tagfail_pt;
 
-      TH1D *WP80_tagpass1jet;
-      TH1D *WP80_tagpass2jet;
-      TH1D *WP80_tagpass3jet;
-      TH1D *WP80_tagpass4jet;
-      TH1D *WP80_tagpass0jet;
-      TH1D *WP80_tagfail0jet ;
-      TH1D *WP80_tagfail1jet ;
-      TH1D *WP80_tagfail2jet ;
-      TH1D *WP80_tagfail3jet ;
-      TH1D *WP80_tagfail4jet; 
+      TH1D *tagall_eta;
+      TH1D *tagpass_eta;
+      TH1D *tagfail_eta;
 
-      TH1D *HLT_ele8NOTele17_tagpass1jet;
-      TH1D *HLT_ele8NOTele17_tagpass2jet;
-      TH1D *HLT_ele8NOTele17_tagpass3jet;
-      TH1D *HLT_ele8NOTele17_tagpass4jet;
-      TH1D *HLT_ele8NOTele17_tagpass0jet;
-      TH1D *HLT_ele8NOTele17_tagfail0jet ;
-      TH1D *HLT_ele8NOTele17_tagfail1jet ;
-      TH1D *HLT_ele8NOTele17_tagfail2jet ;
-      TH1D *HLT_ele8NOTele17_tagfail3jet ;
-      TH1D *HLT_ele8NOTele17_tagfail4jet; 
+      TH1D *tagpass1jet;
+      TH1D *tagpass2jet;
+      TH1D *tagpass3jet;
+      TH1D *tagpass4jet;
+      TH1D *tagpass0jet;
+      TH1D *tagfail0jet ;
+      TH1D *tagfail1jet ;
+      TH1D *tagfail2jet ;
+      TH1D *tagfail3jet ;
+      TH1D *tagfail4jet; 
 
-      TH1D *HLT_ele17_tagpass1jet;
-      TH1D *HLT_ele17_tagpass2jet;
-      TH1D *HLT_ele17_tagpass3jet;
-      TH1D *HLT_ele17_tagpass4jet;
-      TH1D *HLT_ele17_tagpass0jet;
-      TH1D *HLT_ele17_tagfail0jet ;
-      TH1D *HLT_ele17_tagfail1jet ;
-      TH1D *HLT_ele17_tagfail2jet ;
-      TH1D *HLT_ele17_tagfail3jet ;
-      TH1D *HLT_ele17_tagfail4jet; 
+      TH1D *tagpassLowPU; 
+      TH1D *tagfailLowPU; 
+      TH1D *tagpassHighPU; 
+      TH1D *tagfailHighPU; 
 
-      TH1D *probept;
-      TH1D *probept_passWP80;
-      TH1D *probept_failWP80;
-      TH1D *tagpt;
-      TH1D *tagpt_passWP80;
-      TH1D *tagpt_failWP80;
-
-      TH1D *HLTnumberOfMatches_PASS;
-      TH1D *HLTnumberOfMatches_FAIL;
-      TH1D *HLTnumberOfMatches_TOTALELE;
+      //      TH1D *scNumber_per_event;
+      //      TH1D *eleNumber_scMatch;
+      //      TH1D *HLTnumberOfMatches_PASS;
+      //      TH1D *HLTnumberOfMatches_FAIL;
+      //      TH1D *HLTnumberOfMatches_TOTALELE;
 };
 
 //
@@ -159,6 +130,9 @@ class EfficiencyFilter : public edm::EDFilter, public SelectionUtils {
 EfficiencyFilter::EfficiencyFilter (const edm::ParameterSet & parameters)
 {
   theElectronCollectionLabel = parameters.getParameter < edm::InputTag > ("electronCollection");
+  superClusterCollection_EB_ = parameters.getParameter < edm::InputTag > ("superClusterCollection_EB");
+  superClusterCollection_EE_ = parameters.getParameter < edm::InputTag > ("superClusterCollection_EE");
+  VertexCollectionTag_  = parameters.getParameter<edm::InputTag>("VertexCollectionTag");
   std::string outputfile_D = parameters.getUntrackedParameter<std::string>("filename");
   triggerCollection_=parameters.getUntrackedParameter<edm::InputTag>("triggerCollectionTag");
   useCombinedPrescales_ = parameters.getParameter<bool>("UseCombinedPrescales");
@@ -168,6 +142,7 @@ EfficiencyFilter::EfficiencyFilter (const edm::ParameterSet & parameters)
   WP80_efficiency_                  = parameters.getParameter<bool>("WP80_efficiency");
   HLTele17_efficiency_              = parameters.getParameter<bool>("HLTele17_efficiency");
   HLTele8NOTele17_efficiency_       = parameters.getParameter<bool>("HLTele8NOTele17_efficiency");
+  RECO_efficiency_                  = parameters.getParameter<bool>("RECO_efficiency");
   electronIsolatedProducer_ = parameters.getParameter< edm::InputTag > ("electronIsolatedProducer");
   candTag_ = parameters.getParameter< edm::InputTag > ("candTag");
   theJetCollectionLabel_       = parameters.getParameter<edm::InputTag>("JetCollectionLabel");
@@ -178,107 +153,70 @@ EfficiencyFilter::EfficiencyFilter (const edm::ParameterSet & parameters)
   //Initializations...
   edm::Service<TFileService> fs;
 
-  probeall  = fs->make<TH1D>("probeall","Invariant mass when probe fails or passes", 60, 60.0, 120.0);
+  probeall_mee  = fs->make<TH1D>("probeall_mee","Invariant mass when probe fails or passes", 60, 60.0, 120.0);
+  probefail_mee = fs->make<TH1D>("probefail_mee","Invariant mass when probe fails", 60, 60.0, 120.0);
+  probepass_mee = fs->make<TH1D>("probepass_mee","Invariant mass when probe passes", 60, 60.0, 120.0);
 
-  WP80_probefail = fs->make<TH1D>("WP80_probefail","Invariant mass when probe fails", 60, 60.0, 120.0);
-  WP80_probepass = fs->make<TH1D>("WP80_probepass","Invariant mass when probe passes", 60, 60.0, 120.0);
-  HLT_ele8NOTele17_probefail = fs->make<TH1D>("HLT_ele8NOTele17_probefail","Invariant mass when probe fails", 60, 60.0, 120.0);
-  HLT_ele8NOTele17_probepass = fs->make<TH1D>("HLT_ele8NOTele17_probepass","Invariant mass when probe passes", 60, 60.0, 120.0);
-  HLT_ele17_probefail = fs->make<TH1D>("HLT_ele17_probefail","Invariant mass when probe fails", 60, 60.0, 120.0);
-  HLT_ele17_probepass = fs->make<TH1D>("HLT_ele17_probepass","Invariant mass when probe passes", 60, 60.0, 120.0);
+  probepass0jet = fs->make<TH1D>("probepass0Jet","Invariant mass when probe passes + no Jet", 60, 60.0, 120.0);
+  probepass1jet = fs->make<TH1D>("probepass1Jet","Invariant mass when probe passes + 1 Jet", 60, 60.0, 120.0);
+  probepass2jet = fs->make<TH1D>("probepass2Jet","Invariant mass when probe passes + 2 Jets", 60, 60.0, 120.0);
+  probepass3jet = fs->make<TH1D>("probepass3Jet","Invariant mass when probe passes + 3 Jets", 60, 60.0, 120.0);
+  probepass4jet = fs->make<TH1D>("probepass4Jet","Invariant mass when probe passes + 4 Jets", 60, 60.0, 120.0);
 
-  WP80_probepass0jet = fs->make<TH1D>("WP80_probepass0Jet","Invariant mass when probe passes + no Jet", 60, 60.0, 120.0);
-  WP80_probepass1jet = fs->make<TH1D>("WP80_probepass1Jet","Invariant mass when probe passes + 1 Jet", 60, 60.0, 120.0);
-  WP80_probepass2jet = fs->make<TH1D>("WP80_probepass2Jet","Invariant mass when probe passes + 2 Jets", 60, 60.0, 120.0);
-  WP80_probepass3jet = fs->make<TH1D>("WP80_probepass3Jet","Invariant mass when probe passes + 3 Jets", 60, 60.0, 120.0);
-  WP80_probepass4jet = fs->make<TH1D>("WP80_probepass4Jet","Invariant mass when probe passes + 4 Jets", 60, 60.0, 120.0);
+  probefail0jet = fs->make<TH1D>("probefail0Jet","Invariant mass when probe fail + no Jet", 60, 60.0, 120.0);
+  probefail1jet = fs->make<TH1D>("probefail1Jet","Invariant mass when probe fail + 1 Jet", 60, 60.0, 120.0);
+  probefail2jet = fs->make<TH1D>("probefail2Jet","Invariant mass when probe fail + 2 Jets", 60, 60.0, 120.0);
+  probefail3jet = fs->make<TH1D>("probefail3Jet","Invariant mass when probe fail + 3 Jets", 60, 60.0, 120.0);
+  probefail4jet = fs->make<TH1D>("probefail4Jet","Invariant mass when probe fail + 4 Jets", 60, 60.0, 120.0);
 
-  WP80_probefail0jet = fs->make<TH1D>("WP80_probefail0Jet","Invariant mass when probe fail + no Jet", 60, 60.0, 120.0);
-  WP80_probefail1jet = fs->make<TH1D>("WP80_probefail1Jet","Invariant mass when probe fail + 1 Jet", 60, 60.0, 120.0);
-  WP80_probefail2jet = fs->make<TH1D>("WP80_probefail2Jet","Invariant mass when probe fail + 2 Jets", 60, 60.0, 120.0);
-  WP80_probefail3jet = fs->make<TH1D>("WP80_probefail3Jet","Invariant mass when probe fail + 3 Jets", 60, 60.0, 120.0);
-  WP80_probefail4jet = fs->make<TH1D>("WP80_probefail4Jet","Invariant mass when probe fail + 4 Jets", 60, 60.0, 120.0);
+  probepassLowPU = fs->make<TH1D>("probepassLowPU","Invariant mass when probe passes (Low PU)", 60, 60.0, 120.0);
+  probefailLowPU = fs->make<TH1D>("probefailLowPU","Invariant mass when probe fail (Low PU)", 60, 60.0, 120.0);
 
-  HLT_ele8NOTele17_probepass0jet = fs->make<TH1D>("HLT_ele8NOTele17_probepass0Jet","Invariant mass when probe passes + no Jet", 60, 60.0, 120.0);
-  HLT_ele8NOTele17_probepass1jet = fs->make<TH1D>("HLT_ele8NOTele17_probepass1Jet","Invariant mass when probe passes + 1 Jet", 60, 60.0, 120.0);
-  HLT_ele8NOTele17_probepass2jet = fs->make<TH1D>("HLT_ele8NOTele17_probepass2Jet","Invariant mass when probe passes + 2 Jets", 60, 60.0, 120.0);
-  HLT_ele8NOTele17_probepass3jet = fs->make<TH1D>("HLT_ele8NOTele17_probepass3Jet","Invariant mass when probe passes + 3 Jets", 60, 60.0, 120.0);
-  HLT_ele8NOTele17_probepass4jet = fs->make<TH1D>("HLT_ele8NOTele17_probepass4Jet","Invariant mass when probe passes + 4 Jets", 60, 60.0, 120.0);
+  probepassHighPU = fs->make<TH1D>("probepassHighPU","Invariant mass when probe passes (High PU)", 60, 60.0, 120.0);
+  probefailHighPU = fs->make<TH1D>("probefailHighPU","Invariant mass when probe fail (High PU)", 60, 60.0, 120.0);
 
-  HLT_ele8NOTele17_probefail0jet = fs->make<TH1D>("HLT_ele8NOTele17_probefail0Jet","Invariant mass when probe fail + no Jet", 60, 60.0, 120.0);
-  HLT_ele8NOTele17_probefail1jet = fs->make<TH1D>("HLT_ele8NOTele17_probefail1Jet","Invariant mass when probe fail + 1 Jet", 60, 60.0, 120.0);
-  HLT_ele8NOTele17_probefail2jet = fs->make<TH1D>("HLT_ele8NOTele17_probefail2Jet","Invariant mass when probe fail + 2 Jets", 60, 60.0, 120.0);
-  HLT_ele8NOTele17_probefail3jet = fs->make<TH1D>("HLT_ele8NOTele17_probefail3Jet","Invariant mass when probe fail + 3 Jets", 60, 60.0, 120.0);
-  HLT_ele8NOTele17_probefail4jet = fs->make<TH1D>("HLT_ele8NOTele17_probefail4Jet","Invariant mass when probe fail + 4 Jets", 60, 60.0, 120.0);
+  tagall_mee  = fs->make<TH1D>("tagall_mee","Invariant mass when tag fails or passes", 60, 60.0, 120.0);
+  tagfail_mee = fs->make<TH1D>("tagfail_mee","Invariant mass when tag fails WP80", 60, 60.0, 120.0);
+  tagpass_mee = fs->make<TH1D>("tagpass_mee","Invariant mass when tag passes WP80", 60, 60.0, 120.0);
 
-  HLT_ele17_probepass0jet = fs->make<TH1D>("HLT_ele17_probepass0Jet","Invariant mass when probe passes + no Jet", 60, 60.0, 120.0);
-  HLT_ele17_probepass1jet = fs->make<TH1D>("HLT_ele17_probepass1Jet","Invariant mass when probe passes + 1 Jet", 60, 60.0, 120.0);
-  HLT_ele17_probepass2jet = fs->make<TH1D>("HLT_ele17_probepass2Jet","Invariant mass when probe passes + 2 Jets", 60, 60.0, 120.0);
-  HLT_ele17_probepass3jet = fs->make<TH1D>("HLT_ele17_probepass3Jet","Invariant mass when probe passes + 3 Jets", 60, 60.0, 120.0);
-  HLT_ele17_probepass4jet = fs->make<TH1D>("HLT_ele17_probepass4Jet","Invariant mass when probe passes + 4 Jets", 60, 60.0, 120.0);
+  tagpass0jet = fs->make<TH1D>("tagpass0Jet","Invariant mass when tag passes + no Jet", 60, 60.0, 120.0);
+  tagpass1jet = fs->make<TH1D>("tagpass1Jet","Invariant mass when tag passes + 1 Jet", 60, 60.0, 120.0);
+  tagpass2jet = fs->make<TH1D>("tagpass2Jet","Invariant mass when tag passes + 2 Jets", 60, 60.0, 120.0);
+  tagpass3jet = fs->make<TH1D>("tagpass3Jet","Invariant mass when tag passes + 3 Jets", 60, 60.0, 120.0);
+  tagpass4jet = fs->make<TH1D>("tagpass4Jet","Invariant mass when tag passes + 4 Jets", 60, 60.0, 120.0);
 
-  HLT_ele17_probefail0jet = fs->make<TH1D>("HLT_ele17_probefail0Jet","Invariant mass when probe fail + no Jet", 60, 60.0, 120.0);
-  HLT_ele17_probefail1jet = fs->make<TH1D>("HLT_ele17_probefail1Jet","Invariant mass when probe fail + 1 Jet", 60, 60.0, 120.0);
-  HLT_ele17_probefail2jet = fs->make<TH1D>("HLT_ele17_probefail2Jet","Invariant mass when probe fail + 2 Jets", 60, 60.0, 120.0);
-  HLT_ele17_probefail3jet = fs->make<TH1D>("HLT_ele17_probefail3Jet","Invariant mass when probe fail + 3 Jets", 60, 60.0, 120.0);
-  HLT_ele17_probefail4jet = fs->make<TH1D>("HLT_ele17_probefail4Jet","Invariant mass when probe fail + 4 Jets", 60, 60.0, 120.0);
+  tagfail0jet = fs->make<TH1D>("tagfail0Jet","Invariant mass when tag fail + no Jet", 60, 60.0, 120.0);
+  tagfail1jet = fs->make<TH1D>("tagfail1Jet","Invariant mass when tag fail + 1 Jet", 60, 60.0, 120.0);
+  tagfail2jet = fs->make<TH1D>("tagfail2Jet","Invariant mass when tag fail + 2 Jets", 60, 60.0, 120.0);
+  tagfail3jet = fs->make<TH1D>("tagfail3Jet","Invariant mass when tag fail + 3 Jets", 60, 60.0, 120.0);
+  tagfail4jet = fs->make<TH1D>("tagfail4Jet","Invariant mass when tag fail + 4 Jets", 60, 60.0, 120.0);
 
+  tagpassLowPU = fs->make<TH1D>("tagpassLowPU","Invariant mass when tag passes (Low PU)", 60, 60.0, 120.0);
+  tagfailLowPU = fs->make<TH1D>("tagfailLowPU","Invariant mass when tag fail (Low PU)", 60, 60.0, 120.0);
 
-  tagall  = fs->make<TH1D>("tagall","Invariant mass when tag fails or passes", 60, 60.0, 120.0);
+  tagpassHighPU = fs->make<TH1D>("tagpassHighPU","Invariant mass when tag passes (High PU)", 60, 60.0, 120.0);
+  tagfailHighPU = fs->make<TH1D>("tagfailHighPU","Invariant mass when tag fail (High PU)", 60, 60.0, 120.0);
 
-  WP80_tagfail = fs->make<TH1D>("WP80_tagfail","Invariant mass when tag fails WP80", 60, 60.0, 120.0);
-  WP80_tagpass = fs->make<TH1D>("WP80_tagpass","Invariant mass when tag passes WP80", 60, 60.0, 120.0);
-  HLT_ele8NOTele17_tagfail = fs->make<TH1D>("HLT_ele8NOTele17_tagfail","Invariant mass when tag fails HLT", 60, 60.0, 120.0);
-  HLT_ele8NOTele17_tagpass = fs->make<TH1D>("HLT_ele8NOTele17_tagpass","Invariant mass when tag passes HLT", 60, 60.0, 120.0);
-  HLT_ele17_tagfail = fs->make<TH1D>("HLT_ele17_tagfail","Invariant mass when tag fails HLT", 60, 60.0, 120.0);
-  HLT_ele17_tagpass = fs->make<TH1D>("HLT_ele17_tagpass","Invariant mass when tag passes HLT", 60, 60.0, 120.0);
+  probeall_pt= fs->make<TH1D>("probeall_pt","Pt of the electron probe", 120, 0, 120.0);
+  probepass_pt= fs->make<TH1D>("probepass_pt","Pt of the electron probe when passing WP80", 120, 0, 120.0);
+  probefail_pt= fs->make<TH1D>("probefail_pt","Pt of the electron probe when failing WP80", 120, 0, 120.0);
+  tagall_pt= fs->make<TH1D>("tagall_pt","Pt of the electron tag", 120, 0, 120.0);
+  tagpass_pt= fs->make<TH1D>("tagpass_pt","Pt of the electron tag when passing WP80", 120, 0, 120.0);
+  tagfail_pt= fs->make<TH1D>("tagfail_pt","Pt of the electron tag when failing WP80", 120, 0, 120.0);
 
-  WP80_tagpass0jet = fs->make<TH1D>("WP80_tagpass0Jet","Invariant mass when tag passes + no Jet", 60, 60.0, 120.0);
-  WP80_tagpass1jet = fs->make<TH1D>("WP80_tagpass1Jet","Invariant mass when tag passes + 1 Jet", 60, 60.0, 120.0);
-  WP80_tagpass2jet = fs->make<TH1D>("WP80_tagpass2Jet","Invariant mass when tag passes + 2 Jets", 60, 60.0, 120.0);
-  WP80_tagpass3jet = fs->make<TH1D>("WP80_tagpass3Jet","Invariant mass when tag passes + 3 Jets", 60, 60.0, 120.0);
-  WP80_tagpass4jet = fs->make<TH1D>("WP80_tagpass4Jet","Invariant mass when tag passes + 4 Jets", 60, 60.0, 120.0);
+  probeall_eta= fs->make<TH1D>("probeall_eta","Eta of the electron probe", 60, -3.0, 3.0);
+  probepass_eta= fs->make<TH1D>("probepass_eta","Eta of the electron probe when passing WP80", 60, -3.0, 3.0);
+  probefail_eta= fs->make<TH1D>("probefail_eta","Eta of the electron probe when failing WP80", 60, -3.0, 3.0);
+  tagall_eta= fs->make<TH1D>("tagall_eta","Eta of the electron tag", 60, -3.0, 3.0);
+  tagpass_eta= fs->make<TH1D>("tagpass_eta","Eta of the electron tag when passing WP80", 60, -3.0, 3.0);
+  tagfail_eta= fs->make<TH1D>("tagfail_eta","Eta of the electron tag when failing WP80", 60, -3.0, 3.0);
 
-  WP80_tagfail0jet = fs->make<TH1D>("WP80_tagfail0Jet","Invariant mass when tag fail + no Jet", 60, 60.0, 120.0);
-  WP80_tagfail1jet = fs->make<TH1D>("WP80_tagfail1Jet","Invariant mass when tag fail + 1 Jet", 60, 60.0, 120.0);
-  WP80_tagfail2jet = fs->make<TH1D>("WP80_tagfail2Jet","Invariant mass when tag fail + 2 Jets", 60, 60.0, 120.0);
-  WP80_tagfail3jet = fs->make<TH1D>("WP80_tagfail3Jet","Invariant mass when tag fail + 3 Jets", 60, 60.0, 120.0);
-  WP80_tagfail4jet = fs->make<TH1D>("WP80_tagfail4Jet","Invariant mass when tag fail + 4 Jets", 60, 60.0, 120.0);
+  //  scNumber_per_event    = fs->make<TH1D>("scNumber_per_event","Total # of SC > 5 GeV",10,0,10);
+  //  eleNumber_scMatch    = fs->make<TH1D>("eleNumber_scMatch","Total # of SC > 5 GeV",10,0,10);
 
-  HLT_ele8NOTele17_tagpass0jet = fs->make<TH1D>("HLT_ele8NOTele17_tagpass0Jet","Invariant mass when tag passes + no Jet", 60, 60.0, 120.0);
-  HLT_ele8NOTele17_tagpass1jet = fs->make<TH1D>("HLT_ele8NOTele17_tagpass1Jet","Invariant mass when tag passes + 1 Jet", 60, 60.0, 120.0);
-  HLT_ele8NOTele17_tagpass2jet = fs->make<TH1D>("HLT_ele8NOTele17_tagpass2Jet","Invariant mass when tag passes + 2 Jets", 60, 60.0, 120.0);
-  HLT_ele8NOTele17_tagpass3jet = fs->make<TH1D>("HLT_ele8NOTele17_tagpass3Jet","Invariant mass when tag passes + 3 Jets", 60, 60.0, 120.0);
-  HLT_ele8NOTele17_tagpass4jet = fs->make<TH1D>("HLT_ele8NOTele17_tagpass4Jet","Invariant mass when tag passes + 4 Jets", 60, 60.0, 120.0);
-
-  HLT_ele8NOTele17_tagfail0jet = fs->make<TH1D>("HLT_ele8NOTele17_tagfail0Jet","Invariant mass when tag fail + no Jet", 60, 60.0, 120.0);
-  HLT_ele8NOTele17_tagfail1jet = fs->make<TH1D>("HLT_ele8NOTele17_tagfail1Jet","Invariant mass when tag fail + 1 Jet", 60, 60.0, 120.0);
-  HLT_ele8NOTele17_tagfail2jet = fs->make<TH1D>("HLT_ele8NOTele17_tagfail2Jet","Invariant mass when tag fail + 2 Jets", 60, 60.0, 120.0);
-  HLT_ele8NOTele17_tagfail3jet = fs->make<TH1D>("HLT_ele8NOTele17_tagfail3Jet","Invariant mass when tag fail + 3 Jets", 60, 60.0, 120.0);
-  HLT_ele8NOTele17_tagfail4jet = fs->make<TH1D>("HLT_ele8NOTele17_tagfail4Jet","Invariant mass when tag fail + 4 Jets", 60, 60.0, 120.0);
-
-  HLT_ele17_tagpass0jet = fs->make<TH1D>("HLT_ele17_tagpass0Jet","Invariant mass when tag passes + no Jet", 60, 60.0, 120.0);
-  HLT_ele17_tagpass1jet = fs->make<TH1D>("HLT_ele17_tagpass1Jet","Invariant mass when tag passes + 1 Jet", 60, 60.0, 120.0);
-  HLT_ele17_tagpass2jet = fs->make<TH1D>("HLT_ele17_tagpass2Jet","Invariant mass when tag passes + 2 Jets", 60, 60.0, 120.0);
-  HLT_ele17_tagpass3jet = fs->make<TH1D>("HLT_ele17_tagpass3Jet","Invariant mass when tag passes + 3 Jets", 60, 60.0, 120.0);
-  HLT_ele17_tagpass4jet = fs->make<TH1D>("HLT_ele17_tagpass4Jet","Invariant mass when tag passes + 4 Jets", 60, 60.0, 120.0);
-
-  HLT_ele17_tagfail0jet = fs->make<TH1D>("HLT_ele17_tagfail0Jet","Invariant mass when tag fail + no Jet", 60, 60.0, 120.0);
-  HLT_ele17_tagfail1jet = fs->make<TH1D>("HLT_ele17_tagfail1Jet","Invariant mass when tag fail + 1 Jet", 60, 60.0, 120.0);
-  HLT_ele17_tagfail2jet = fs->make<TH1D>("HLT_ele17_tagfail2Jet","Invariant mass when tag fail + 2 Jets", 60, 60.0, 120.0);
-  HLT_ele17_tagfail3jet = fs->make<TH1D>("HLT_ele17_tagfail3Jet","Invariant mass when tag fail + 3 Jets", 60, 60.0, 120.0);
-  HLT_ele17_tagfail4jet = fs->make<TH1D>("HLT_ele17_tagfail4Jet","Invariant mass when tag fail + 4 Jets", 60, 60.0, 120.0);
-
-  probept= fs->make<TH1D>("probept","Pt of the electron probe", 120, 0, 120.0);
-  probept_passWP80= fs->make<TH1D>("probept_passWP80","Pt of the electron probe when passing WP80", 120, 0, 120.0);
-  probept_failWP80= fs->make<TH1D>("probept_failWP80","Pt of the electron probe when failing WP80", 120, 0, 120.0);
-  tagpt= fs->make<TH1D>("tagpt","Pt of the electron tag", 120, 0, 120.0);
-  tagpt_passWP80= fs->make<TH1D>("tagpt_passWP80","Pt of the electron tag when passing WP80", 120, 0, 120.0);
-  tagpt_failWP80= fs->make<TH1D>("tagpt_failWP80","Pt of the electron tag when failing WP80", 120, 0, 120.0);
-
-  HLTnumberOfMatches_PASS    = fs->make<TH1D>("HLTnumberOfMatches_PASS","Total # of electron matching the HLT",10,0,10);
-  HLTnumberOfMatches_FAIL    = fs->make<TH1D>("HLTnumberOfMatches_FAIL","Total # of electron NOT matching the HLT",10,0,10);
-  HLTnumberOfMatches_TOTALELE= fs->make<TH1D>("HLTnumberOfMatches_TOTALELE","Total # of electrons per event",10,0,10);
+  //  HLTnumberOfMatches_PASS    = fs->make<TH1D>("HLTnumberOfMatches_PASS","Total # of electron matching the HLT",10,0,10);
+  //  HLTnumberOfMatches_FAIL    = fs->make<TH1D>("HLTnumberOfMatches_FAIL","Total # of electron NOT matching the HLT",10,0,10);
+  //  HLTnumberOfMatches_TOTALELE= fs->make<TH1D>("HLTnumberOfMatches_TOTALELE","Total # of electrons per event",10,0,10);
 }
 
 
