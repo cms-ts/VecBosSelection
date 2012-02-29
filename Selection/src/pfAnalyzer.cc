@@ -36,7 +36,7 @@ pfAnalyzer::produce(edm::Event & iEvent, edm::EventSetup const & iSetup)
      protection=false;
      passSelection = true;
      /// NEW DS
-     // Cutting on WP80
+     // Cutting on WP80pf
      for (pat::ElectronCollection::const_iterator recoElectron = electronCollection->begin (); recoElectron != electronCollection->end (); recoElectron++) {
 	
 	protection=true;
@@ -49,9 +49,9 @@ pfAnalyzer::produce(edm::Event & iEvent, edm::EventSetup const & iSetup)
 	if (result[1]) passIDEleCriteria->SetBinContent(2,passIDEleCriteria->GetBinContent(2)+1);
 	if (result[2]) passIDEleCriteria->SetBinContent(3,passIDEleCriteria->GetBinContent(3)+1);
 	
-	if ( SelectionUtils::DoWP80(recoElectron,iEvent) && SelectionUtils::DoHLTMatch(recoElectron,iEvent) && recoElectron->pt()>10.0){	
+	if ( SelectionUtils::DoWP80pf(recoElectron,iEvent) && SelectionUtils::DoHLTMatch(recoElectron,iEvent) && recoElectron->pt()>10.0){	
 	   //if ( SelectionUtils::DoWP80(recoElectron,iEvent) && SelectionUtils::DoHLTMatch(recoElectron,iEvent)){
-	   if (Debug2) cout<<"Tag is a WP80 electron..."<<endl;
+	   if (Debug2) cout<<"Tag is a WP80pf electron..."<<endl;
 	   
 	   //Sort in Pt
 	   if (Debug2) cout<<"Electron pt value ->"<<recoElectron->pt()<<endl;
@@ -79,7 +79,7 @@ pfAnalyzer::produce(edm::Event & iEvent, edm::EventSetup const & iSetup)
 	}
 	
 	else{
-	   if (Debug2) cout<<"Tag IS a NOT WP80 electron...Exit"<<endl;
+	   if (Debug2) cout<<"Tag IS a NOT WP80pf electron...Exit"<<endl;
 	}
 	
      }

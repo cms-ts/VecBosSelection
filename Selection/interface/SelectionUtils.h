@@ -11,6 +11,7 @@ class SelectionUtils {
 	public:
 
 		bool DoWP80(pat::ElectronCollection::const_iterator recoElectron,edm::Event& iEvent);
+		bool DoWP80pf(pat::ElectronCollection::const_iterator recoElectron,edm::Event& iEvent);
 		bool DoHLTMatch(pat::ElectronCollection::const_iterator,edm::Event&);
 		std::vector<bool> MakeEleIDAnalysis(pat::ElectronCollection::const_iterator recoElectron,edm::Event& iEvent); 
 
