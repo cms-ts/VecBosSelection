@@ -75,7 +75,7 @@ pfAnalyzer::pfAnalyzer (const edm::ParameterSet & parameters)
    Debug2 = false;
    passSelection=true;
    theElectronCollectionLabel = parameters.getParameter <edm::InputTag> ("electronCollection");
-   pflowEleCollection_ = parameters.getUntrackedParameter<edm::InputTag>("pflowEleCollection",edm::InputTag("particleFlow:electrons"));
+   pflowEleCollection_ = parameters.getUntrackedParameter<edm::InputTag>("pflowEleCollection",edm::InputTag("particleFlow"));
    removePU_ = parameters.getParameter<bool>("removePU");
    produces<reco::PFCandidateCollection>();
    

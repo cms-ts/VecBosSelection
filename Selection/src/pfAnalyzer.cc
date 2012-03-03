@@ -121,26 +121,27 @@ pfAnalyzer::produce(edm::Event & iEvent, edm::EventSetup const & iSetup)
 	   iEvent.getByLabel (pflowEleCollection_, pfElecCollection);
 	   
 	   for (reco::PFCandidateCollection::const_iterator pfElectron = pfElecCollection->begin (); pfElectron != pfElecCollection->end (); pfElectron++) {
-	      
-	      if ( fabs(pfElectron->pt() - tag->pt())<delta && 
-		   fabs(pfElectron->eta() - tag->eta())<delta &&
-		   fabs(pfElectron->phi() - tag->phi())<delta ) {
-		 pOutput->push_back(*pfElectron);
-		 h_electronEn->Fill(pfElectron->energy());
-		 h_electronEta->Fill(pfElectron->eta());
-		 h_electronPt->Fill(pfElectron->pt());
-		 cont++;
-		 continue;
-	      }
-	      if ( fabs(pfElectron->pt() - probe->pt())<delta && 
-		   fabs(pfElectron->eta() - probe->eta())<delta &&
-		   fabs(pfElectron->phi() - probe->phi())<delta ) {
-		 pOutput->push_back(*pfElectron);
-		 h_electronEn->Fill(pfElectron->energy());
-		 h_electronEta->Fill(pfElectron->eta());
-		 h_electronPt->Fill(pfElectron->pt());
-		 cont++;
-		 continue;
+	      if (fabs(pfElectron->pdgId())==11){
+		 if ( fabs(pfElectron->pt() - tag->pt())<delta && 
+		      fabs(pfElectron->eta() - tag->eta())<delta &&
+		      fabs(pfElectron->phi() - tag->phi())<delta ) {
+		    pOutput->push_back(*pfElectron);
+		    h_electronEn->Fill(pfElectron->energy());
+		    h_electronEta->Fill(pfElectron->eta());
+		    h_electronPt->Fill(pfElectron->pt());
+		    cont++;
+		    continue;
+		 }
+		 if ( fabs(pfElectron->pt() - probe->pt())<delta && 
+		      fabs(pfElectron->eta() - probe->eta())<delta &&
+		      fabs(pfElectron->phi() - probe->phi())<delta ) {
+		    pOutput->push_back(*pfElectron);
+		    h_electronEn->Fill(pfElectron->energy());
+		    h_electronEta->Fill(pfElectron->eta());
+		    h_electronPt->Fill(pfElectron->pt());
+		    cont++;
+		    continue;
+		 }
 	      }
 	   }
 	}
