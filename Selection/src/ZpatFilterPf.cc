@@ -13,7 +13,7 @@ Implementation:
 //
 // Original Author:  Vieri Candelise, Matteo Marone & Davide Scaini
 //         Created:  Thu Dec 11 10:46:26 CEST 2011
-// $Id: ZpatFilterPf.cc,v 1.2 2012/03/03 17:25:55 montanin Exp $
+// $Id: ZpatFilterPf.cc,v 1.3 2012/03/03 18:09:31 marone Exp $
 //
 //
 
@@ -192,7 +192,7 @@ ZpatFilterPf::filter (edm::Event & iEvent, edm::EventSetup const & iSetup)
   if (electronCollection->size()<=1) {
     numberOfEleAfterHLTTrigger->SetBinContent(1,numberOfEleAfterHLTTrigger->GetBinContent(1)+1);
     numberOfEleAfterHLTTrigger->SetBinContent(3,numberOfEleAfterHLTTrigger->GetBinContent(3)+1);
-    cout<<"Events with DoubleEle trigger but eleCollection size <2!!! suspicious! -> "<<theElectronCollectionLabel<<endl;
+    //cout<<"Events with DoubleEle trigger but eleCollection size <2!!! suspicious! -> "<<theElectronCollectionLabel<<endl;
     return false;
   }
   numberOfEleAfterHLTTrigger->SetBinContent(1,numberOfEleAfterHLTTrigger->GetBinContent(1)+1);
