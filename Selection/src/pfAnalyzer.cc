@@ -1,4 +1,4 @@
-#include "VecBosSelection/Selection/interface/ZanalyzerProducer.h"
+#include "VecBosSelection/Selection/interface/pfAnalyzer.h"
 
 using namespace std;
 using namespace edm;
@@ -11,18 +11,17 @@ using namespace reco;
 
 // ------------ method called for each event  ------------
 void
-ZanalyzerProducer::produce(edm::Event & iEvent, edm::EventSetup const & iSetup)
+pfAnalyzer::produce(edm::Event & iEvent, edm::EventSetup const & iSetup)
 {
 
    // get gfs Electron  
-   auto_ptr< reco::GsfElectronCollection > 
-      pOutput( new reco::GsfElectronCollection ); 
+   auto_ptr< reco::PFCandidateCollection > 
+      pOutput( new reco::PFCandidateCollection ); 
 
   if (Debug2) cout<<"------- NEW Event -----"<<endl;
   double delta = 0.001;
   int cont = 0;
 
-  //Handle < GsfElectronCollection > electronCollection;
   Handle < pat::ElectronCollection > electronCollection;  
   iEvent.getByLabel (theElectronCollectionLabel, electronCollection);
   if (electronCollection.isValid () && electronCollection->size()>1){
@@ -50,7 +49,7 @@ ZanalyzerProducer::produce(edm::Event & iEvent, edm::EventSetup const & iSetup)
 	if (result[1]) passIDEleCriteria->SetBinContent(2,passIDEleCriteria->GetBinContent(2)+1);
 	if (result[2]) passIDEleCriteria->SetBinContent(3,passIDEleCriteria->GetBinContent(3)+1);
 	
-	if ( SelectionUtils::DoWP80(recoElectron,iEvent) && SelectionUtils::DoHLTMatch(recoElectron,iEvent) && recoElectron->pt()>10.0){
+	if ( SelectionUtils::DoWP80Pf(recoElectron,iEvent) && SelectionUtils::DoHLTMatch(recoElectron,iEvent) && recoElectron->pt()>10.0){
 	//if ( SelectionUtils::DoWP80(recoElectron,iEvent) && SelectionUtils::DoHLTMatch(recoElectron,iEvent)){
 	   if (Debug2) cout<<"Tag is a WP80 electron..."<<endl;
 	   
@@ -77,7 +76,9 @@ ZanalyzerProducer::produce(edm::Event & iEvent, edm::EventSetup const & iSetup)
 	      }
 	   }
 	   i++;
-	} else{
+	} 
+
+	else{
 	   if (Debug2) cout<<"Tag IS a NOT WP80 electron...Exit"<<endl;
 	}
 		
@@ -116,28 +117,28 @@ ZanalyzerProducer::produce(edm::Event & iEvent, edm::EventSetup const & iSetup)
 	
 // searching for the corresponding GSF electron 
 	if (passSelection){
-	   Handle < GsfElectronCollection > gsfElecCollection;
-	   iEvent.getByLabel ("gsfElectrons", gsfElecCollection);
+	   Handle<reco::PFCandidateCollection> pfElecCollection;
+	   iEvent.getByLabel (pflowEleCollection_, pfElecCollection);
 	   
-	   for (reco::GsfElectronCollection::const_iterator gsfElectron = gsfElecCollection->begin (); gsfElectron != gsfElecCollection->end (); gsfElectron++) {
+	   for (reco::PFCandidateCollection::const_iterator pfElectron = pfElecCollection->begin (); pfElectron != pfElecCollection->end (); pfElectron++) {
 	      
-	      if ( fabs(gsfElectron->pt() - tag->pt())<delta && 
-		   fabs(gsfElectron->eta() - tag->eta())<delta &&
-		   fabs(gsfElectron->phi() - tag->phi())<delta ) {
-		 pOutput->push_back(*gsfElectron);
-		 h_electronEn->Fill(gsfElectron->energy());
-		 h_electronEta->Fill(gsfElectron->eta());
-		 h_electronPt->Fill(gsfElectron->pt());
+	      if ( fabs(pfElectron->pt() - tag->pt())<delta && 
+		   fabs(pfElectron->eta() - tag->eta())<delta &&
+		   fabs(pfElectron->phi() - tag->phi())<delta ) {
+		 pOutput->push_back(*pfElectron);
+		 h_electronEn->Fill(pfElectron->energy());
+		 h_electronEta->Fill(pfElectron->eta());
+		 h_electronPt->Fill(pfElectron->pt());
 		 cont++;
 		 continue;
 	      }
-	      if ( fabs(gsfElectron->pt() - probe->pt())<delta && 
-		   fabs(gsfElectron->eta() - probe->eta())<delta &&
-		   fabs(gsfElectron->phi() - probe->phi())<delta ) {
-		 pOutput->push_back(*gsfElectron);
-		 h_electronEn->Fill(gsfElectron->energy());
-		 h_electronEta->Fill(gsfElectron->eta());
-		 h_electronPt->Fill(gsfElectron->pt());
+	      if ( fabs(pfElectron->pt() - probe->pt())<delta && 
+		   fabs(pfElectron->eta() - probe->eta())<delta &&
+		   fabs(pfElectron->phi() - probe->phi())<delta ) {
+		 pOutput->push_back(*pfElectron);
+		 h_electronEn->Fill(pfElectron->energy());
+		 h_electronEta->Fill(pfElectron->eta());
+		 h_electronPt->Fill(pfElectron->pt());
 		 cont++;
 		 continue;
 	      }
@@ -158,7 +159,7 @@ ZanalyzerProducer::produce(edm::Event & iEvent, edm::EventSetup const & iSetup)
 
 // ------------ method called once each job just before starting event loop  ------------
 void
-ZanalyzerProducer::beginJob (){
+pfAnalyzer::beginJob (){
 
 //beginJob
 
@@ -167,11 +168,11 @@ ZanalyzerProducer::beginJob (){
 
 // ------------ method called once each job just after ending the event loop  ------------
 void
-ZanalyzerProducer::endJob ()
+pfAnalyzer::endJob ()
 {
 
 //endJob
 
 }
 
-DEFINE_FWK_MODULE (ZanalyzerProducer);
+DEFINE_FWK_MODULE (pfAnalyzer);

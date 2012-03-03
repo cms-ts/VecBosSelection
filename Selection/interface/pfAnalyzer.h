@@ -29,10 +29,10 @@
 #include "TH1.h"
 
 
-class ZanalyzerProducer : public edm::EDProducer, public SelectionUtils {
+class pfAnalyzer : public edm::EDProducer, public SelectionUtils {
 	public:
-		explicit ZanalyzerProducer(const edm::ParameterSet &);
-		~ZanalyzerProducer();
+		explicit pfAnalyzer(const edm::ParameterSet &);
+		~pfAnalyzer();
 
 		virtual void produce(edm::Event&, edm::EventSetup const&);
 		virtual void beginJob();
@@ -44,6 +44,7 @@ class ZanalyzerProducer : public edm::EDProducer, public SelectionUtils {
 		// ----------member data ---------------------------
 
 		edm::InputTag theElectronCollectionLabel;
+		edm::InputTag pflowEleCollection_;
 		bool removePU_;
 		bool Debug2; //Activate with true if you wonna have verbosity for debug
 		TH1I* passIDEleCriteria;
@@ -69,13 +70,14 @@ class ZanalyzerProducer : public edm::EDProducer, public SelectionUtils {
 //
 // constructors and destructor
 //
-ZanalyzerProducer::ZanalyzerProducer (const edm::ParameterSet & parameters)
+pfAnalyzer::pfAnalyzer (const edm::ParameterSet & parameters)
 {
    Debug2 = false;
    passSelection=true;
    theElectronCollectionLabel = parameters.getParameter <edm::InputTag> ("electronCollection");
+   pflowEleCollection_ = parameters.getUntrackedParameter<edm::InputTag>("pflowEleCollection",edm::InputTag("particleFlow:electrons"));
    removePU_ = parameters.getParameter<bool>("removePU");
-   produces<reco::GsfElectronCollection>();
+   produces<reco::PFCandidateCollection>();
    
 
    //Initializations...
@@ -83,7 +85,7 @@ ZanalyzerProducer::ZanalyzerProducer (const edm::ParameterSet & parameters)
 
    passIDEleCriteria = fs->make<TH1I>("passIDEleCriteria","Ele Id pass/not pass... 3 entries each ele", 3, 0, 3);
    
-   eventAccept= fs->make<TH1D>("eventAccept","There is corresponding GSF", 20, 0, 20);
+   eventAccept= fs->make<TH1D>("eventAccept","There is corresponding PF", 20, 0, 20);
    h_electronEn= fs->make<TH1D>("h_electronEn","electronEn", 200, 0, 200);
    h_electronEta= fs->make<TH1D>("h_electronEta","electronEta", 200, -2.5, 2.5);
    h_electronPt= fs->make<TH1D>("h_electronPt","electronPt", 200, 0, 200);
@@ -94,7 +96,7 @@ ZanalyzerProducer::ZanalyzerProducer (const edm::ParameterSet & parameters)
 
 
 
-ZanalyzerProducer::~ZanalyzerProducer ()
+pfAnalyzer::~pfAnalyzer ()
 {
 
 	// do anything here that needs to be done at desctruction time
