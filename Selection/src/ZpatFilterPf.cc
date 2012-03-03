@@ -13,7 +13,7 @@ Implementation:
 //
 // Original Author:  Vieri Candelise, Matteo Marone & Davide Scaini
 //         Created:  Thu Dec 11 10:46:26 CEST 2011
-// $Id: ZpatFilterPf.cc,v 1.8 2012/02/20 08:11:05 marone Exp $
+// $Id: ZpatFilterPf.cc,v 1.2 2012/03/03 17:25:55 montanin Exp $
 //
 //
 
@@ -183,45 +183,73 @@ ZpatFilterPf::filter (edm::Event & iEvent, edm::EventSetup const & iSetup)
   int twoEleHLTCount=0;
   int WP80Count=0;
   int lowThrholdCount=0;
-  
+    int isID=0; 
+  int isIso=0;
+  int isConv=0;
+
   int i=0;
 
-  if (electronCollection->size()<=1) return false;
+  if (electronCollection->size()<=1) {
+    numberOfEleAfterHLTTrigger->SetBinContent(1,numberOfEleAfterHLTTrigger->GetBinContent(1)+1);
+    numberOfEleAfterHLTTrigger->SetBinContent(3,numberOfEleAfterHLTTrigger->GetBinContent(3)+1);
+    cout<<"Events with DoubleEle trigger but eleCollection size <2!!! suspicious! -> "<<theElectronCollectionLabel<<endl;
+    return false;
+  }
+  numberOfEleAfterHLTTrigger->SetBinContent(1,numberOfEleAfterHLTTrigger->GetBinContent(1)+1);
+  numberOfEleAfterHLTTrigger->SetBinContent(2,numberOfEleAfterHLTTrigger->GetBinContent(2)+1);
+ 
   bool protection=false;
   int jj=0;
   int sizePat=electronCollection->size();
   eleSelStepByStep->SetBinContent(3,eleSelStepByStep->GetBinContent(3)+1); // (1) + at least 2 ele in the event (2)
 
   protection=false;
-  /// NEW DS
+
+ /// NEW DS
   // Cutting on WP80
   for (pat::ElectronCollection::const_iterator recoElectron = electronCollection->begin (); recoElectron != electronCollection->end (); recoElectron++) {
     protection=true;
     jj++;
-
     //Check whether the electron is within the acceptance
-    if (fabs(recoElectron ->superCluster()->eta()) > maxEtaForElectron) continue;
+    if (fabs(recoElectron ->superCluster()->eta()) > maxEtaForElectron) {
+      continue;
+    }
     twoEleGoodEtaCount++;
-    if (twoEleGoodEtaCount==2) eleSelStepByStep->SetBinContent(4,eleSelStepByStep->GetBinContent(4)+1); //(2) + 2 ele whithin eta acceptance (3)
-
+    if (twoEleGoodEtaCount==2) {
+      eleSelStepByStep->SetBinContent(4,eleSelStepByStep->GetBinContent(4)+1); //(2) + 2 ele whithin eta acceptance (3)
+    }
     if (SelectionUtils::DoHLTMatch(recoElectron,iEvent)) twoEleHLTCount++;
-    if (twoEleHLTCount==2) eleSelStepByStep->SetBinContent(5,eleSelStepByStep->GetBinContent(5)+1); //(3) + 2 ele HLT matched (4)
-
+    if (twoEleHLTCount==2) {
+      eleSelStepByStep->SetBinContent(5,eleSelStepByStep->GetBinContent(5)+1); //(3) + 2 ele HLT matched (4)
+      twoEleHLTCount++; //To avoid multiple insertion...
+    }
     //Perform checks on each ele ID criteria
     // Here you get a plot full of information. Each electron contributes with one entry (so total numer of entries = 3* #electrons)
     // To have the "%", each bin value shold be divided by total numer of entries/3
     std::vector<bool> result=SelectionUtils::MakeEleIDAnalysis(recoElectron,iEvent); 
     passIDEleCriteria->SetBinContent(1,passIDEleCriteria->GetBinContent(1)+1);
-    if (result[0]) passIDEleCriteria->SetBinContent(2,passIDEleCriteria->GetBinContent(2)+1);
-    if (result[1]) passIDEleCriteria->SetBinContent(3,passIDEleCriteria->GetBinContent(3)+1);
-    if (result[2]) passIDEleCriteria->SetBinContent(4,passIDEleCriteria->GetBinContent(4)+1);
+    if (result[0]) {
+      passIDEleCriteria->SetBinContent(2,passIDEleCriteria->GetBinContent(2)+1);
+      if (isIso<2) isIso++;
+    }
+    if (result[1]) {
+      passIDEleCriteria->SetBinContent(3,passIDEleCriteria->GetBinContent(3)+1);
+      if (isID<2) isID++;
+    }
+    if (result[2]) {
+      passIDEleCriteria->SetBinContent(4,passIDEleCriteria->GetBinContent(4)+1);
+      if (isConv<2) isConv++;
+    }
+    if (isID==2) eleSelStepByStep->SetBinContent(6,eleSelStepByStep->GetBinContent(6)+1); // (5) + 2 ele pt > lowTh (6)
+    if (isID==2 && isIso==2) eleSelStepByStep->SetBinContent(7,eleSelStepByStep->GetBinContent(7)+1); // (5) + 2 ele pt > lowTh (6)
+    if (isID==2 && isIso==2 && isConv==2) eleSelStepByStep->SetBinContent(8,eleSelStepByStep->GetBinContent(8)+1); // (5) + 2 ele pt > lowTh (6)
 
     if (result[0] && result[1] && result[2]) WP80Count++;
-    if (WP80Count==2) eleSelStepByStep->SetBinContent(6,eleSelStepByStep->GetBinContent(6)+1); //(4) + 2 ele WP80 (5)
+    if (WP80Count==2) eleSelStepByStep->SetBinContent(9,eleSelStepByStep->GetBinContent(9)+1); //(4) + 2 ele WP80 (5)
 
-    if ( SelectionUtils::DoWP80Pf(recoElectron,iEvent) && SelectionUtils::DoHLTMatch(recoElectron,iEvent) && recoElectron->pt()>secondEleEnThrhold){
+    if ( SelectionUtils::DoWP80(recoElectron,iEvent) && SelectionUtils::DoHLTMatch(recoElectron,iEvent) && recoElectron->pt()>secondEleEnThrhold){
        lowThrholdCount++;
-      if (lowThrholdCount==2)eleSelStepByStep->SetBinContent(7,eleSelStepByStep->GetBinContent(7)+1); // (5) + 2 ele pt > lowTh (6)
+      if (lowThrholdCount==2)eleSelStepByStep->SetBinContent(10,eleSelStepByStep->GetBinContent(10)+1); // (5) + 2 ele pt > lowTh (6)
 
       if (Debug3) cout<<"Tag is a WP80 electron..."<<endl;
       //Sort in Pt
@@ -254,13 +282,18 @@ ZpatFilterPf::filter (edm::Event & iEvent, edm::EventSetup const & iSetup)
 
   if (!protection) {
     cout<<"size pat is "<<sizePat<<" while jj is "<<jj<<" and protection "<<protection<<endl;
-    cout<<"problems with PAT collection, in ZpatFilterPf.cc-->... Please check..."<<endl;    
+    cout<<"problems with PAT collection, in ZpatFilter.cc-->... Please check..."<<endl;    
     return false;
   }
 
   if(i<2 || highestptele->pt()<firstEleEnThrhold) return false; //you NEED at least two electrons :)
-  eleSelStepByStep->SetBinContent(8,eleSelStepByStep->GetBinContent(8)+1); // (6) + 1 ele pt > LowPt and + 1 ele pt > highPt (7)
- 
+  eleSelStepByStep->SetBinContent(11,eleSelStepByStep->GetBinContent(11)+1); // (8) + 1 ele pt > LowPt and + 1 ele pt > highPt (7)
+
+  //Check if the charge are opposite..
+  if(highestptele->charge() == secondptele->charge()) return false;
+   eleSelStepByStep->SetBinContent(12,eleSelStepByStep->GetBinContent(12)+1); // (9) + Opposite Charge
+
+
   //--------------
   // Match the HLT
   pat::ElectronCollection::const_iterator tag;
@@ -281,6 +314,7 @@ ZpatFilterPf::filter (edm::Event & iEvent, edm::EventSetup const & iSetup)
 
   //Cut on the tag and probe mass...
   if (e_ee_invMass>highZmassLimit || e_ee_invMass<lowZmassLimit) return false;
+  eleSelStepByStep->SetBinContent(13,eleSelStepByStep->GetBinContent(13)+1);
   //Pippo -> Number Of Events having more than 2 electrons and eta < 2.4 & 1 HLT+WP80 with > 10 GeV & 1 HLT+WP80 with > 20 GeV and Withihn the window energy mass
 
   //Filling Histograms
