@@ -1,11 +1,12 @@
 #include <iostream>
 #include "VecBosSelection/Selection/interface/SelectionUtils.h"
 
-
+bool HLTmatch=true; //This one is used as a test, to compare with analyses without HLT ELE matching... Should be TRUE!
 
 //DO the WP80 analysis
 bool SelectionUtils::DoWP80(pat::ElectronCollection::const_iterator recoElectron,edm::Event& iEvent)
 {
+
   double IsoTrk = 0;
   double IsoEcal = 0;
   double IsoHcal = 0;
@@ -253,6 +254,10 @@ bool SelectionUtils::DoWP80Pf(pat::ElectronCollection::const_iterator recoElectr
 
 bool SelectionUtils::DoHLTMatch(pat::ElectronCollection::const_iterator recoElectron,edm::Event& iEvent)
 {
+  if (!HLTmatch) {
+    cout<<"WARNING: HLT matched in the event, not checking if both eles have been triggered! Go in SelectionUtils.cc to change it"<<endl;
+    return true;
+  }
   bool match=false;
   //DOesnt work, after chatting with Marco M.
   //for(std::vector<std::string>::const_iterator it = triggerNames_.begin(); it<triggerNames_.end();++it) {
