@@ -48,7 +48,11 @@ class ZpatFilter : public edm::EDFilter, public SelectionUtils {
 		std::vector<unsigned int> triggerIndices_; // index of the algorithms selected by our analysis
 		bool doTheHLTAnalysis_;
 		bool removePU_;
-
+		
+		int gsfPatDiff;
+		int gsfPatDiffPlus;
+		int gsfPatDiffMinus;
+		int totCont;
 
 		//  std::string outputFile_;
 		TH1D* eventMultip;
@@ -81,7 +85,11 @@ ZpatFilter::ZpatFilter (const edm::ParameterSet & parameters)
 	doTheHLTAnalysis_     = parameters.getParameter<bool>("doTheHLTAnalysis");
 	removePU_             = parameters.getParameter<bool>("removePU");
 
-
+	
+	gsfPatDiff=0;
+	gsfPatDiffPlus=0;
+	gsfPatDiffMinus=0;
+	totCont=0;
 
   //Initializations...
   edm::Service<TFileService> fs;

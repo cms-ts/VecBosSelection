@@ -13,7 +13,7 @@ Implementation:
 //
 // Original Author:  Vieri Candelise, Matteo Marone & Davide Scaini
 //         Created:  Thu Dec 11 10:46:26 CEST 2011
-// $Id: ZpatFilterPf.cc,v 1.1.2.1 2012/02/29 18:34:29 montanin Exp $
+// $Id: ZpatFilterPf.cc,v 1.1.2.2 2012/02/29 19:19:02 montanin Exp $
 //
 //
 
@@ -204,12 +204,15 @@ ZpatFilterPf::filter (edm::Event & iEvent, edm::EventSetup const & iSetup)
     //Perform checks on each ele ID criteria
     // Here you get a plot full of information. Each electron contributes with one entry (so total numer of entries = 3* #electrons)
     // To have the "%", each bin value shold be divided by total numer of entries/3
-    std::vector<bool> result=SelectionUtils::MakeEleIDAnalysis(recoElectron,iEvent); 
+    std::vector<bool> result=SelectionUtils::MakeEleIDAnalysis(recoElectron,iEvent, removePU_); 
     if (result[0]) passIDEleCriteria->SetBinContent(1,passIDEleCriteria->GetBinContent(1)+1);
     if (result[1]) passIDEleCriteria->SetBinContent(2,passIDEleCriteria->GetBinContent(2)+1);
     if (result[2]) passIDEleCriteria->SetBinContent(3,passIDEleCriteria->GetBinContent(3)+1);
-
-    if ( SelectionUtils::DoWP80pf(recoElectron,iEvent) && SelectionUtils::DoHLTMatch(recoElectron,iEvent) && recoElectron->pt()>10.0){
+    
+    
+    if (Debug3) cout << "1- removePU_ in ZpatFilterPf is (1 for true) = "<<removePU_<<endl;
+    if ( SelectionUtils::DoWP80pf(recoElectron,iEvent, removePU_) && SelectionUtils::DoHLTMatch(recoElectron,iEvent) && recoElectron->pt()>10.0){
+      if (Debug3)   cout << "2- removePU_ in ZpatFilterPf is (1 for true) = "<<removePU_<<endl;
       if (Debug3) cout<<"Tag is a WP80 electron..."<<endl;
       //Sort in Pt
       if (Debug3) cout<<"Electron pt value ->"<<recoElectron->pt()<<endl;

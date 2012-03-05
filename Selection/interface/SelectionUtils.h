@@ -10,13 +10,13 @@ class SelectionUtils {
 
 	public:
 
-		bool DoWP80(pat::ElectronCollection::const_iterator recoElectron,edm::Event& iEvent);
-		bool DoWP80pf(pat::ElectronCollection::const_iterator recoElectron,edm::Event& iEvent);
+		bool DoWP80(pat::ElectronCollection::const_iterator recoElectron,edm::Event& iEvent, bool removePU_);
+		bool DoWP80pf(pat::ElectronCollection::const_iterator recoElectron,edm::Event& iEvent, bool removePU_);
 		bool DoHLTMatch(pat::ElectronCollection::const_iterator,edm::Event&);
-		std::vector<bool> MakeEleIDAnalysis(pat::ElectronCollection::const_iterator recoElectron,edm::Event& iEvent); 
+		std::vector<bool> MakeEleIDAnalysis(pat::ElectronCollection::const_iterator recoElectron,edm::Event& iEvent, bool removePU_); 
 
-private:
-      bool removePU_;
+//private:
+		//bool removePU_;
 
 };
 

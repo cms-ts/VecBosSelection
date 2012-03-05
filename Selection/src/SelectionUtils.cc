@@ -4,7 +4,7 @@
 bool HLTmatch=true; //This one is used as a test, to compare with analyses without HLT ELE matching... Should be TRUE!
 
 //DO the WP80 analysis
-bool SelectionUtils::DoWP80(pat::ElectronCollection::const_iterator recoElectron,edm::Event& iEvent)
+bool SelectionUtils::DoWP80(pat::ElectronCollection::const_iterator recoElectron,edm::Event& iEvent, bool removePU_)
 {
 
   double IsoTrk = 0;
@@ -128,7 +128,7 @@ bool SelectionUtils::DoWP80(pat::ElectronCollection::const_iterator recoElectron
 
 
 //DO the WP80 analysis with pf isolation
-bool SelectionUtils::DoWP80pf(pat::ElectronCollection::const_iterator recoElectron,edm::Event& iEvent)
+bool SelectionUtils::DoWP80pf(pat::ElectronCollection::const_iterator recoElectron,edm::Event& iEvent, bool removePU_)
 {
 
   double IsoChg = 0;
@@ -139,10 +139,13 @@ bool SelectionUtils::DoWP80pf(pat::ElectronCollection::const_iterator recoElectr
 
   //  if (recoElectron->et () <= 25) return false;
 
+  //cout << "removePU_ is (1 for true) = "<<removePU_<<endl;
+
   HE = recoElectron->hadronicOverEm();
   if (removePU_){
     double lepIsoRho;
     
+    //cout << "removing PU_ ...."<<endl;
     /////// Pileup density "rho" for lepton isolation subtraction /////
     
     edm::Handle<double> rhoLepIso;
@@ -156,6 +159,8 @@ bool SelectionUtils::DoWP80pf(pat::ElectronCollection::const_iterator recoElectr
     IsoTot = ((IsoNeut + IsoChg + IsoPhot)/ recoElectron->pt ());
   }
   else{
+     
+     //cout << "NOT removing PU_ ...."<<endl;
     // Define Isolation variables
     IsoNeut = recoElectron->pfIsolationVariables().neutralHadronIso;
     IsoChg = recoElectron->pfIsolationVariables().chargedHadronIso;
@@ -272,7 +277,7 @@ bool SelectionUtils::DoHLTMatch(pat::ElectronCollection::const_iterator recoElec
   return match;
 }
 
-std::vector<bool> SelectionUtils::MakeEleIDAnalysis(pat::ElectronCollection::const_iterator recoElectron,edm::Event& iEvent)
+std::vector<bool> SelectionUtils::MakeEleIDAnalysis(pat::ElectronCollection::const_iterator recoElectron,edm::Event& iEvent, bool removePU_)
 {
   std::vector<bool> rec;
   double IsoTrk = 0;

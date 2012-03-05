@@ -33,7 +33,6 @@ pfAnalyzer::produce(edm::Event & iEvent, edm::EventSetup const & iSetup)
      bool protection=false;
      int jj=0;
      int sizePat=electronCollection->size(); 
-     protection=false;
      passSelection = true;
      /// NEW DS
      // Cutting on WP80pf
@@ -44,12 +43,12 @@ pfAnalyzer::produce(edm::Event & iEvent, edm::EventSetup const & iSetup)
 	//Perform checks on each ele ID criteria
 	// Here you get a plot full of information. Each electron contributes with one entry (so total numer of entries = 3* #electrons)
 	// To have the "%", each bin value shold be divided by total numer of entries/3
-	std::vector<bool> result=SelectionUtils::MakeEleIDAnalysis(recoElectron,iEvent); 
+	std::vector<bool> result=SelectionUtils::MakeEleIDAnalysis(recoElectron,iEvent, removePU_); 
 	if (result[0]) passIDEleCriteria->SetBinContent(1,passIDEleCriteria->GetBinContent(1)+1);
 	if (result[1]) passIDEleCriteria->SetBinContent(2,passIDEleCriteria->GetBinContent(2)+1);
 	if (result[2]) passIDEleCriteria->SetBinContent(3,passIDEleCriteria->GetBinContent(3)+1);
 	
-	if ( SelectionUtils::DoWP80pf(recoElectron,iEvent) && SelectionUtils::DoHLTMatch(recoElectron,iEvent) && recoElectron->pt()>10.0){	
+	if ( SelectionUtils::DoWP80pf(recoElectron,iEvent, removePU_) && SelectionUtils::DoHLTMatch(recoElectron,iEvent) && recoElectron->pt()>10.0){	
 	   //if ( SelectionUtils::DoWP80(recoElectron,iEvent) && SelectionUtils::DoHLTMatch(recoElectron,iEvent)){
 	   if (Debug2) cout<<"Tag is a WP80pf electron..."<<endl;
 	   

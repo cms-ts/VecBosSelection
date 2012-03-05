@@ -13,7 +13,7 @@ Implementation:
 //
 // Original Author:  Vieri Candelise, Matteo Marone & Davide Scaini
 //         Created:  Thu Dec 11 10:46:26 CEST 2011
-// $Id: ZpatFilter.cc,v 1.5 2012/01/24 11:03:10 schizzi Exp $
+// $Id: ZpatFilter.cc,v 1.6 2012/01/31 21:29:49 marone Exp $
 //
 //
 
@@ -57,7 +57,6 @@ using namespace reco;
 
 bool hltispresent2=1; //Necessary to correctly match the HLT
 bool Debug2=false;    //Activate with true if you wonna have verbosity for Debug
-
   using namespace edm;
 
 //
@@ -166,8 +165,16 @@ ZpatFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSetup)
   //Get Pattuple... Yes, we gave up....
   Handle < pat::ElectronCollection > electronCollection;
   iEvent.getByLabel (theElectronCollectionLabel, electronCollection);
+  Handle < GsfElectronCollection > gsfElecCollection;
+  iEvent.getByLabel ("gsfElectrons", gsfElecCollection);
   if (!electronCollection.isValid ())  return false;
-
+  totCont++;
+  if (electronCollection->size()!= gsfElecCollection->size()){
+     gsfPatDiff++;
+     cout << "GSF PAT size = "<<electronCollection->size()<<endl;
+     cout << "GSF collection size = "<<gsfElecCollection->size()<<endl;
+     if (electronCollection->size() < gsfElecCollection->size()){gsfPatDiffMinus++;}
+     else {gsfPatDiffPlus++;}}
   pat::ElectronCollection::const_iterator highestptele;
   pat::ElectronCollection::const_iterator secondptele;
 
@@ -179,18 +186,19 @@ ZpatFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSetup)
   protection=false;
   /// NEW DS
   // Cutting on WP80
+  //pat::ElectronCollection::const_iterator recoElectronPippo = *(electronCollection->begin()->pfCandidateRef())->begin ();
   for (pat::ElectronCollection::const_iterator recoElectron = electronCollection->begin (); recoElectron != electronCollection->end (); recoElectron++) {
     protection=true;
     jj++;
     //Perform checks on each ele ID criteria
     // Here you get a plot full of information. Each electron contributes with one entry (so total numer of entries = 3* #electrons)
     // To have the "%", each bin value shold be divided by total numer of entries/3
-    std::vector<bool> result=SelectionUtils::MakeEleIDAnalysis(recoElectron,iEvent); 
+    std::vector<bool> result=SelectionUtils::MakeEleIDAnalysis(recoElectron,iEvent, removePU_); 
     if (result[0]) passIDEleCriteria->SetBinContent(1,passIDEleCriteria->GetBinContent(1)+1);
     if (result[1]) passIDEleCriteria->SetBinContent(2,passIDEleCriteria->GetBinContent(2)+1);
     if (result[2]) passIDEleCriteria->SetBinContent(3,passIDEleCriteria->GetBinContent(3)+1);
 
-    if ( SelectionUtils::DoWP80(recoElectron,iEvent) && SelectionUtils::DoHLTMatch(recoElectron,iEvent) && recoElectron->pt()>10.0){
+    if ( SelectionUtils::DoWP80(recoElectron,iEvent, removePU_) && SelectionUtils::DoHLTMatch(recoElectron,iEvent) && recoElectron->pt()>10.0){
       if (Debug2) cout<<"Tag is a WP80 electron..."<<endl;
       //Sort in Pt
       if (Debug2) cout<<"Electron pt value ->"<<recoElectron->pt()<<endl;
@@ -325,7 +333,11 @@ ZpatFilter::beginRun(edm::Run &iRun, edm::EventSetup const& iSetup)
 void
 ZpatFilter::endJob ()
 {
-
+   cout << "Number of events passing the trigger = " << totCont<< endl;
+   cout << "Number of events in which PAT != GSF = " << gsfPatDiff<< endl;
+   cout << "Number of events in which PAT < GSF = " << gsfPatDiffMinus<< endl;
+   cout << "Number of events in which PAT > GSF = " << gsfPatDiffPlus<< endl;
+   
   //endJob
 
 }
