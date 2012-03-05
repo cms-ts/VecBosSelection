@@ -13,7 +13,7 @@ Implementation:
 //
 // Original Author:  Vieri Candelise & Matteo Marone
 //         Created:  Wed May 11 14:53:26 CESDo2011
-// $Id: EfficiencyFilter.cc,v 1.16.2.1 2012/02/29 15:27:22 schizzi Exp $
+// $Id: EfficiencyFilter.cc,v 1.16.2.2 2012/03/05 17:23:35 montanin Exp $
 
 
 
@@ -267,11 +267,11 @@ EfficiencyFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSetup)
   // WP80:
 
   if (WP80_efficiency_) {
-     if (SelectionUtils::DoWP80(highestptele,iEvent, removePU_)){
+     if (SelectionUtils::DoWP80Pf(highestptele,iEvent, removePU_)){
       probeall_pt->Fill(secondptele->pt());
       probeall_eta->Fill(secondptele->eta());
       probeall_mee->Fill(e_ee_invMass);
-      if ( SelectionUtils::DoWP80(secondptele,iEvent, removePU_) ){
+      if ( SelectionUtils::DoWP80Pf(secondptele,iEvent, removePU_) ){
 	probepass_pt->Fill(secondptele->pt());
 	probepass_eta->Fill(secondptele->eta());
 	probepass_mee->Fill(e_ee_invMass);
@@ -296,17 +296,17 @@ EfficiencyFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSetup)
 	if (nJet==3) probefail3jet->Fill(e_ee_invMass);
 	if (nJet==4) probefail4jet->Fill(e_ee_invMass);
 	if (numberOfVertices > 10) {
-	  probepassHighPU->Fill(e_ee_invMass);
+	  probefailHighPU->Fill(e_ee_invMass);
 	} else {
-	  probepassLowPU->Fill(e_ee_invMass);
+	  probefailLowPU->Fill(e_ee_invMass);
 	}
       }
     }  
-     if (SelectionUtils::DoWP80(secondptele,iEvent, removePU_)){
+     if (SelectionUtils::DoWP80Pf(secondptele,iEvent, removePU_)){
       tagall_pt->Fill(highestptele->pt());
       tagall_eta->Fill(highestptele->eta());
       tagall_mee->Fill(e_ee_invMass);
-      if ( SelectionUtils::DoWP80(highestptele,iEvent, removePU_) ){
+      if ( SelectionUtils::DoWP80Pf(highestptele,iEvent, removePU_) ){
 	tagpass_pt->Fill(highestptele->pt());
 	tagpass_eta->Fill(highestptele->eta());
 	tagpass_mee->Fill(e_ee_invMass);
@@ -331,9 +331,9 @@ EfficiencyFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSetup)
 	if (nJet==3) tagfail3jet->Fill(e_ee_invMass);
 	if (nJet==4) tagfail4jet->Fill(e_ee_invMass);
 	if (numberOfVertices > 10) {
-	  tagpassHighPU->Fill(e_ee_invMass);
+	  tagfailHighPU->Fill(e_ee_invMass);
 	} else {
-	  tagpassLowPU->Fill(e_ee_invMass);
+	  tagfailLowPU->Fill(e_ee_invMass);
 	}
       }
     }
@@ -342,7 +342,7 @@ EfficiencyFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSetup)
   // HLT:
 
   if (HLTele17_efficiency_ || HLTele8NOTele17_efficiency_) {
-     if ( SelectionUtils::DoWP80(highestptele,iEvent, removePU_) ){
+     if ( SelectionUtils::DoWP80Pf(highestptele,iEvent, removePU_) ){
       probeall_pt->Fill(secondptele->pt());
       probeall_eta->Fill(secondptele->eta());
       probeall_mee->Fill(e_ee_invMass);
@@ -371,13 +371,13 @@ EfficiencyFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSetup)
 	if (nJet==3) probefail3jet->Fill(e_ee_invMass);
 	if (nJet==4) probefail4jet->Fill(e_ee_invMass);
 	if (numberOfVertices > 10) {
-	  probepassHighPU->Fill(e_ee_invMass);
+	  probefailHighPU->Fill(e_ee_invMass);
 	} else {
-	  probepassLowPU->Fill(e_ee_invMass);
+	  probefailLowPU->Fill(e_ee_invMass);
 	}
       }
     }
-    if ( SelectionUtils::DoWP80(secondptele,iEvent, removePU_) ){    
+    if ( SelectionUtils::DoWP80Pf(secondptele,iEvent, removePU_) ){    
       if ( SelectionUtils::DoHLTMatch(highestptele,iEvent) ){
 	tagpass_pt->Fill(highestptele->pt());
 	tagpass_eta->Fill(highestptele->eta());
@@ -403,9 +403,9 @@ EfficiencyFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSetup)
 	if (nJet==3) tagfail3jet->Fill(e_ee_invMass);
 	if (nJet==4) tagfail4jet->Fill(e_ee_invMass);
 	if (numberOfVertices > 10) {
-	  tagpassHighPU->Fill(e_ee_invMass);
+	  tagfailHighPU->Fill(e_ee_invMass);
 	} else {
-	  tagpassLowPU->Fill(e_ee_invMass);
+	  tagfailLowPU->Fill(e_ee_invMass);
 	}
       }
     }
@@ -414,7 +414,7 @@ EfficiencyFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSetup)
   // RECO:
 
   if (RECO_efficiency_) {
-    if (SelectionUtils::DoWP80(highestptele,iEvent, removePU_)){
+    if (SelectionUtils::DoWP80Pf(highestptele,iEvent, removePU_)){
       probeall_pt->Fill(highestenergy_SC->energy());
       probeall_eta->Fill(highestenergy_SC->eta());
       probeall_mee->Fill(e_ee_invMass);
@@ -443,9 +443,9 @@ EfficiencyFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSetup)
 	if (nJet==3) probefail3jet->Fill(e_ee_invMass);
 	if (nJet==4) probefail4jet->Fill(e_ee_invMass);
 	if (numberOfVertices > 10) {
-	  probepassHighPU->Fill(e_ee_invMass);
+	  probefailHighPU->Fill(e_ee_invMass);
 	} else {
-	  probepassLowPU->Fill(e_ee_invMass);
+	  probefailLowPU->Fill(e_ee_invMass);
 	}
       }
     }  
