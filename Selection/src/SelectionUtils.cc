@@ -4,7 +4,7 @@
 bool HLTmatch=true; //This one is used as a test, to compare with analyses without HLT ELE matching... Should be TRUE!
 
 //DO the WP80 analysis
-bool SelectionUtils::DoWP80(pat::ElectronCollection::const_iterator recoElectron,edm::Event& iEvent)
+bool SelectionUtils::DoWP80(pat::ElectronCollection::const_iterator recoElectron,edm::Event& iEvent,bool removePU_)
 {
 
   double IsoTrk = 0;
@@ -127,7 +127,7 @@ bool SelectionUtils::DoWP80(pat::ElectronCollection::const_iterator recoElectron
 }
 
 //DO the WP80Pf analysis
-bool SelectionUtils::DoWP80Pf(pat::ElectronCollection::const_iterator recoElectron,edm::Event& iEvent)
+bool SelectionUtils::DoWP80Pf(pat::ElectronCollection::const_iterator recoElectron,edm::Event& iEvent,bool removePU_)
 {
    double IsoChg = 0;
    double IsoNeut = 0;
@@ -142,7 +142,7 @@ bool SelectionUtils::DoWP80Pf(pat::ElectronCollection::const_iterator recoElectr
       double lepIsoRho;
       
       /////// Pileup density "rho" for lepton isolation subtraction /////
-      
+      //cout << "1- removing PU ..."<<endl;
       edm::Handle<double> rhoLepIso;
       const edm::InputTag eventrhoLepIso("kt6PFJetsForIsolation", "rho");
       iEvent.getByLabel(eventrhoLepIso, rhoLepIso);
@@ -154,6 +154,8 @@ bool SelectionUtils::DoWP80Pf(pat::ElectronCollection::const_iterator recoElectr
       IsoTot = ((IsoNeut + IsoChg + IsoPhot)/ recoElectron->pt ());
    }
    else{
+      
+      //cout << "2- NOT removing PU ..."<<endl;
       // Define Isolation variables
       IsoNeut = recoElectron->pfIsolationVariables().neutralHadronIso;
       IsoChg = recoElectron->pfIsolationVariables().chargedHadronIso;
@@ -250,7 +252,7 @@ bool SelectionUtils::DoWP80Pf(pat::ElectronCollection::const_iterator recoElectr
 }
 
 //DO the WP80Pf analysis with NEW HE VARIABLE!! (testing!!!)
-bool SelectionUtils::DoWP80Pf_NewHE(pat::ElectronCollection::const_iterator recoElectron,edm::Event& iEvent)
+bool SelectionUtils::DoWP80Pf_NewHE(pat::ElectronCollection::const_iterator recoElectron,edm::Event& iEvent,bool removePU_)
 {
    double IsoChg = 0;
    double IsoNeut = 0;
@@ -395,7 +397,7 @@ bool SelectionUtils::DoHLTMatch(pat::ElectronCollection::const_iterator recoElec
   return match;
 }
 
-std::vector<bool> SelectionUtils::MakeEleIDAnalysis(pat::ElectronCollection::const_iterator recoElectron,edm::Event& iEvent)
+std::vector<bool> SelectionUtils::MakeEleIDAnalysis(pat::ElectronCollection::const_iterator recoElectron,edm::Event& iEvent,bool removePU_)
 {
   std::vector<bool> rec;
   double IsoTrk = 0;

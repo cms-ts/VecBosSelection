@@ -13,7 +13,7 @@ Implementation:
 //
 // Original Author:  Vieri Candelise, Matteo Marone & Davide Scaini
 //         Created:  Thu Dec 11 10:46:26 CEST 2011
-// $Id: ZpatFilterPf.cc,v 1.3 2012/03/03 18:09:31 marone Exp $
+// $Id: ZpatFilterPf.cc,v 1.4 2012/03/03 18:31:58 marone Exp $
 //
 //
 
@@ -226,7 +226,7 @@ ZpatFilterPf::filter (edm::Event & iEvent, edm::EventSetup const & iSetup)
     //Perform checks on each ele ID criteria
     // Here you get a plot full of information. Each electron contributes with one entry (so total numer of entries = 3* #electrons)
     // To have the "%", each bin value shold be divided by total numer of entries/3
-    std::vector<bool> result=SelectionUtils::MakeEleIDAnalysis(recoElectron,iEvent); 
+    std::vector<bool> result=SelectionUtils::MakeEleIDAnalysis(recoElectron,iEvent,removePU_); 
     passIDEleCriteria->SetBinContent(1,passIDEleCriteria->GetBinContent(1)+1);
     if (result[0]) {
       passIDEleCriteria->SetBinContent(2,passIDEleCriteria->GetBinContent(2)+1);
@@ -247,7 +247,7 @@ ZpatFilterPf::filter (edm::Event & iEvent, edm::EventSetup const & iSetup)
     if (result[0] && result[1] && result[2]) WP80Count++;
     if (WP80Count==2) eleSelStepByStep->SetBinContent(9,eleSelStepByStep->GetBinContent(9)+1); //(4) + 2 ele WP80 (5)
 
-    if ( SelectionUtils::DoWP80(recoElectron,iEvent) && SelectionUtils::DoHLTMatch(recoElectron,iEvent) && recoElectron->pt()>secondEleEnThrhold){
+    if ( SelectionUtils::DoWP80(recoElectron,iEvent,removePU_) && SelectionUtils::DoHLTMatch(recoElectron,iEvent) && recoElectron->pt()>secondEleEnThrhold){
        lowThrholdCount++;
       if (lowThrholdCount==2)eleSelStepByStep->SetBinContent(10,eleSelStepByStep->GetBinContent(10)+1); // (5) + 2 ele pt > lowTh (6)
 
