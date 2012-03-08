@@ -13,7 +13,7 @@ Implementation:
 //
 // Original Author:  Vieri Candelise & Matteo Marone
 //         Created:  Wed May 11 14:53:26 CESDo2011
-// $Id: EfficiencyFilter.cc,v 1.16.2.2 2012/03/05 17:23:35 montanin Exp $
+// $Id: EfficiencyFilter.cc,v 1.16.2.3 2012/03/05 20:26:14 schizzi Exp $
 
 
 
@@ -148,7 +148,7 @@ EfficiencyFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSetup)
     if (Debug) cout<<" MMMM ele trigger size "<<recoElectron->triggerObjectMatches().size()<<endl;
     //    HLTmatches_TOTAL++;
     //    if ( SelectionUtils::DoHLTMatch(recoElectron,iEvent) ) {HLTmatches_PASS++;} else {HLTmatches_FAIL++;}
-    if (recoElectron->pt()>10.0 && ((WP80_efficiency_ && SelectionUtils::DoHLTMatch(recoElectron,iEvent)) || HLTele17_efficiency_ || HLTele8NOTele17_efficiency_)) {
+    if (recoElectron->pt()>20.0 && ((WP80_efficiency_ && SelectionUtils::DoHLTMatch(recoElectron,iEvent)) || HLTele17_efficiency_ || HLTele8NOTele17_efficiency_)) {
       if (i==0) highestptele=recoElectron;
       if (i==1){
 	if (highestptele->pt()<recoElectron->pt()){
@@ -170,7 +170,7 @@ EfficiencyFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSetup)
       }
       i++;
     }
-    if (recoElectron->pt()>10.0 && RECO_efficiency_) {
+    if (recoElectron->pt()>20.0 && RECO_efficiency_) {
       if (sqrt((highestenergy_SC->eta()-recoElectron->eta())*(highestenergy_SC->eta()-recoElectron->eta())+(highestenergy_SC->phi()-recoElectron->phi())*(highestenergy_SC->phi()-recoElectron->phi())) < 0.3) {
 	highestenergy_SC_isPassingProbe=true;
 	if (Debug) cout<<"Ele and SC are matched!"<<endl;
@@ -200,8 +200,8 @@ EfficiencyFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSetup)
   //  HLTnumberOfMatches_FAIL->Fill(HLTmatches_FAIL);
   //  HLTnumberOfMatches_TOTALELE->Fill(HLTmatches_TOTAL);
 
-  if((WP80_efficiency_ || HLTele17_efficiency_ || HLTele8NOTele17_efficiency_) && (i<2 || highestptele->pt()<20.0)) {return false;}
-  if(RECO_efficiency_ && (i<1 || highestptele->pt()<20.0)) {if (Debug) cout << "No TP ele-SC for RECO. i = " << i << endl; return false;}
+  if((WP80_efficiency_ || HLTele17_efficiency_ || HLTele8NOTele17_efficiency_) && i<2) return false;
+  if(RECO_efficiency_ && i<1) return false;
 
   //Calculating tag & probe stuff
   TLorentzVector tagv;
@@ -267,11 +267,11 @@ EfficiencyFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSetup)
   // WP80:
 
   if (WP80_efficiency_) {
-     if (SelectionUtils::DoWP80Pf(highestptele,iEvent, removePU_)){
+     if (SelectionUtils::DoWP80pf(highestptele,iEvent, removePU_)){
       probeall_pt->Fill(secondptele->pt());
       probeall_eta->Fill(secondptele->eta());
       probeall_mee->Fill(e_ee_invMass);
-      if ( SelectionUtils::DoWP80Pf(secondptele,iEvent, removePU_) ){
+      if ( SelectionUtils::DoWP80pf(secondptele,iEvent, removePU_) ){
 	probepass_pt->Fill(secondptele->pt());
 	probepass_eta->Fill(secondptele->eta());
 	probepass_mee->Fill(e_ee_invMass);
@@ -302,11 +302,11 @@ EfficiencyFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSetup)
 	}
       }
     }  
-     if (SelectionUtils::DoWP80Pf(secondptele,iEvent, removePU_)){
+     if (SelectionUtils::DoWP80pf(secondptele,iEvent, removePU_)){
       tagall_pt->Fill(highestptele->pt());
       tagall_eta->Fill(highestptele->eta());
       tagall_mee->Fill(e_ee_invMass);
-      if ( SelectionUtils::DoWP80Pf(highestptele,iEvent, removePU_) ){
+      if ( SelectionUtils::DoWP80pf(highestptele,iEvent, removePU_) ){
 	tagpass_pt->Fill(highestptele->pt());
 	tagpass_eta->Fill(highestptele->eta());
 	tagpass_mee->Fill(e_ee_invMass);
@@ -342,7 +342,7 @@ EfficiencyFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSetup)
   // HLT:
 
   if (HLTele17_efficiency_ || HLTele8NOTele17_efficiency_) {
-     if ( SelectionUtils::DoWP80Pf(highestptele,iEvent, removePU_) ){
+     if ( SelectionUtils::DoWP80pf(highestptele,iEvent, removePU_) ){
       probeall_pt->Fill(secondptele->pt());
       probeall_eta->Fill(secondptele->eta());
       probeall_mee->Fill(e_ee_invMass);
@@ -377,7 +377,7 @@ EfficiencyFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSetup)
 	}
       }
     }
-    if ( SelectionUtils::DoWP80Pf(secondptele,iEvent, removePU_) ){    
+    if ( SelectionUtils::DoWP80pf(secondptele,iEvent, removePU_) ){    
       if ( SelectionUtils::DoHLTMatch(highestptele,iEvent) ){
 	tagpass_pt->Fill(highestptele->pt());
 	tagpass_eta->Fill(highestptele->eta());
@@ -414,7 +414,7 @@ EfficiencyFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSetup)
   // RECO:
 
   if (RECO_efficiency_) {
-    if (SelectionUtils::DoWP80Pf(highestptele,iEvent, removePU_)){
+    if (SelectionUtils::DoWP80pf(highestptele,iEvent, removePU_)){
       probeall_pt->Fill(highestenergy_SC->energy());
       probeall_eta->Fill(highestenergy_SC->eta());
       probeall_mee->Fill(e_ee_invMass);
