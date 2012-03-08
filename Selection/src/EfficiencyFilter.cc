@@ -13,7 +13,7 @@ Implementation:
 //
 // Original Author:  Vieri Candelise & Matteo Marone
 //         Created:  Wed May 11 14:53:26 CESDo2011
-// $Id: EfficiencyFilter.cc,v 1.17 2012/03/05 14:20:48 schizzi Exp $
+// $Id: EfficiencyFilter.cc,v 1.18 2012/03/05 17:50:43 montanin Exp $
 
 
 
@@ -148,7 +148,7 @@ EfficiencyFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSetup)
     if (Debug) cout<<" MMMM ele trigger size "<<recoElectron->triggerObjectMatches().size()<<endl;
     //    HLTmatches_TOTAL++;
     //    if ( SelectionUtils::DoHLTMatch(recoElectron,iEvent) ) {HLTmatches_PASS++;} else {HLTmatches_FAIL++;}
-    if (recoElectron->pt()>10.0 && ((WP80_efficiency_ && SelectionUtils::DoHLTMatch(recoElectron,iEvent)) || HLTele17_efficiency_ || HLTele8NOTele17_efficiency_)) {
+    if (recoElectron->pt()>20.0 && ((WP80_efficiency_ && SelectionUtils::DoHLTMatch(recoElectron,iEvent)) || HLTele17_efficiency_ || HLTele8NOTele17_efficiency_)) {
       if (i==0) highestptele=recoElectron;
       if (i==1){
 	if (highestptele->pt()<recoElectron->pt()){
@@ -170,7 +170,7 @@ EfficiencyFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSetup)
       }
       i++;
     }
-    if (recoElectron->pt()>10.0 && RECO_efficiency_) {
+    if (recoElectron->pt()>20.0 && RECO_efficiency_) {
       if (sqrt((highestenergy_SC->eta()-recoElectron->eta())*(highestenergy_SC->eta()-recoElectron->eta())+(highestenergy_SC->phi()-recoElectron->phi())*(highestenergy_SC->phi()-recoElectron->phi())) < 0.3) {
 	highestenergy_SC_isPassingProbe=true;
 	if (Debug) cout<<"Ele and SC are matched!"<<endl;
@@ -200,8 +200,8 @@ EfficiencyFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSetup)
   //  HLTnumberOfMatches_FAIL->Fill(HLTmatches_FAIL);
   //  HLTnumberOfMatches_TOTALELE->Fill(HLTmatches_TOTAL);
 
-  if((WP80_efficiency_ || HLTele17_efficiency_ || HLTele8NOTele17_efficiency_) && (i<2 || highestptele->pt()<20.0)) {return false;}
-  if(RECO_efficiency_ && (i<1 || highestptele->pt()<20.0)) {if (Debug) cout << "No TP ele-SC for RECO. i = " << i << endl; return false;}
+  if((WP80_efficiency_ || HLTele17_efficiency_ || HLTele8NOTele17_efficiency_) && i<2) return false;
+  if(RECO_efficiency_ && i<1) return false;
 
   //Calculating tag & probe stuff
   TLorentzVector tagv;
