@@ -13,7 +13,7 @@ Implementation:
 //
 // Original Author:  Vieri Candelise & Matteo Marone
 //         Created:  Wed May 11 14:53:26 CESDo2011
-// $Id: EfficiencyFilter.cc,v 1.18 2012/03/05 17:50:43 montanin Exp $
+// $Id: EfficiencyFilter.cc,v 1.19 2012/03/08 11:36:28 schizzi Exp $
 
 
 
@@ -380,11 +380,11 @@ EfficiencyFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSetup)
 	}
       }
     }  
-    if (SelectionUtils::DoWP80Pf_NewHE(secondptele,iEvent,removePU_)){
+    if (SelectionUtils::DoWP80Pf(secondptele,iEvent,removePU_)){
       tagall_pt->Fill(highestptele->pt());
       tagall_eta->Fill(highestptele->eta());
       tagall_mee->Fill(e_ee_invMass);
-      if ( SelectionUtils::DoWP80Pf(highestptele,iEvent,removePU_) ){
+      if ( SelectionUtils::DoWP80Pf_NewHE(highestptele,iEvent,removePU_) ){
 	tagpass_pt->Fill(highestptele->pt());
 	tagpass_eta->Fill(highestptele->eta());
 	tagpass_mee->Fill(e_ee_invMass);
