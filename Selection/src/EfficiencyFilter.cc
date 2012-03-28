@@ -13,7 +13,7 @@ Implementation:
 //
 // Original Author:  Vieri Candelise & Matteo Marone
 //         Created:  Wed May 11 14:53:26 CESDo2011
-// $Id: EfficiencyFilter.cc,v 1.19 2012/03/08 11:36:28 schizzi Exp $
+// $Id: EfficiencyFilter.cc,v 1.20 2012/03/13 10:24:43 schizzi Exp $
 
 
 
@@ -130,15 +130,13 @@ EfficiencyFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSetup)
   pat::ElectronCollection::const_iterator highestptele;
   pat::ElectronCollection::const_iterator secondptele;
 
-  //  int HLTmatches_PASS=0;
-  //  int HLTmatches_TOTAL=0;
-  //  int HLTmatches_FAIL=0;
+  int HLTmatches_PASS=0;
+  int HLTmatches_TOTAL=0;
+  int HLTmatches_FAIL=0;
 
   int i=0;
   if (electronCollection->size()<=1) return false;
   bool protection=false;
-  int jj=0;
-  //  int n_scEle_match=0;
   int sizePat=electronCollection->size();
 
   
@@ -146,9 +144,9 @@ EfficiencyFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSetup)
     protection=true;
     if (Debug) cout<<"Electron pt value ->"<<recoElectron->pt()<<endl;
     if (Debug) cout<<" MMMM ele trigger size "<<recoElectron->triggerObjectMatches().size()<<endl;
-    //    HLTmatches_TOTAL++;
-    //    if ( SelectionUtils::DoHLTMatch(recoElectron,iEvent) ) {HLTmatches_PASS++;} else {HLTmatches_FAIL++;}
-    if (recoElectron->pt()>20.0 && ((WP80_efficiency_ && SelectionUtils::DoHLTMatch(recoElectron,iEvent)) || HLTele17_efficiency_ || HLTele8NOTele17_efficiency_)) {
+    HLTmatches_TOTAL++;
+    if ( SelectionUtils::DoHLTMatch(recoElectron,iEvent) ) {HLTmatches_PASS++;} else {HLTmatches_FAIL++;}
+    if (recoElectron->pt()>20.0 && (WP80_efficiency_ || HLTele17_efficiency_ || HLTele8_efficiency_)) {
       if (i==0) highestptele=recoElectron;
       if (i==1){
 	if (highestptele->pt()<recoElectron->pt()){
@@ -187,21 +185,18 @@ EfficiencyFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSetup)
     }
   }
   if (!protection) {
-    cout<<"size pat is "<<sizePat<<" while jj is "<<jj<<" and protection "<<protection<<endl;
     cout<<"problems with PAT collection, in Efficiency.cc-->... Please check..."<<endl;    
     return false;
   }
   
-  //  eleNumber_scMatch->Fill(n_scEle_match);
-
   if (Debug) cout<<"Out of the SC and RECOele loops!"<<endl;  
 
-  //  HLTnumberOfMatches_PASS->Fill(HLTmatches_PASS);
-  //  HLTnumberOfMatches_FAIL->Fill(HLTmatches_FAIL);
-  //  HLTnumberOfMatches_TOTALELE->Fill(HLTmatches_TOTAL);
+  HLTnumberOfMatches_PASS->Fill(HLTmatches_PASS);
+  HLTnumberOfMatches_FAIL->Fill(HLTmatches_FAIL);
+  HLTnumberOfMatches_TOTALELE->Fill(HLTmatches_TOTAL);
 
-  if((WP80_efficiency_ || HLTele17_efficiency_ || HLTele8NOTele17_efficiency_) && i<2) return false;
-  if(RECO_efficiency_ && i<1) return false;
+  if((WP80_efficiency_ || HLTele17_efficiency_ || HLTele8_efficiency_) && i<2) return false;
+  if(i<1) return false;
 
   //Calculating tag & probe stuff
   TLorentzVector tagv;
@@ -228,23 +223,31 @@ EfficiencyFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSetup)
   int nJet = 0;
   int jetIndex = 0;
   double deltaRCone=0.3;
+  double leadingJet_pT=0.0;
   
   Handle<PFJetCollection> pfJets;
   iEvent.getByLabel(theJetCollectionLabel_, pfJets);
   if (pfJets.isValid()) {
-    PFJetCollection::const_iterator jet = pfJets->begin ();
-    
-    for (; jet != pfJets->end (); jet++, jetIndex++) {
+    for(reco::PFJetCollection::const_iterator jet = pfJets->begin();jet != pfJets->end();jet++) { 
       // check if the jet is equal to one of the isolated electrons
       double deltaR1;
-      if (WP80_efficiency_ || HLTele17_efficiency_ || HLTele8NOTele17_efficiency_) {
+      if (WP80_efficiency_ || HLTele17_efficiency_ || HLTele8_efficiency_) {
 	deltaR1 = sqrt( pow(jet->eta()-secondptele->eta(),2)+pow(jet->phi()-secondptele->phi(),2) );
       } else {
 	deltaR1 = sqrt( pow(jet->eta()-highestenergy_SC->eta(),2)+pow(jet->phi()-highestenergy_SC->phi(),2) );
       }
       double deltaR2= sqrt( pow(jet->eta()-highestptele->eta(),2)+pow(jet->phi()-highestptele->phi(),2) );
-      if (deltaR1 > deltaRCone && deltaR2 > deltaRCone && fabs(jet->eta())<2.4 && jet->pt()>30) {
+      if (deltaR1 > deltaRCone && deltaR2 > deltaRCone 
+	  && fabs(jet->eta())<2.4 
+	  && jet->pt()>30
+	  && jet->chargedEmEnergyFraction() < 0.99
+	  && jet->neutralHadronEnergyFraction() < 0.99
+	  && jet->neutralEmEnergyFraction() < 0.99
+	  && jet->chargedHadronEnergyFraction() > 0.0
+	  && jet->chargedMultiplicity() > 0
+	  ) {
 	nJet++;
+	if (jet->pt() > leadingJet_pT) leadingJet_pT = jet->pt();
 	if (Debug) cout<<"Jet eta "<<jet->eta()<<" pt "<<jet->pt()<<endl;
       }
     }
@@ -264,15 +267,19 @@ EfficiencyFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSetup)
   
   // Filling TAP distributions:
 
-  // WP80:
+  // WP80 & HLT:
 
-  if (WP80_efficiency_ && !New_HE_) {
+  if (WP80_efficiency_ || HLTele17_efficiency_ || HLTele8_efficiency_) {
     // 1st leg WP80 efficiency
-    if (SelectionUtils::DoWP80Pf(highestptele,iEvent,removePU_)){
+    if (SelectionUtils::DoWP80Pf(highestptele,iEvent,removePU_) && SelectionUtils::DoHLTMatch(highestptele,iEvent)){
       probeall_pt->Fill(secondptele->pt());
       probeall_eta->Fill(secondptele->eta());
       probeall_mee->Fill(e_ee_invMass);
-      if ( SelectionUtils::DoWP80Pf(secondptele,iEvent,removePU_) ){
+      probeall_leadjetpt->Fill(leadingJet_pT);
+      if ((!New_HE_ && SelectionUtils::DoWP80Pf(secondptele,iEvent,removePU_) && SelectionUtils::DoHLTMatch(secondptele,iEvent)) || 
+	  (New_HE_ && SelectionUtils::DoWP80Pf_NewHE(secondptele,iEvent,removePU_)) ||
+	  ((HLTele17_efficiency_ || HLTele8_efficiency_) && SelectionUtils::DoHLTMatch(secondptele,iEvent))
+	  ){
 	probepass_pt->Fill(secondptele->pt());
 	probepass_eta->Fill(secondptele->eta());
 	probepass_mee->Fill(e_ee_invMass);
@@ -281,10 +288,27 @@ EfficiencyFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSetup)
 	if (nJet==2) probepass2jet->Fill(e_ee_invMass);
 	if (nJet==3) probepass3jet->Fill(e_ee_invMass);
 	if (nJet==4) probepass4jet->Fill(e_ee_invMass);
-	if (numberOfVertices > 10) {
-	  probepassHighPU->Fill(e_ee_invMass);
-	} else {
-	  probepassLowPU->Fill(e_ee_invMass);
+	if (nJet>4)  probepass5jet->Fill(e_ee_invMass);
+	if (numberOfVertices < 5) probepass0pu->Fill(e_ee_invMass);
+	if (numberOfVertices >= 5 && numberOfVertices < 10) probepass1pu->Fill(e_ee_invMass);
+	if (numberOfVertices >= 10 && numberOfVertices < 15) probepass2pu->Fill(e_ee_invMass);
+	if (numberOfVertices >= 15 && numberOfVertices < 20) probepass3pu->Fill(e_ee_invMass);
+	if (numberOfVertices >= 20) probepass4pu->Fill(e_ee_invMass);
+	if (fabs(secondptele->eta()) < 0.5) probepass0eta->Fill(e_ee_invMass);
+	if (fabs(secondptele->eta()) >= 0.5 && fabs(secondptele->eta()) <1.0)  probepass1eta->Fill(e_ee_invMass);
+	if (fabs(secondptele->eta()) >= 1.0 && fabs(secondptele->eta()) <1.44) probepass2eta->Fill(e_ee_invMass);
+	if (fabs(secondptele->eta()) > 1.56 && fabs(secondptele->eta()) <2.0)  probepass3eta->Fill(e_ee_invMass);
+	if (fabs(secondptele->eta()) >= 2.0 && fabs(secondptele->eta()) <3.0)  probepass4eta->Fill(e_ee_invMass);
+	if (nJet > 0) {
+	  if (leadingJet_pT >=  30.0  && leadingJet_pT <  40.0) probepass0leadjetpt->Fill(e_ee_invMass);
+	  if (leadingJet_pT >=  40.0  && leadingJet_pT <  50.0) probepass1leadjetpt->Fill(e_ee_invMass);
+	  if (leadingJet_pT >=  50.0  && leadingJet_pT <  70.0) probepass2leadjetpt->Fill(e_ee_invMass);
+	  if (leadingJet_pT >=  70.0  && leadingJet_pT <  90.0) probepass3leadjetpt->Fill(e_ee_invMass);
+	  if (leadingJet_pT >=  90.0  && leadingJet_pT < 120.0) probepass4leadjetpt->Fill(e_ee_invMass);
+	  if (leadingJet_pT >= 120.0  && leadingJet_pT < 150.0) probepass5leadjetpt->Fill(e_ee_invMass);
+	  if (leadingJet_pT >= 150.0  && leadingJet_pT < 190.0) probepass6leadjetpt->Fill(e_ee_invMass);
+	  if (leadingJet_pT >= 190.0  && leadingJet_pT < 230.0) probepass7leadjetpt->Fill(e_ee_invMass);
+	  if (leadingJet_pT >= 230.0) probepass8leadjetpt->Fill(e_ee_invMass);
 	}
       }
       else{
@@ -296,18 +320,39 @@ EfficiencyFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSetup)
 	if (nJet==2) probefail2jet->Fill(e_ee_invMass);
 	if (nJet==3) probefail3jet->Fill(e_ee_invMass);
 	if (nJet==4) probefail4jet->Fill(e_ee_invMass);
-	if (numberOfVertices > 10) {
-	  probefailHighPU->Fill(e_ee_invMass);
-	} else {
-	  probefailLowPU->Fill(e_ee_invMass);
+	if (nJet>4)  probepass5jet->Fill(e_ee_invMass);
+	if (numberOfVertices < 5) probefail0pu->Fill(e_ee_invMass);
+	if (numberOfVertices >= 5 && numberOfVertices < 10) probefail1pu->Fill(e_ee_invMass);
+	if (numberOfVertices >= 10 && numberOfVertices < 15) probefail2pu->Fill(e_ee_invMass);
+	if (numberOfVertices >= 15 && numberOfVertices < 20) probefail3pu->Fill(e_ee_invMass);
+	if (numberOfVertices >= 20) probefail4pu->Fill(e_ee_invMass);
+	if (fabs(secondptele->eta()) < 0.5) probefail0eta->Fill(e_ee_invMass);
+	if (fabs(secondptele->eta()) >= 0.5 && fabs(secondptele->eta()) <1.0)  probefail1eta->Fill(e_ee_invMass);
+	if (fabs(secondptele->eta()) >= 1.0 && fabs(secondptele->eta()) <1.44) probefail2eta->Fill(e_ee_invMass);
+	if (fabs(secondptele->eta()) > 1.56 && fabs(secondptele->eta()) <2.0)  probefail3eta->Fill(e_ee_invMass);
+	if (fabs(secondptele->eta()) >= 2.0 && fabs(secondptele->eta()) <3.0)  probefail4eta->Fill(e_ee_invMass);
+	if (nJet > 0) {
+	  if (leadingJet_pT >=  30.0  && leadingJet_pT <  40.0) probefail0leadjetpt->Fill(e_ee_invMass);
+	  if (leadingJet_pT >=  40.0  && leadingJet_pT <  50.0) probefail1leadjetpt->Fill(e_ee_invMass);
+	  if (leadingJet_pT >=  50.0  && leadingJet_pT <  70.0) probefail2leadjetpt->Fill(e_ee_invMass);
+	  if (leadingJet_pT >=  70.0  && leadingJet_pT <  90.0) probefail3leadjetpt->Fill(e_ee_invMass);
+	  if (leadingJet_pT >=  90.0  && leadingJet_pT < 120.0) probefail4leadjetpt->Fill(e_ee_invMass);
+	  if (leadingJet_pT >= 120.0  && leadingJet_pT < 150.0) probefail5leadjetpt->Fill(e_ee_invMass);
+	  if (leadingJet_pT >= 150.0  && leadingJet_pT < 190.0) probefail6leadjetpt->Fill(e_ee_invMass);
+	  if (leadingJet_pT >= 190.0  && leadingJet_pT < 230.0) probefail7leadjetpt->Fill(e_ee_invMass);
+	  if (leadingJet_pT >= 230.0) probefail8leadjetpt->Fill(e_ee_invMass);
 	}
       }
     }  
-    if (SelectionUtils::DoWP80Pf(secondptele,iEvent,removePU_)){
+    if (SelectionUtils::DoWP80Pf(secondptele,iEvent,removePU_) && SelectionUtils::DoHLTMatch(secondptele,iEvent)){
       tagall_pt->Fill(highestptele->pt());
       tagall_eta->Fill(highestptele->eta());
       tagall_mee->Fill(e_ee_invMass);
-      if ( SelectionUtils::DoWP80Pf(highestptele,iEvent,removePU_) ){
+      tagall_leadjetpt->Fill(leadingJet_pT);
+      if ( (!New_HE_ && SelectionUtils::DoWP80Pf(highestptele,iEvent,removePU_)) || 
+	   (New_HE_ && SelectionUtils::DoWP80Pf_NewHE(highestptele,iEvent,removePU_)) ||
+	   ((HLTele17_efficiency_ || HLTele8_efficiency_) && SelectionUtils::DoHLTMatch(highestptele,iEvent))
+	   ){
 	tagpass_pt->Fill(highestptele->pt());
 	tagpass_eta->Fill(highestptele->eta());
 	tagpass_mee->Fill(e_ee_invMass);
@@ -316,10 +361,27 @@ EfficiencyFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSetup)
 	if (nJet==2) tagpass2jet->Fill(e_ee_invMass);
 	if (nJet==3) tagpass3jet->Fill(e_ee_invMass);
 	if (nJet==4) tagpass4jet->Fill(e_ee_invMass);
-	if (numberOfVertices > 10) {
-	  tagpassHighPU->Fill(e_ee_invMass);
-	} else {
-	  tagpassLowPU->Fill(e_ee_invMass);
+	if (nJet>4)  tagpass5jet->Fill(e_ee_invMass);
+	if (numberOfVertices < 5) tagpass0pu->Fill(e_ee_invMass);
+	if (numberOfVertices >= 5 && numberOfVertices < 10) tagpass1pu->Fill(e_ee_invMass);
+	if (numberOfVertices >= 10 && numberOfVertices < 15) tagpass2pu->Fill(e_ee_invMass);
+	if (numberOfVertices >= 15 && numberOfVertices < 20) tagpass3pu->Fill(e_ee_invMass);
+	if (numberOfVertices >= 20) tagpass4pu->Fill(e_ee_invMass);
+	if (fabs(secondptele->eta()) < 0.5) tagpass0eta->Fill(e_ee_invMass);
+	if (fabs(secondptele->eta()) >= 0.5 && fabs(secondptele->eta()) <1.0)  tagpass1eta->Fill(e_ee_invMass);
+	if (fabs(secondptele->eta()) >= 1.0 && fabs(secondptele->eta()) <1.44) tagpass2eta->Fill(e_ee_invMass);
+	if (fabs(secondptele->eta()) > 1.56 && fabs(secondptele->eta()) <2.0)  tagpass3eta->Fill(e_ee_invMass);
+	if (fabs(secondptele->eta()) >= 2.0 && fabs(secondptele->eta()) <3.0)  tagpass4eta->Fill(e_ee_invMass);
+	if (nJet > 0) {
+	  if (leadingJet_pT >=  30.0  && leadingJet_pT <  40.0) tagpass0leadjetpt->Fill(e_ee_invMass);
+	  if (leadingJet_pT >=  40.0  && leadingJet_pT <  50.0) tagpass1leadjetpt->Fill(e_ee_invMass);
+	  if (leadingJet_pT >=  50.0  && leadingJet_pT <  70.0) tagpass2leadjetpt->Fill(e_ee_invMass);
+	  if (leadingJet_pT >=  70.0  && leadingJet_pT <  90.0) tagpass3leadjetpt->Fill(e_ee_invMass);
+	  if (leadingJet_pT >=  90.0  && leadingJet_pT < 120.0) tagpass4leadjetpt->Fill(e_ee_invMass);
+	  if (leadingJet_pT >= 120.0  && leadingJet_pT < 150.0) tagpass5leadjetpt->Fill(e_ee_invMass);
+	  if (leadingJet_pT >= 150.0  && leadingJet_pT < 190.0) tagpass6leadjetpt->Fill(e_ee_invMass);
+	  if (leadingJet_pT >= 190.0  && leadingJet_pT < 230.0) tagpass7leadjetpt->Fill(e_ee_invMass);
+	  if (leadingJet_pT >= 230.0) tagpass8leadjetpt->Fill(e_ee_invMass);
 	}
       }
       else{
@@ -331,160 +393,27 @@ EfficiencyFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSetup)
 	if (nJet==2) tagfail2jet->Fill(e_ee_invMass);
 	if (nJet==3) tagfail3jet->Fill(e_ee_invMass);
 	if (nJet==4) tagfail4jet->Fill(e_ee_invMass);
-	if (numberOfVertices > 10) {
-	  tagfailHighPU->Fill(e_ee_invMass);
-	} else {
-	  tagfailLowPU->Fill(e_ee_invMass);
-	}
-      }
-    }
-  }
-
-
-  // WP80 (New HE!!!):
-
-  if (WP80_efficiency_ && New_HE_) {
-    // 1st leg WP80 efficiency
-    if (SelectionUtils::DoWP80Pf(highestptele,iEvent,removePU_)){
-      probeall_pt->Fill(secondptele->pt());
-      probeall_eta->Fill(secondptele->eta());
-      probeall_mee->Fill(e_ee_invMass);
-      if ( SelectionUtils::DoWP80Pf_NewHE(secondptele,iEvent,removePU_) ){
-	probepass_pt->Fill(secondptele->pt());
-	probepass_eta->Fill(secondptele->eta());
-	probepass_mee->Fill(e_ee_invMass);
-	if (nJet==0) probepass0jet->Fill(e_ee_invMass);
-	if (nJet==1) probepass1jet->Fill(e_ee_invMass);
-	if (nJet==2) probepass2jet->Fill(e_ee_invMass);
-	if (nJet==3) probepass3jet->Fill(e_ee_invMass);
-	if (nJet==4) probepass4jet->Fill(e_ee_invMass);
-	if (numberOfVertices > 10) {
-	  probepassHighPU->Fill(e_ee_invMass);
-	} else {
-	  probepassLowPU->Fill(e_ee_invMass);
-	}
-      }
-      else{
-	probefail_pt->Fill(secondptele->pt());
-	probefail_eta->Fill(secondptele->eta());
-	probefail_mee->Fill(e_ee_invMass);
-	if (nJet==0) probefail0jet->Fill(e_ee_invMass);
-	if (nJet==1) probefail1jet->Fill(e_ee_invMass);
-	if (nJet==2) probefail2jet->Fill(e_ee_invMass);
-	if (nJet==3) probefail3jet->Fill(e_ee_invMass);
-	if (nJet==4) probefail4jet->Fill(e_ee_invMass);
-	if (numberOfVertices > 10) {
-	  probefailHighPU->Fill(e_ee_invMass);
-	} else {
-	  probefailLowPU->Fill(e_ee_invMass);
-	}
-      }
-    }  
-    if (SelectionUtils::DoWP80Pf(secondptele,iEvent,removePU_)){
-      tagall_pt->Fill(highestptele->pt());
-      tagall_eta->Fill(highestptele->eta());
-      tagall_mee->Fill(e_ee_invMass);
-      if ( SelectionUtils::DoWP80Pf_NewHE(highestptele,iEvent,removePU_) ){
-	tagpass_pt->Fill(highestptele->pt());
-	tagpass_eta->Fill(highestptele->eta());
-	tagpass_mee->Fill(e_ee_invMass);
-	if (nJet==0) tagpass0jet->Fill(e_ee_invMass);
-	if (nJet==1) tagpass1jet->Fill(e_ee_invMass);
-	if (nJet==2) tagpass2jet->Fill(e_ee_invMass);
-	if (nJet==3) tagpass3jet->Fill(e_ee_invMass);
-	if (nJet==4) tagpass4jet->Fill(e_ee_invMass);
-	if (numberOfVertices > 10) {
-	  tagpassHighPU->Fill(e_ee_invMass);
-	} else {
-	  tagpassLowPU->Fill(e_ee_invMass);
-	}
-      }
-      else{
-	tagfail_pt->Fill(highestptele->pt());
-	tagfail_eta->Fill(highestptele->eta());
-	tagfail_mee->Fill(e_ee_invMass);
-	if (nJet==0) tagfail0jet->Fill(e_ee_invMass);
-	if (nJet==1) tagfail1jet->Fill(e_ee_invMass);
-	if (nJet==2) tagfail2jet->Fill(e_ee_invMass);
-	if (nJet==3) tagfail3jet->Fill(e_ee_invMass);
-	if (nJet==4) tagfail4jet->Fill(e_ee_invMass);
-	if (numberOfVertices > 10) {
-	  tagfailHighPU->Fill(e_ee_invMass);
-	} else {
-	  tagfailLowPU->Fill(e_ee_invMass);
-	}
-      }
-    }
-  }
-
-
-  // HLT:
-
-  if (HLTele17_efficiency_ || HLTele8NOTele17_efficiency_) {
-    if ( SelectionUtils::DoWP80Pf(highestptele,iEvent,removePU_) ){
-      probeall_pt->Fill(secondptele->pt());
-      probeall_eta->Fill(secondptele->eta());
-      probeall_mee->Fill(e_ee_invMass);
-      if ( SelectionUtils::DoHLTMatch(secondptele,iEvent) ){
-	probepass_pt->Fill(secondptele->pt());
-	probepass_eta->Fill(secondptele->eta());
-	probepass_mee->Fill(e_ee_invMass);
-	if (nJet==0) probepass0jet->Fill(e_ee_invMass);
-	if (nJet==1) probepass1jet->Fill(e_ee_invMass);
-	if (nJet==2) probepass2jet->Fill(e_ee_invMass);
-	if (nJet==3) probepass3jet->Fill(e_ee_invMass);
-	if (nJet==4) probepass4jet->Fill(e_ee_invMass);
-	if (numberOfVertices > 10) {
-	  probepassHighPU->Fill(e_ee_invMass);
-	} else {
-	  probepassLowPU->Fill(e_ee_invMass);
-	}
-      }
-      else{
-	probefail_pt->Fill(secondptele->pt());
-	probefail_eta->Fill(secondptele->eta());
-	probefail_mee->Fill(e_ee_invMass);
-	if (nJet==0) probefail0jet->Fill(e_ee_invMass);
-	if (nJet==1) probefail1jet->Fill(e_ee_invMass);
-	if (nJet==2) probefail2jet->Fill(e_ee_invMass);
-	if (nJet==3) probefail3jet->Fill(e_ee_invMass);
-	if (nJet==4) probefail4jet->Fill(e_ee_invMass);
-	if (numberOfVertices > 10) {
-	  probefailHighPU->Fill(e_ee_invMass);
-	} else {
-	  probefailLowPU->Fill(e_ee_invMass);
-	}
-      }
-    }
-    if ( SelectionUtils::DoWP80Pf(secondptele,iEvent,removePU_) ){    
-      if ( SelectionUtils::DoHLTMatch(highestptele,iEvent) ){
-	tagpass_pt->Fill(highestptele->pt());
-	tagpass_eta->Fill(highestptele->eta());
-	tagpass_mee->Fill(e_ee_invMass);
-	if (nJet==0) tagpass0jet->Fill(e_ee_invMass);
-	if (nJet==1) tagpass1jet->Fill(e_ee_invMass);
-	if (nJet==2) tagpass2jet->Fill(e_ee_invMass);
-	if (nJet==3) tagpass3jet->Fill(e_ee_invMass);
-	if (nJet==4) tagpass4jet->Fill(e_ee_invMass);
-	if (numberOfVertices > 10) {
-	  tagpassHighPU->Fill(e_ee_invMass);
-	} else {
-	  tagpassLowPU->Fill(e_ee_invMass);
-	}
-      }
-      else{
-	tagfail_pt->Fill(highestptele->pt());
-	tagfail_eta->Fill(highestptele->eta());
-	tagfail_mee->Fill(e_ee_invMass);
-	if (nJet==0) tagfail0jet->Fill(e_ee_invMass);
-	if (nJet==1) tagfail1jet->Fill(e_ee_invMass);
-	if (nJet==2) tagfail2jet->Fill(e_ee_invMass);
-	if (nJet==3) tagfail3jet->Fill(e_ee_invMass);
-	if (nJet==4) tagfail4jet->Fill(e_ee_invMass);
-	if (numberOfVertices > 10) {
-	  tagfailHighPU->Fill(e_ee_invMass);
-	} else {
-	  tagfailLowPU->Fill(e_ee_invMass);
+	if (nJet>4)  tagpass5jet->Fill(e_ee_invMass);
+	if (numberOfVertices < 5) tagfail0pu->Fill(e_ee_invMass);
+	if (numberOfVertices >= 5 && numberOfVertices < 10) tagfail1pu->Fill(e_ee_invMass);
+	if (numberOfVertices >= 10 && numberOfVertices < 15) tagfail2pu->Fill(e_ee_invMass);
+	if (numberOfVertices >= 15 && numberOfVertices < 20) tagfail3pu->Fill(e_ee_invMass);
+	if (numberOfVertices >= 20) tagfail4pu->Fill(e_ee_invMass);
+	if (fabs(secondptele->eta()) < 0.5) tagfail0eta->Fill(e_ee_invMass);
+	if (fabs(secondptele->eta()) >= 0.5 && fabs(secondptele->eta()) <1.0)  tagfail1eta->Fill(e_ee_invMass);
+	if (fabs(secondptele->eta()) >= 1.0 && fabs(secondptele->eta()) <1.44) tagfail2eta->Fill(e_ee_invMass);
+	if (fabs(secondptele->eta()) > 1.56 && fabs(secondptele->eta()) <2.0)  tagfail3eta->Fill(e_ee_invMass);
+	if (fabs(secondptele->eta()) >= 2.0 && fabs(secondptele->eta()) <3.0)  tagfail4eta->Fill(e_ee_invMass);
+	if (nJet > 0) {
+	  if (leadingJet_pT >=  30.0  && leadingJet_pT <  40.0) tagfail0leadjetpt->Fill(e_ee_invMass);
+	  if (leadingJet_pT >=  40.0  && leadingJet_pT <  50.0) tagfail1leadjetpt->Fill(e_ee_invMass);
+	  if (leadingJet_pT >=  50.0  && leadingJet_pT <  70.0) tagfail2leadjetpt->Fill(e_ee_invMass);
+	  if (leadingJet_pT >=  70.0  && leadingJet_pT <  90.0) tagfail3leadjetpt->Fill(e_ee_invMass);
+	  if (leadingJet_pT >=  90.0  && leadingJet_pT < 120.0) tagfail4leadjetpt->Fill(e_ee_invMass);
+	  if (leadingJet_pT >= 120.0  && leadingJet_pT < 150.0) tagfail5leadjetpt->Fill(e_ee_invMass);
+	  if (leadingJet_pT >= 150.0  && leadingJet_pT < 190.0) tagfail6leadjetpt->Fill(e_ee_invMass);
+	  if (leadingJet_pT >= 190.0  && leadingJet_pT < 230.0) tagfail7leadjetpt->Fill(e_ee_invMass);
+	  if (leadingJet_pT >= 230.0) tagfail8leadjetpt->Fill(e_ee_invMass);
 	}
       }
     }
@@ -493,10 +422,11 @@ EfficiencyFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSetup)
   // RECO:
 
   if (RECO_efficiency_) {
-    if (SelectionUtils::DoWP80Pf(highestptele,iEvent,removePU_)){
+    if (SelectionUtils::DoWP80Pf(highestptele,iEvent,removePU_) && SelectionUtils::DoHLTMatch(highestptele,iEvent)){
       probeall_pt->Fill(highestenergy_SC->energy());
       probeall_eta->Fill(highestenergy_SC->eta());
       probeall_mee->Fill(e_ee_invMass);
+      probeall_leadjetpt->Fill(leadingJet_pT);
       if (highestenergy_SC_isPassingProbe){
 	probepass_pt->Fill(highestenergy_SC->energy());
 	probepass_eta->Fill(highestenergy_SC->eta());
@@ -506,10 +436,27 @@ EfficiencyFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSetup)
 	if (nJet==2) probepass2jet->Fill(e_ee_invMass);
 	if (nJet==3) probepass3jet->Fill(e_ee_invMass);
 	if (nJet==4) probepass4jet->Fill(e_ee_invMass);
-	if (numberOfVertices > 10) {
-	  probepassHighPU->Fill(e_ee_invMass);
-	} else {
-	  probepassLowPU->Fill(e_ee_invMass);
+	if (nJet>4)  probepass5jet->Fill(e_ee_invMass);
+	if (numberOfVertices < 5) probepass0pu->Fill(e_ee_invMass);
+	if (numberOfVertices >= 5 && numberOfVertices < 10) probepass1pu->Fill(e_ee_invMass);
+	if (numberOfVertices >= 10 && numberOfVertices < 15) probepass2pu->Fill(e_ee_invMass);
+	if (numberOfVertices >= 15 && numberOfVertices < 20) probepass3pu->Fill(e_ee_invMass);
+	if (numberOfVertices >= 20) probepass4pu->Fill(e_ee_invMass);
+	if (fabs(highestenergy_SC->eta()) < 0.5) probepass0eta->Fill(e_ee_invMass);
+	if (fabs(highestenergy_SC->eta()) >= 0.5 && fabs(highestenergy_SC->eta()) <1.0)  probepass1eta->Fill(e_ee_invMass);
+	if (fabs(highestenergy_SC->eta()) >= 1.0 && fabs(highestenergy_SC->eta()) <1.44) probepass2eta->Fill(e_ee_invMass);
+	if (fabs(highestenergy_SC->eta()) > 1.56 && fabs(highestenergy_SC->eta()) <2.0)  probepass3eta->Fill(e_ee_invMass);
+	if (fabs(highestenergy_SC->eta()) >= 2.0 && fabs(highestenergy_SC->eta()) <3.0)  probepass4eta->Fill(e_ee_invMass);
+	if (nJet > 0) {
+	  if (leadingJet_pT >=  30.0  && leadingJet_pT <  40.0) probepass0leadjetpt->Fill(e_ee_invMass);
+	  if (leadingJet_pT >=  40.0  && leadingJet_pT <  50.0) probepass1leadjetpt->Fill(e_ee_invMass);
+	  if (leadingJet_pT >=  50.0  && leadingJet_pT <  70.0) probepass2leadjetpt->Fill(e_ee_invMass);
+	  if (leadingJet_pT >=  70.0  && leadingJet_pT <  90.0) probepass3leadjetpt->Fill(e_ee_invMass);
+	  if (leadingJet_pT >=  90.0  && leadingJet_pT < 120.0) probepass4leadjetpt->Fill(e_ee_invMass);
+	  if (leadingJet_pT >= 120.0  && leadingJet_pT < 150.0) probepass5leadjetpt->Fill(e_ee_invMass);
+	  if (leadingJet_pT >= 150.0  && leadingJet_pT < 190.0) probepass6leadjetpt->Fill(e_ee_invMass);
+	  if (leadingJet_pT >= 190.0  && leadingJet_pT < 230.0) probepass7leadjetpt->Fill(e_ee_invMass);
+	  if (leadingJet_pT >= 230.0) probepass8leadjetpt->Fill(e_ee_invMass);
 	}
       }
       else{
@@ -521,10 +468,27 @@ EfficiencyFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSetup)
 	if (nJet==2) probefail2jet->Fill(e_ee_invMass);
 	if (nJet==3) probefail3jet->Fill(e_ee_invMass);
 	if (nJet==4) probefail4jet->Fill(e_ee_invMass);
-	if (numberOfVertices > 10) {
-	  probefailHighPU->Fill(e_ee_invMass);
-	} else {
-	  probefailLowPU->Fill(e_ee_invMass);
+	if (nJet>4)  probepass5jet->Fill(e_ee_invMass);
+	if (numberOfVertices < 5) probefail0pu->Fill(e_ee_invMass);
+	if (numberOfVertices >= 5 && numberOfVertices < 10) probefail1pu->Fill(e_ee_invMass);
+	if (numberOfVertices >= 10 && numberOfVertices < 15) probefail2pu->Fill(e_ee_invMass);
+	if (numberOfVertices >= 15 && numberOfVertices < 20) probefail3pu->Fill(e_ee_invMass);
+	if (numberOfVertices >= 20) probefail4pu->Fill(e_ee_invMass);
+	if (fabs(highestenergy_SC->eta()) < 0.5) probefail0eta->Fill(e_ee_invMass);
+	if (fabs(highestenergy_SC->eta()) >= 0.5 && fabs(highestenergy_SC->eta()) <1.0)  probefail1eta->Fill(e_ee_invMass);
+	if (fabs(highestenergy_SC->eta()) >= 1.0 && fabs(highestenergy_SC->eta()) <1.44) probefail2eta->Fill(e_ee_invMass);
+	if (fabs(highestenergy_SC->eta()) > 1.56 && fabs(highestenergy_SC->eta()) <2.0)  probefail3eta->Fill(e_ee_invMass);
+	if (fabs(highestenergy_SC->eta()) >= 2.0 && fabs(highestenergy_SC->eta()) <3.0)  probefail4eta->Fill(e_ee_invMass);
+	if (nJet > 0) {
+	  if (leadingJet_pT >=  30.0  && leadingJet_pT <  40.0) probefail0leadjetpt->Fill(e_ee_invMass);
+	  if (leadingJet_pT >=  40.0  && leadingJet_pT <  50.0) probefail1leadjetpt->Fill(e_ee_invMass);
+	  if (leadingJet_pT >=  50.0  && leadingJet_pT <  70.0) probefail2leadjetpt->Fill(e_ee_invMass);
+	  if (leadingJet_pT >=  70.0  && leadingJet_pT <  90.0) probefail3leadjetpt->Fill(e_ee_invMass);
+	  if (leadingJet_pT >=  90.0  && leadingJet_pT < 120.0) probefail4leadjetpt->Fill(e_ee_invMass);
+	  if (leadingJet_pT >= 120.0  && leadingJet_pT < 150.0) probefail5leadjetpt->Fill(e_ee_invMass);
+	  if (leadingJet_pT >= 150.0  && leadingJet_pT < 190.0) probefail6leadjetpt->Fill(e_ee_invMass);
+	  if (leadingJet_pT >= 190.0  && leadingJet_pT < 230.0) probefail7leadjetpt->Fill(e_ee_invMass);
+	  if (leadingJet_pT >= 230.0) probefail8leadjetpt->Fill(e_ee_invMass);
 	}
       }
     }  
