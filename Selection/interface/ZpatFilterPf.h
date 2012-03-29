@@ -64,6 +64,7 @@ class ZpatFilterPf : public edm::EDFilter, public SelectionUtils {
 		TH1F* h_invMassEE;
 		TH1F* h_invMassEB;
 		TH1F* h_invMassBB;
+		TH1F* h_zPt_3e;
 		TH1I* passIDEleCriteria;
 		TH1I*  eleSelStepByStep;
 		TH1I*  numberOfEleAfterHLTTrigger;
@@ -95,6 +96,7 @@ ZpatFilterPf::ZpatFilterPf (const edm::ParameterSet & parameters)
   h_invMassEE =  fs->make<TH1F>("Z peak - WP80 Endcap-Endcap","Z peak;InvMass (Gev)", 140, 0.0, 140.0);
   h_invMassEB = fs->make<TH1F>("Z peak - WP80 Endcap-Barrel","Z peak;InvMass (Gev)", 140, 0.0, 140.0);
   h_invMassBB = fs->make<TH1F>("Z peak - WP80 Barrel-Barrel","Z peak;InvMass (Gev)", 140, 0.0, 140.0);
+  h_zPt_3e = fs->make<TH1F>("h_zPt_3e","zPt_3e", 200, 0.0, 200.0);
   passIDEleCriteria = fs->make<TH1I>("passIDEleCriteria","Ele Id pass/not pass... 3 entries each ele", 4, 0, 4);
   eleSelStepByStep = fs->make<TH1I>("eleSelStepByStep","History of selected/rejected ele", 13, 0, 13);
   numberOfEleAfterHLTTrigger = fs->make<TH1I>("numberOfEleAfterHLTTrigger","Size of ele collection, after HLT cuts,", 3, 0, 3);

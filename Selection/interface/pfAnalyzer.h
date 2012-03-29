@@ -61,6 +61,8 @@ class pfAnalyzer : public edm::EDProducer, public SelectionUtils {
 		TH1D* h_electronPt;
 		TH1D* h_electronInvMass;
 		TH1D* h_electronInvMassPass;
+		TH1D* h_zPt_3e;
+		//TH1D* h_zPt1j_3e;
 		bool passSelection;
  
 };
@@ -91,7 +93,8 @@ pfAnalyzer::pfAnalyzer (const edm::ParameterSet & parameters)
    h_electronPt= fs->make<TH1D>("h_electronPt","electronPt", 200, 0, 200);
    h_electronInvMass= fs->make<TH1D>("h_electronInvMass","electronInvMass", 60, 60, 120);
    h_electronInvMassPass= fs->make<TH1D>("h_electronInvMassPass","electronInvMassPass", 60, 60, 120);
-
+   h_zPt_3e = fs->make<TH1D>("h_zPt_3e","zPt_3e", 200, 0, 200);
+   //h_zPt1j_3e = fs->make<TH1D>("h_zPt1j_3e","zPt1j_3e", 200, 0, 200);
 }
 
 
@@ -105,4 +108,5 @@ pfAnalyzer::~pfAnalyzer ()
 }
 
 #endif
+
 

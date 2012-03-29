@@ -13,7 +13,7 @@ Implementation:
 //
 // Original Author:  Vieri Candelise, Matteo Marone & Davide Scaini
 //         Created:  Thu Dec 11 10:46:26 CEST 2011
-// $Id: ZpatFilterPf.cc,v 1.5 2012/03/05 17:51:32 montanin Exp $
+// $Id: ZpatFilterPf.cc,v 1.6 2012/03/08 11:11:18 montanin Exp $
 //
 //
 
@@ -316,7 +316,7 @@ ZpatFilterPf::filter (edm::Event & iEvent, edm::EventSetup const & iSetup)
   if (e_ee_invMass>highZmassLimit || e_ee_invMass<lowZmassLimit) return false;
   eleSelStepByStep->SetBinContent(13,eleSelStepByStep->GetBinContent(13)+1);
   //Pippo -> Number Of Events having more than 2 electrons and eta < 2.4 & 1 HLT+WP80 with > 10 GeV & 1 HLT+WP80 with > 20 GeV and Withihn the window energy mass
-
+  if (i> 2 ) h_zPt_3e->Fill(e_pair.Pt());
   //Filling Histograms
   h_invMass->Fill(e_ee_invMass);
 

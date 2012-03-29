@@ -117,6 +117,7 @@ pfAnalyzer::produce(edm::Event & iEvent, edm::EventSetup const & iSetup)
 	
 // searching for the corresponding GSF electron 
 	if (passSelection){
+	   if (electronCollection->size()>2) h_zPt_3e->Fill(e_pair.Pt());
 	   Handle<reco::PFCandidateCollection> pfElecCollection;
 	   iEvent.getByLabel (pflowEleCollection_, pfElecCollection);
 	   
