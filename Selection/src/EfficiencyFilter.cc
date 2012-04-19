@@ -13,7 +13,7 @@ Implementation:
 //
 // Original Author:  Vieri Candelise & Matteo Marone
 //         Created:  Wed May 11 14:53:26 CESDo2011
-// $Id: EfficiencyFilter.cc,v 1.22 2012/03/29 15:07:12 schizzi Exp $
+// $Id: EfficiencyFilter.cc,v 1.23 2012/04/16 14:33:42 schizzi Exp $
 
 
 
@@ -309,71 +309,26 @@ EfficiencyFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSetup)
 	  if (leadingJet_pT >= 190.0  && leadingJet_pT < 230.0) probepass7leadjetpt->Fill(e_ee_invMass);
 	  if (leadingJet_pT >= 230.0) probepass8leadjetpt->Fill(e_ee_invMass);
 	}
-	if (nJet == 0) {
-	  if (leadingJet_pT >=  30.0  && leadingJet_pT <  40.0) probepass0leadjetpt0nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >=  40.0  && leadingJet_pT <  50.0) probepass1leadjetpt0nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >=  50.0  && leadingJet_pT <  70.0) probepass2leadjetpt0nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >=  70.0  && leadingJet_pT <  90.0) probepass3leadjetpt0nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >=  90.0  && leadingJet_pT < 120.0) probepass4leadjetpt0nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >= 120.0  && leadingJet_pT < 150.0) probepass5leadjetpt0nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >= 150.0  && leadingJet_pT < 190.0) probepass6leadjetpt0nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >= 190.0  && leadingJet_pT < 230.0) probepass7leadjetpt0nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >= 230.0) probepass8leadjetpt0nJet->Fill(e_ee_invMass);
-	}
 	if (nJet == 1) {
-	  if (leadingJet_pT >=  30.0  && leadingJet_pT <  40.0) probepass0leadjetpt1nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >=  40.0  && leadingJet_pT <  50.0) probepass1leadjetpt1nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >=  50.0  && leadingJet_pT <  70.0) probepass2leadjetpt1nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >=  70.0  && leadingJet_pT <  90.0) probepass3leadjetpt1nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >=  90.0  && leadingJet_pT < 120.0) probepass4leadjetpt1nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >= 120.0  && leadingJet_pT < 150.0) probepass5leadjetpt1nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >= 150.0  && leadingJet_pT < 190.0) probepass6leadjetpt1nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >= 190.0  && leadingJet_pT < 230.0) probepass7leadjetpt1nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >= 230.0) probepass8leadjetpt1nJet->Fill(e_ee_invMass);
+	  if (leadingJet_pT >=  30.0  && leadingJet_pT <  40.0) probepass0th2f->Fill(e_ee_invMass);
+	  if (leadingJet_pT >=  40.0  && leadingJet_pT <  50.0) probepass1th2f->Fill(e_ee_invMass);
+	  if (leadingJet_pT >=  50.0  && leadingJet_pT <  70.0) probepass2th2f->Fill(e_ee_invMass);
+	  if (leadingJet_pT >=  70.0  && leadingJet_pT <  90.0) probepass3th2f->Fill(e_ee_invMass);
+	  if (leadingJet_pT >=  90.0  && leadingJet_pT < 120.0) probepass4th2f->Fill(e_ee_invMass);
+	  if (leadingJet_pT >= 120.0) probepass5th2f->Fill(e_ee_invMass);
 	}
 	if (nJet == 2) {
-	  if (leadingJet_pT >=  30.0  && leadingJet_pT <  40.0) probepass0leadjetpt2nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >=  40.0  && leadingJet_pT <  50.0) probepass1leadjetpt2nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >=  50.0  && leadingJet_pT <  70.0) probepass2leadjetpt2nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >=  70.0  && leadingJet_pT <  90.0) probepass3leadjetpt2nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >=  90.0  && leadingJet_pT < 120.0) probepass4leadjetpt2nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >= 120.0  && leadingJet_pT < 150.0) probepass5leadjetpt2nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >= 150.0  && leadingJet_pT < 190.0) probepass6leadjetpt2nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >= 190.0  && leadingJet_pT < 230.0) probepass7leadjetpt2nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >= 230.0) probepass8leadjetpt2nJet->Fill(e_ee_invMass);
+	  if (leadingJet_pT >=  30.0  && leadingJet_pT <  40.0) probepass6th2f->Fill(e_ee_invMass);
+	  if (leadingJet_pT >=  40.0  && leadingJet_pT <  50.0) probepass7th2f->Fill(e_ee_invMass);
+	  if (leadingJet_pT >=  50.0  && leadingJet_pT <  90.0) probepass8th2f->Fill(e_ee_invMass);
+	  if (leadingJet_pT >=  90.0) probepass9th2f->Fill(e_ee_invMass);
 	}
 	if (nJet == 3) {
-	  if (leadingJet_pT >=  30.0  && leadingJet_pT <  40.0) probepass0leadjetpt3nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >=  40.0  && leadingJet_pT <  50.0) probepass1leadjetpt3nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >=  50.0  && leadingJet_pT <  70.0) probepass2leadjetpt3nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >=  70.0  && leadingJet_pT <  90.0) probepass3leadjetpt3nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >=  90.0  && leadingJet_pT < 120.0) probepass4leadjetpt3nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >= 120.0  && leadingJet_pT < 150.0) probepass5leadjetpt3nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >= 150.0  && leadingJet_pT < 190.0) probepass6leadjetpt3nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >= 190.0  && leadingJet_pT < 230.0) probepass7leadjetpt3nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >= 230.0) probepass8leadjetpt3nJet->Fill(e_ee_invMass);
+	  if (leadingJet_pT >=  30.0  && leadingJet_pT <  90.0) probepass10th2f->Fill(e_ee_invMass);
+	  if (leadingJet_pT >=  90.0) probepass11th2f->Fill(e_ee_invMass);
 	}
-	if (nJet == 4) {
-	  if (leadingJet_pT >=  30.0  && leadingJet_pT <  40.0) probepass0leadjetpt4nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >=  40.0  && leadingJet_pT <  50.0) probepass1leadjetpt4nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >=  50.0  && leadingJet_pT <  70.0) probepass2leadjetpt4nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >=  70.0  && leadingJet_pT <  90.0) probepass3leadjetpt4nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >=  90.0  && leadingJet_pT < 120.0) probepass4leadjetpt4nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >= 120.0  && leadingJet_pT < 150.0) probepass5leadjetpt4nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >= 150.0  && leadingJet_pT < 190.0) probepass6leadjetpt4nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >= 190.0  && leadingJet_pT < 230.0) probepass7leadjetpt4nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >= 230.0) probepass8leadjetpt4nJet->Fill(e_ee_invMass);
-	}
-	if (nJet >= 5) {
-	  if (leadingJet_pT >=  30.0  && leadingJet_pT <  40.0) probepass0leadjetpt5nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >=  40.0  && leadingJet_pT <  50.0) probepass1leadjetpt5nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >=  50.0  && leadingJet_pT <  70.0) probepass2leadjetpt5nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >=  70.0  && leadingJet_pT <  90.0) probepass3leadjetpt5nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >=  90.0  && leadingJet_pT < 120.0) probepass4leadjetpt5nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >= 120.0  && leadingJet_pT < 150.0) probepass5leadjetpt5nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >= 150.0  && leadingJet_pT < 190.0) probepass6leadjetpt5nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >= 190.0  && leadingJet_pT < 230.0) probepass7leadjetpt5nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >= 230.0) probepass8leadjetpt5nJet->Fill(e_ee_invMass);
+	if (nJet >= 4) {
+	  if (leadingJet_pT >=  30.0) probepass12th2f->Fill(e_ee_invMass);
 	}
       }
       else{
@@ -407,71 +362,26 @@ EfficiencyFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSetup)
 	  if (leadingJet_pT >= 190.0  && leadingJet_pT < 230.0) probefail7leadjetpt->Fill(e_ee_invMass);
 	  if (leadingJet_pT >= 230.0) probefail8leadjetpt->Fill(e_ee_invMass);
 	}
-	if (nJet == 0) {
-	  if (leadingJet_pT >=  30.0  && leadingJet_pT <  40.0) probefail0leadjetpt0nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >=  40.0  && leadingJet_pT <  50.0) probefail1leadjetpt0nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >=  50.0  && leadingJet_pT <  70.0) probefail2leadjetpt0nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >=  70.0  && leadingJet_pT <  90.0) probefail3leadjetpt0nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >=  90.0  && leadingJet_pT < 120.0) probefail4leadjetpt0nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >= 120.0  && leadingJet_pT < 150.0) probefail5leadjetpt0nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >= 150.0  && leadingJet_pT < 190.0) probefail6leadjetpt0nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >= 190.0  && leadingJet_pT < 230.0) probefail7leadjetpt0nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >= 230.0) probefail8leadjetpt0nJet->Fill(e_ee_invMass);
-	}
 	if (nJet == 1) {
-	  if (leadingJet_pT >=  30.0  && leadingJet_pT <  40.0) probefail0leadjetpt1nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >=  40.0  && leadingJet_pT <  50.0) probefail1leadjetpt1nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >=  50.0  && leadingJet_pT <  70.0) probefail2leadjetpt1nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >=  70.0  && leadingJet_pT <  90.0) probefail3leadjetpt1nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >=  90.0  && leadingJet_pT < 120.0) probefail4leadjetpt1nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >= 120.0  && leadingJet_pT < 150.0) probefail5leadjetpt1nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >= 150.0  && leadingJet_pT < 190.0) probefail6leadjetpt1nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >= 190.0  && leadingJet_pT < 230.0) probefail7leadjetpt1nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >= 230.0) probefail8leadjetpt1nJet->Fill(e_ee_invMass);
+	  if (leadingJet_pT >=  30.0  && leadingJet_pT <  40.0) probefail0th2f->Fill(e_ee_invMass);
+	  if (leadingJet_pT >=  40.0  && leadingJet_pT <  50.0) probefail1th2f->Fill(e_ee_invMass);
+	  if (leadingJet_pT >=  50.0  && leadingJet_pT <  70.0) probefail2th2f->Fill(e_ee_invMass);
+	  if (leadingJet_pT >=  70.0  && leadingJet_pT <  90.0) probefail3th2f->Fill(e_ee_invMass);
+	  if (leadingJet_pT >=  90.0  && leadingJet_pT < 120.0) probefail4th2f->Fill(e_ee_invMass);
+	  if (leadingJet_pT >= 120.0) probefail5th2f->Fill(e_ee_invMass);
 	}
 	if (nJet == 2) {
-	  if (leadingJet_pT >=  30.0  && leadingJet_pT <  40.0) probefail0leadjetpt2nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >=  40.0  && leadingJet_pT <  50.0) probefail1leadjetpt2nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >=  50.0  && leadingJet_pT <  70.0) probefail2leadjetpt2nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >=  70.0  && leadingJet_pT <  90.0) probefail3leadjetpt2nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >=  90.0  && leadingJet_pT < 120.0) probefail4leadjetpt2nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >= 120.0  && leadingJet_pT < 150.0) probefail5leadjetpt2nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >= 150.0  && leadingJet_pT < 190.0) probefail6leadjetpt2nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >= 190.0  && leadingJet_pT < 230.0) probefail7leadjetpt2nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >= 230.0) probefail8leadjetpt2nJet->Fill(e_ee_invMass);
+	  if (leadingJet_pT >=  30.0  && leadingJet_pT <  40.0) probefail6th2f->Fill(e_ee_invMass);
+	  if (leadingJet_pT >=  40.0  && leadingJet_pT <  50.0) probefail7th2f->Fill(e_ee_invMass);
+	  if (leadingJet_pT >=  50.0  && leadingJet_pT <  90.0) probefail8th2f->Fill(e_ee_invMass);
+	  if (leadingJet_pT >=  90.0) probefail9th2f->Fill(e_ee_invMass);
 	}
 	if (nJet == 3) {
-	  if (leadingJet_pT >=  30.0  && leadingJet_pT <  40.0) probefail0leadjetpt3nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >=  40.0  && leadingJet_pT <  50.0) probefail1leadjetpt3nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >=  50.0  && leadingJet_pT <  70.0) probefail2leadjetpt3nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >=  70.0  && leadingJet_pT <  90.0) probefail3leadjetpt3nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >=  90.0  && leadingJet_pT < 120.0) probefail4leadjetpt3nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >= 120.0  && leadingJet_pT < 150.0) probefail5leadjetpt3nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >= 150.0  && leadingJet_pT < 190.0) probefail6leadjetpt3nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >= 190.0  && leadingJet_pT < 230.0) probefail7leadjetpt3nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >= 230.0) probefail8leadjetpt3nJet->Fill(e_ee_invMass);
+	  if (leadingJet_pT >=  30.0  && leadingJet_pT <  90.0) probefail10th2f->Fill(e_ee_invMass);
+	  if (leadingJet_pT >=  90.0) probefail11th2f->Fill(e_ee_invMass);
 	}
-	if (nJet == 4) {
-	  if (leadingJet_pT >=  30.0  && leadingJet_pT <  40.0) probefail0leadjetpt4nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >=  40.0  && leadingJet_pT <  50.0) probefail1leadjetpt4nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >=  50.0  && leadingJet_pT <  70.0) probefail2leadjetpt4nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >=  70.0  && leadingJet_pT <  90.0) probefail3leadjetpt4nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >=  90.0  && leadingJet_pT < 120.0) probefail4leadjetpt4nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >= 120.0  && leadingJet_pT < 150.0) probefail5leadjetpt4nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >= 150.0  && leadingJet_pT < 190.0) probefail6leadjetpt4nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >= 190.0  && leadingJet_pT < 230.0) probefail7leadjetpt4nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >= 230.0) probefail8leadjetpt4nJet->Fill(e_ee_invMass);
-	}
-	if (nJet >= 5) {
-	  if (leadingJet_pT >=  30.0  && leadingJet_pT <  40.0) probefail0leadjetpt5nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >=  40.0  && leadingJet_pT <  50.0) probefail1leadjetpt5nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >=  50.0  && leadingJet_pT <  70.0) probefail2leadjetpt5nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >=  70.0  && leadingJet_pT <  90.0) probefail3leadjetpt5nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >=  90.0  && leadingJet_pT < 120.0) probefail4leadjetpt5nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >= 120.0  && leadingJet_pT < 150.0) probefail5leadjetpt5nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >= 150.0  && leadingJet_pT < 190.0) probefail6leadjetpt5nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >= 190.0  && leadingJet_pT < 230.0) probefail7leadjetpt5nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >= 230.0) probefail8leadjetpt5nJet->Fill(e_ee_invMass);
+	if (nJet >= 4) {
+	  if (leadingJet_pT >=  30.0) probefail12th2f->Fill(e_ee_invMass);
 	}
       }
     }  
@@ -516,71 +426,26 @@ EfficiencyFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSetup)
 	  if (leadingJet_pT >= 190.0  && leadingJet_pT < 230.0) tagpass7leadjetpt->Fill(e_ee_invMass);
 	  if (leadingJet_pT >= 230.0) tagpass8leadjetpt->Fill(e_ee_invMass);
 	}
-	if (nJet == 0) {
-	  if (leadingJet_pT >=  30.0  && leadingJet_pT <  40.0) tagpass0leadjetpt0nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >=  40.0  && leadingJet_pT <  50.0) tagpass1leadjetpt0nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >=  50.0  && leadingJet_pT <  70.0) tagpass2leadjetpt0nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >=  70.0  && leadingJet_pT <  90.0) tagpass3leadjetpt0nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >=  90.0  && leadingJet_pT < 120.0) tagpass4leadjetpt0nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >= 120.0  && leadingJet_pT < 150.0) tagpass5leadjetpt0nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >= 150.0  && leadingJet_pT < 190.0) tagpass6leadjetpt0nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >= 190.0  && leadingJet_pT < 230.0) tagpass7leadjetpt0nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >= 230.0) tagpass8leadjetpt0nJet->Fill(e_ee_invMass);
-	}
 	if (nJet == 1) {
-	  if (leadingJet_pT >=  30.0  && leadingJet_pT <  40.0) tagpass0leadjetpt1nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >=  40.0  && leadingJet_pT <  50.0) tagpass1leadjetpt1nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >=  50.0  && leadingJet_pT <  70.0) tagpass2leadjetpt1nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >=  70.0  && leadingJet_pT <  90.0) tagpass3leadjetpt1nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >=  90.0  && leadingJet_pT < 120.0) tagpass4leadjetpt1nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >= 120.0  && leadingJet_pT < 150.0) tagpass5leadjetpt1nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >= 150.0  && leadingJet_pT < 190.0) tagpass6leadjetpt1nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >= 190.0  && leadingJet_pT < 230.0) tagpass7leadjetpt1nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >= 230.0) tagpass8leadjetpt1nJet->Fill(e_ee_invMass);
+	  if (leadingJet_pT >=  30.0  && leadingJet_pT <  40.0) tagpass0th2f->Fill(e_ee_invMass);
+	  if (leadingJet_pT >=  40.0  && leadingJet_pT <  50.0) tagpass1th2f->Fill(e_ee_invMass);
+	  if (leadingJet_pT >=  50.0  && leadingJet_pT <  70.0) tagpass2th2f->Fill(e_ee_invMass);
+	  if (leadingJet_pT >=  70.0  && leadingJet_pT <  90.0) tagpass3th2f->Fill(e_ee_invMass);
+	  if (leadingJet_pT >=  90.0  && leadingJet_pT < 120.0) tagpass4th2f->Fill(e_ee_invMass);
+	  if (leadingJet_pT >= 120.0) tagpass5th2f->Fill(e_ee_invMass);
 	}
 	if (nJet == 2) {
-	  if (leadingJet_pT >=  30.0  && leadingJet_pT <  40.0) tagpass0leadjetpt2nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >=  40.0  && leadingJet_pT <  50.0) tagpass1leadjetpt2nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >=  50.0  && leadingJet_pT <  70.0) tagpass2leadjetpt2nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >=  70.0  && leadingJet_pT <  90.0) tagpass3leadjetpt2nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >=  90.0  && leadingJet_pT < 120.0) tagpass4leadjetpt2nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >= 120.0  && leadingJet_pT < 150.0) tagpass5leadjetpt2nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >= 150.0  && leadingJet_pT < 190.0) tagpass6leadjetpt2nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >= 190.0  && leadingJet_pT < 230.0) tagpass7leadjetpt2nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >= 230.0) tagpass8leadjetpt2nJet->Fill(e_ee_invMass);
+	  if (leadingJet_pT >=  30.0  && leadingJet_pT <  40.0) tagpass6th2f->Fill(e_ee_invMass);
+	  if (leadingJet_pT >=  40.0  && leadingJet_pT <  50.0) tagpass7th2f->Fill(e_ee_invMass);
+	  if (leadingJet_pT >=  50.0  && leadingJet_pT <  90.0) tagpass8th2f->Fill(e_ee_invMass);
+	  if (leadingJet_pT >=  90.0) tagpass9th2f->Fill(e_ee_invMass);
 	}
 	if (nJet == 3) {
-	  if (leadingJet_pT >=  30.0  && leadingJet_pT <  40.0) tagpass0leadjetpt3nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >=  40.0  && leadingJet_pT <  50.0) tagpass1leadjetpt3nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >=  50.0  && leadingJet_pT <  70.0) tagpass2leadjetpt3nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >=  70.0  && leadingJet_pT <  90.0) tagpass3leadjetpt3nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >=  90.0  && leadingJet_pT < 120.0) tagpass4leadjetpt3nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >= 120.0  && leadingJet_pT < 150.0) tagpass5leadjetpt3nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >= 150.0  && leadingJet_pT < 190.0) tagpass6leadjetpt3nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >= 190.0  && leadingJet_pT < 230.0) tagpass7leadjetpt3nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >= 230.0) tagpass8leadjetpt3nJet->Fill(e_ee_invMass);
+	  if (leadingJet_pT >=  30.0  && leadingJet_pT <  90.0) tagpass10th2f->Fill(e_ee_invMass);
+	  if (leadingJet_pT >=  90.0) tagpass11th2f->Fill(e_ee_invMass);
 	}
-	if (nJet == 4) {
-	  if (leadingJet_pT >=  30.0  && leadingJet_pT <  40.0) tagpass0leadjetpt4nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >=  40.0  && leadingJet_pT <  50.0) tagpass1leadjetpt4nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >=  50.0  && leadingJet_pT <  70.0) tagpass2leadjetpt4nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >=  70.0  && leadingJet_pT <  90.0) tagpass3leadjetpt4nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >=  90.0  && leadingJet_pT < 120.0) tagpass4leadjetpt4nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >= 120.0  && leadingJet_pT < 150.0) tagpass5leadjetpt4nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >= 150.0  && leadingJet_pT < 190.0) tagpass6leadjetpt4nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >= 190.0  && leadingJet_pT < 230.0) tagpass7leadjetpt4nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >= 230.0) tagpass8leadjetpt4nJet->Fill(e_ee_invMass);
-	}
-	if (nJet >= 5) {
-	  if (leadingJet_pT >=  30.0  && leadingJet_pT <  40.0) tagpass0leadjetpt5nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >=  40.0  && leadingJet_pT <  50.0) tagpass1leadjetpt5nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >=  50.0  && leadingJet_pT <  70.0) tagpass2leadjetpt5nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >=  70.0  && leadingJet_pT <  90.0) tagpass3leadjetpt5nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >=  90.0  && leadingJet_pT < 120.0) tagpass4leadjetpt5nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >= 120.0  && leadingJet_pT < 150.0) tagpass5leadjetpt5nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >= 150.0  && leadingJet_pT < 190.0) tagpass6leadjetpt5nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >= 190.0  && leadingJet_pT < 230.0) tagpass7leadjetpt5nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >= 230.0) tagpass8leadjetpt5nJet->Fill(e_ee_invMass);
+	if (nJet >= 4) {
+	  if (leadingJet_pT >=  30.0) tagpass12th2f->Fill(e_ee_invMass);
 	}
       }
       else{
@@ -614,71 +479,26 @@ EfficiencyFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSetup)
 	  if (leadingJet_pT >= 190.0  && leadingJet_pT < 230.0) tagfail7leadjetpt->Fill(e_ee_invMass);
 	  if (leadingJet_pT >= 230.0) tagfail8leadjetpt->Fill(e_ee_invMass);
 	}
-	if (nJet == 0) {
-	  if (leadingJet_pT >=  30.0  && leadingJet_pT <  40.0) tagfail0leadjetpt0nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >=  40.0  && leadingJet_pT <  50.0) tagfail1leadjetpt0nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >=  50.0  && leadingJet_pT <  70.0) tagfail2leadjetpt0nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >=  70.0  && leadingJet_pT <  90.0) tagfail3leadjetpt0nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >=  90.0  && leadingJet_pT < 120.0) tagfail4leadjetpt0nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >= 120.0  && leadingJet_pT < 150.0) tagfail5leadjetpt0nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >= 150.0  && leadingJet_pT < 190.0) tagfail6leadjetpt0nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >= 190.0  && leadingJet_pT < 230.0) tagfail7leadjetpt0nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >= 230.0) tagfail8leadjetpt0nJet->Fill(e_ee_invMass);
-	}
 	if (nJet == 1) {
-	  if (leadingJet_pT >=  30.0  && leadingJet_pT <  40.0) tagfail0leadjetpt1nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >=  40.0  && leadingJet_pT <  50.0) tagfail1leadjetpt1nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >=  50.0  && leadingJet_pT <  70.0) tagfail2leadjetpt1nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >=  70.0  && leadingJet_pT <  90.0) tagfail3leadjetpt1nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >=  90.0  && leadingJet_pT < 120.0) tagfail4leadjetpt1nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >= 120.0  && leadingJet_pT < 150.0) tagfail5leadjetpt1nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >= 150.0  && leadingJet_pT < 190.0) tagfail6leadjetpt1nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >= 190.0  && leadingJet_pT < 230.0) tagfail7leadjetpt1nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >= 230.0) tagfail8leadjetpt1nJet->Fill(e_ee_invMass);
+	  if (leadingJet_pT >=  30.0  && leadingJet_pT <  40.0) tagfail0th2f->Fill(e_ee_invMass);
+	  if (leadingJet_pT >=  40.0  && leadingJet_pT <  50.0) tagfail1th2f->Fill(e_ee_invMass);
+	  if (leadingJet_pT >=  50.0  && leadingJet_pT <  70.0) tagfail2th2f->Fill(e_ee_invMass);
+	  if (leadingJet_pT >=  70.0  && leadingJet_pT <  90.0) tagfail3th2f->Fill(e_ee_invMass);
+	  if (leadingJet_pT >=  90.0  && leadingJet_pT < 120.0) tagfail4th2f->Fill(e_ee_invMass);
+	  if (leadingJet_pT >= 120.0) tagfail5th2f->Fill(e_ee_invMass);
 	}
 	if (nJet == 2) {
-	  if (leadingJet_pT >=  30.0  && leadingJet_pT <  40.0) tagfail0leadjetpt2nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >=  40.0  && leadingJet_pT <  50.0) tagfail1leadjetpt2nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >=  50.0  && leadingJet_pT <  70.0) tagfail2leadjetpt2nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >=  70.0  && leadingJet_pT <  90.0) tagfail3leadjetpt2nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >=  90.0  && leadingJet_pT < 120.0) tagfail4leadjetpt2nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >= 120.0  && leadingJet_pT < 150.0) tagfail5leadjetpt2nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >= 150.0  && leadingJet_pT < 190.0) tagfail6leadjetpt2nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >= 190.0  && leadingJet_pT < 230.0) tagfail7leadjetpt2nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >= 230.0) tagfail8leadjetpt2nJet->Fill(e_ee_invMass);
+	  if (leadingJet_pT >=  30.0  && leadingJet_pT <  40.0) tagfail6th2f->Fill(e_ee_invMass);
+	  if (leadingJet_pT >=  40.0  && leadingJet_pT <  50.0) tagfail7th2f->Fill(e_ee_invMass);
+	  if (leadingJet_pT >=  50.0  && leadingJet_pT <  90.0) tagfail8th2f->Fill(e_ee_invMass);
+	  if (leadingJet_pT >=  90.0) tagfail9th2f->Fill(e_ee_invMass);
 	}
 	if (nJet == 3) {
-	  if (leadingJet_pT >=  30.0  && leadingJet_pT <  40.0) tagfail0leadjetpt3nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >=  40.0  && leadingJet_pT <  50.0) tagfail1leadjetpt3nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >=  50.0  && leadingJet_pT <  70.0) tagfail2leadjetpt3nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >=  70.0  && leadingJet_pT <  90.0) tagfail3leadjetpt3nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >=  90.0  && leadingJet_pT < 120.0) tagfail4leadjetpt3nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >= 120.0  && leadingJet_pT < 150.0) tagfail5leadjetpt3nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >= 150.0  && leadingJet_pT < 190.0) tagfail6leadjetpt3nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >= 190.0  && leadingJet_pT < 230.0) tagfail7leadjetpt3nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >= 230.0) tagfail8leadjetpt3nJet->Fill(e_ee_invMass);
+	  if (leadingJet_pT >=  30.0  && leadingJet_pT <  90.0) tagfail10th2f->Fill(e_ee_invMass);
+	  if (leadingJet_pT >=  90.0) tagfail11th2f->Fill(e_ee_invMass);
 	}
-	if (nJet == 4) {
-	  if (leadingJet_pT >=  30.0  && leadingJet_pT <  40.0) tagfail0leadjetpt4nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >=  40.0  && leadingJet_pT <  50.0) tagfail1leadjetpt4nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >=  50.0  && leadingJet_pT <  70.0) tagfail2leadjetpt4nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >=  70.0  && leadingJet_pT <  90.0) tagfail3leadjetpt4nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >=  90.0  && leadingJet_pT < 120.0) tagfail4leadjetpt4nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >= 120.0  && leadingJet_pT < 150.0) tagfail5leadjetpt4nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >= 150.0  && leadingJet_pT < 190.0) tagfail6leadjetpt4nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >= 190.0  && leadingJet_pT < 230.0) tagfail7leadjetpt4nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >= 230.0) tagfail8leadjetpt4nJet->Fill(e_ee_invMass);
-	}
-	if (nJet >= 5) {
-	  if (leadingJet_pT >=  30.0  && leadingJet_pT <  40.0) tagfail0leadjetpt5nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >=  40.0  && leadingJet_pT <  50.0) tagfail1leadjetpt5nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >=  50.0  && leadingJet_pT <  70.0) tagfail2leadjetpt5nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >=  70.0  && leadingJet_pT <  90.0) tagfail3leadjetpt5nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >=  90.0  && leadingJet_pT < 120.0) tagfail4leadjetpt5nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >= 120.0  && leadingJet_pT < 150.0) tagfail5leadjetpt5nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >= 150.0  && leadingJet_pT < 190.0) tagfail6leadjetpt5nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >= 190.0  && leadingJet_pT < 230.0) tagfail7leadjetpt5nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >= 230.0) tagfail8leadjetpt5nJet->Fill(e_ee_invMass);
+	if (nJet >= 4) {
+	  if (leadingJet_pT >=  30.0) tagfail12th2f->Fill(e_ee_invMass);
 	}
       }
     }
@@ -723,71 +543,26 @@ EfficiencyFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSetup)
 	  if (leadingJet_pT >= 190.0  && leadingJet_pT < 230.0) probepass7leadjetpt->Fill(e_ee_invMass);
 	  if (leadingJet_pT >= 230.0) probepass8leadjetpt->Fill(e_ee_invMass);
 	}
-	if (nJet == 0) {
-	  if (leadingJet_pT >=  30.0  && leadingJet_pT <  40.0) probepass0leadjetpt0nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >=  40.0  && leadingJet_pT <  50.0) probepass1leadjetpt0nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >=  50.0  && leadingJet_pT <  70.0) probepass2leadjetpt0nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >=  70.0  && leadingJet_pT <  90.0) probepass3leadjetpt0nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >=  90.0  && leadingJet_pT < 120.0) probepass4leadjetpt0nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >= 120.0  && leadingJet_pT < 150.0) probepass5leadjetpt0nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >= 150.0  && leadingJet_pT < 190.0) probepass6leadjetpt0nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >= 190.0  && leadingJet_pT < 230.0) probepass7leadjetpt0nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >= 230.0) probepass8leadjetpt0nJet->Fill(e_ee_invMass);
-	}
 	if (nJet == 1) {
-	  if (leadingJet_pT >=  30.0  && leadingJet_pT <  40.0) probepass0leadjetpt1nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >=  40.0  && leadingJet_pT <  50.0) probepass1leadjetpt1nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >=  50.0  && leadingJet_pT <  70.0) probepass2leadjetpt1nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >=  70.0  && leadingJet_pT <  90.0) probepass3leadjetpt1nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >=  90.0  && leadingJet_pT < 120.0) probepass4leadjetpt1nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >= 120.0  && leadingJet_pT < 150.0) probepass5leadjetpt1nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >= 150.0  && leadingJet_pT < 190.0) probepass6leadjetpt1nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >= 190.0  && leadingJet_pT < 230.0) probepass7leadjetpt1nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >= 230.0) probepass8leadjetpt1nJet->Fill(e_ee_invMass);
+	  if (leadingJet_pT >=  30.0  && leadingJet_pT <  40.0) probepass0th2f->Fill(e_ee_invMass);
+	  if (leadingJet_pT >=  40.0  && leadingJet_pT <  50.0) probepass1th2f->Fill(e_ee_invMass);
+	  if (leadingJet_pT >=  50.0  && leadingJet_pT <  70.0) probepass2th2f->Fill(e_ee_invMass);
+	  if (leadingJet_pT >=  70.0  && leadingJet_pT <  90.0) probepass3th2f->Fill(e_ee_invMass);
+	  if (leadingJet_pT >=  90.0  && leadingJet_pT < 120.0) probepass4th2f->Fill(e_ee_invMass);
+	  if (leadingJet_pT >= 120.0) probepass5th2f->Fill(e_ee_invMass);
 	}
 	if (nJet == 2) {
-	  if (leadingJet_pT >=  30.0  && leadingJet_pT <  40.0) probepass0leadjetpt2nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >=  40.0  && leadingJet_pT <  50.0) probepass1leadjetpt2nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >=  50.0  && leadingJet_pT <  70.0) probepass2leadjetpt2nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >=  70.0  && leadingJet_pT <  90.0) probepass3leadjetpt2nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >=  90.0  && leadingJet_pT < 120.0) probepass4leadjetpt2nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >= 120.0  && leadingJet_pT < 150.0) probepass5leadjetpt2nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >= 150.0  && leadingJet_pT < 190.0) probepass6leadjetpt2nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >= 190.0  && leadingJet_pT < 230.0) probepass7leadjetpt2nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >= 230.0) probepass8leadjetpt2nJet->Fill(e_ee_invMass);
+	  if (leadingJet_pT >=  30.0  && leadingJet_pT <  40.0) probepass6th2f->Fill(e_ee_invMass);
+	  if (leadingJet_pT >=  40.0  && leadingJet_pT <  50.0) probepass7th2f->Fill(e_ee_invMass);
+	  if (leadingJet_pT >=  50.0  && leadingJet_pT <  90.0) probepass8th2f->Fill(e_ee_invMass);
+	  if (leadingJet_pT >=  90.0) probepass9th2f->Fill(e_ee_invMass);
 	}
 	if (nJet == 3) {
-	  if (leadingJet_pT >=  30.0  && leadingJet_pT <  40.0) probepass0leadjetpt3nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >=  40.0  && leadingJet_pT <  50.0) probepass1leadjetpt3nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >=  50.0  && leadingJet_pT <  70.0) probepass2leadjetpt3nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >=  70.0  && leadingJet_pT <  90.0) probepass3leadjetpt3nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >=  90.0  && leadingJet_pT < 120.0) probepass4leadjetpt3nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >= 120.0  && leadingJet_pT < 150.0) probepass5leadjetpt3nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >= 150.0  && leadingJet_pT < 190.0) probepass6leadjetpt3nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >= 190.0  && leadingJet_pT < 230.0) probepass7leadjetpt3nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >= 230.0) probepass8leadjetpt3nJet->Fill(e_ee_invMass);
+	  if (leadingJet_pT >=  30.0  && leadingJet_pT <  90.0) probepass10th2f->Fill(e_ee_invMass);
+	  if (leadingJet_pT >=  90.0) probepass11th2f->Fill(e_ee_invMass);
 	}
-	if (nJet == 4) {
-	  if (leadingJet_pT >=  30.0  && leadingJet_pT <  40.0) probepass0leadjetpt4nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >=  40.0  && leadingJet_pT <  50.0) probepass1leadjetpt4nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >=  50.0  && leadingJet_pT <  70.0) probepass2leadjetpt4nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >=  70.0  && leadingJet_pT <  90.0) probepass3leadjetpt4nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >=  90.0  && leadingJet_pT < 120.0) probepass4leadjetpt4nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >= 120.0  && leadingJet_pT < 150.0) probepass5leadjetpt4nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >= 150.0  && leadingJet_pT < 190.0) probepass6leadjetpt4nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >= 190.0  && leadingJet_pT < 230.0) probepass7leadjetpt4nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >= 230.0) probepass8leadjetpt4nJet->Fill(e_ee_invMass);
-	}
-	if (nJet >= 5) {
-	  if (leadingJet_pT >=  30.0  && leadingJet_pT <  40.0) probepass0leadjetpt5nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >=  40.0  && leadingJet_pT <  50.0) probepass1leadjetpt5nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >=  50.0  && leadingJet_pT <  70.0) probepass2leadjetpt5nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >=  70.0  && leadingJet_pT <  90.0) probepass3leadjetpt5nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >=  90.0  && leadingJet_pT < 120.0) probepass4leadjetpt5nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >= 120.0  && leadingJet_pT < 150.0) probepass5leadjetpt5nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >= 150.0  && leadingJet_pT < 190.0) probepass6leadjetpt5nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >= 190.0  && leadingJet_pT < 230.0) probepass7leadjetpt5nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >= 230.0) probepass8leadjetpt5nJet->Fill(e_ee_invMass);
+	if (nJet >= 4) {
+	  if (leadingJet_pT >=  30.0) probepass12th2f->Fill(e_ee_invMass);
 	}
       }
       else{
@@ -821,71 +596,26 @@ EfficiencyFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSetup)
 	  if (leadingJet_pT >= 190.0  && leadingJet_pT < 230.0) probefail7leadjetpt->Fill(e_ee_invMass);
 	  if (leadingJet_pT >= 230.0) probefail8leadjetpt->Fill(e_ee_invMass);
 	}
-	if (nJet == 0) {
-	  if (leadingJet_pT >=  30.0  && leadingJet_pT <  40.0) probefail0leadjetpt0nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >=  40.0  && leadingJet_pT <  50.0) probefail1leadjetpt0nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >=  50.0  && leadingJet_pT <  70.0) probefail2leadjetpt0nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >=  70.0  && leadingJet_pT <  90.0) probefail3leadjetpt0nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >=  90.0  && leadingJet_pT < 120.0) probefail4leadjetpt0nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >= 120.0  && leadingJet_pT < 150.0) probefail5leadjetpt0nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >= 150.0  && leadingJet_pT < 190.0) probefail6leadjetpt0nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >= 190.0  && leadingJet_pT < 230.0) probefail7leadjetpt0nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >= 230.0) probefail8leadjetpt0nJet->Fill(e_ee_invMass);
-	}
 	if (nJet == 1) {
-	  if (leadingJet_pT >=  30.0  && leadingJet_pT <  40.0) probefail0leadjetpt1nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >=  40.0  && leadingJet_pT <  50.0) probefail1leadjetpt1nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >=  50.0  && leadingJet_pT <  70.0) probefail2leadjetpt1nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >=  70.0  && leadingJet_pT <  90.0) probefail3leadjetpt1nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >=  90.0  && leadingJet_pT < 120.0) probefail4leadjetpt1nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >= 120.0  && leadingJet_pT < 150.0) probefail5leadjetpt1nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >= 150.0  && leadingJet_pT < 190.0) probefail6leadjetpt1nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >= 190.0  && leadingJet_pT < 230.0) probefail7leadjetpt1nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >= 230.0) probefail8leadjetpt1nJet->Fill(e_ee_invMass);
+	  if (leadingJet_pT >=  30.0  && leadingJet_pT <  40.0) probefail0th2f->Fill(e_ee_invMass);
+	  if (leadingJet_pT >=  40.0  && leadingJet_pT <  50.0) probefail1th2f->Fill(e_ee_invMass);
+	  if (leadingJet_pT >=  50.0  && leadingJet_pT <  70.0) probefail2th2f->Fill(e_ee_invMass);
+	  if (leadingJet_pT >=  70.0  && leadingJet_pT <  90.0) probefail3th2f->Fill(e_ee_invMass);
+	  if (leadingJet_pT >=  90.0  && leadingJet_pT < 120.0) probefail4th2f->Fill(e_ee_invMass);
+	  if (leadingJet_pT >= 120.0) probefail5th2f->Fill(e_ee_invMass);
 	}
 	if (nJet == 2) {
-	  if (leadingJet_pT >=  30.0  && leadingJet_pT <  40.0) probefail0leadjetpt2nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >=  40.0  && leadingJet_pT <  50.0) probefail1leadjetpt2nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >=  50.0  && leadingJet_pT <  70.0) probefail2leadjetpt2nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >=  70.0  && leadingJet_pT <  90.0) probefail3leadjetpt2nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >=  90.0  && leadingJet_pT < 120.0) probefail4leadjetpt2nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >= 120.0  && leadingJet_pT < 150.0) probefail5leadjetpt2nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >= 150.0  && leadingJet_pT < 190.0) probefail6leadjetpt2nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >= 190.0  && leadingJet_pT < 230.0) probefail7leadjetpt2nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >= 230.0) probefail8leadjetpt2nJet->Fill(e_ee_invMass);
+	  if (leadingJet_pT >=  30.0  && leadingJet_pT <  40.0) probefail6th2f->Fill(e_ee_invMass);
+	  if (leadingJet_pT >=  40.0  && leadingJet_pT <  50.0) probefail7th2f->Fill(e_ee_invMass);
+	  if (leadingJet_pT >=  50.0  && leadingJet_pT <  90.0) probefail8th2f->Fill(e_ee_invMass);
+	  if (leadingJet_pT >=  90.0) probefail9th2f->Fill(e_ee_invMass);
 	}
 	if (nJet == 3) {
-	  if (leadingJet_pT >=  30.0  && leadingJet_pT <  40.0) probefail0leadjetpt3nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >=  40.0  && leadingJet_pT <  50.0) probefail1leadjetpt3nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >=  50.0  && leadingJet_pT <  70.0) probefail2leadjetpt3nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >=  70.0  && leadingJet_pT <  90.0) probefail3leadjetpt3nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >=  90.0  && leadingJet_pT < 120.0) probefail4leadjetpt3nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >= 120.0  && leadingJet_pT < 150.0) probefail5leadjetpt3nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >= 150.0  && leadingJet_pT < 190.0) probefail6leadjetpt3nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >= 190.0  && leadingJet_pT < 230.0) probefail7leadjetpt3nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >= 230.0) probefail8leadjetpt3nJet->Fill(e_ee_invMass);
+	  if (leadingJet_pT >=  30.0  && leadingJet_pT <  90.0) probefail10th2f->Fill(e_ee_invMass);
+	  if (leadingJet_pT >=  90.0) probefail11th2f->Fill(e_ee_invMass);
 	}
-	if (nJet == 4) {
-	  if (leadingJet_pT >=  30.0  && leadingJet_pT <  40.0) probefail0leadjetpt4nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >=  40.0  && leadingJet_pT <  50.0) probefail1leadjetpt4nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >=  50.0  && leadingJet_pT <  70.0) probefail2leadjetpt4nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >=  70.0  && leadingJet_pT <  90.0) probefail3leadjetpt4nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >=  90.0  && leadingJet_pT < 120.0) probefail4leadjetpt4nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >= 120.0  && leadingJet_pT < 150.0) probefail5leadjetpt4nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >= 150.0  && leadingJet_pT < 190.0) probefail6leadjetpt4nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >= 190.0  && leadingJet_pT < 230.0) probefail7leadjetpt4nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >= 230.0) probefail8leadjetpt4nJet->Fill(e_ee_invMass);
-	}
-	if (nJet >= 5) {
-	  if (leadingJet_pT >=  30.0  && leadingJet_pT <  40.0) probefail0leadjetpt5nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >=  40.0  && leadingJet_pT <  50.0) probefail1leadjetpt5nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >=  50.0  && leadingJet_pT <  70.0) probefail2leadjetpt5nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >=  70.0  && leadingJet_pT <  90.0) probefail3leadjetpt5nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >=  90.0  && leadingJet_pT < 120.0) probefail4leadjetpt5nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >= 120.0  && leadingJet_pT < 150.0) probefail5leadjetpt5nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >= 150.0  && leadingJet_pT < 190.0) probefail6leadjetpt5nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >= 190.0  && leadingJet_pT < 230.0) probefail7leadjetpt5nJet->Fill(e_ee_invMass);
-	  if (leadingJet_pT >= 230.0) probefail8leadjetpt5nJet->Fill(e_ee_invMass);
+	if (nJet >= 4) {
+	  if (leadingJet_pT >=  30.0) probefail12th2f->Fill(e_ee_invMass);
 	}
       }
     }  
