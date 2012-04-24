@@ -42,6 +42,7 @@ class EfficiencyFilter : public edm::EDFilter, public SelectionUtils {
       // ----------member data ---------------------------
 
       edm::InputTag theElectronCollectionLabel;
+      edm::InputTag theHLTElectronCollectionLabel;
       edm::InputTag superClusterCollection_EB_;
       edm::InputTag superClusterCollection_EE_;
       edm::InputTag triggerCollection_; 
@@ -263,6 +264,7 @@ class EfficiencyFilter : public edm::EDFilter, public SelectionUtils {
 EfficiencyFilter::EfficiencyFilter (const edm::ParameterSet & parameters)
 {
   theElectronCollectionLabel = parameters.getParameter < edm::InputTag > ("electronCollection");
+  theHLTElectronCollectionLabel = parameters.getParameter < edm::InputTag > ("HLTelectronCollection");
   superClusterCollection_EB_ = parameters.getParameter < edm::InputTag > ("superClusterCollection_EB");
   superClusterCollection_EE_ = parameters.getParameter < edm::InputTag > ("superClusterCollection_EE");
   VertexCollectionTag_  = parameters.getParameter<edm::InputTag>("VertexCollectionTag");

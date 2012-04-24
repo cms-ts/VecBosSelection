@@ -13,7 +13,7 @@ Implementation:
 //
 // Original Author:  Vieri Candelise & Matteo Marone
 //         Created:  Wed May 11 14:53:26 CESDo2011
-// $Id: EfficiencyFilter.cc,v 1.23 2012/04/16 14:33:42 schizzi Exp $
+// $Id: EfficiencyFilter.cc,v 1.24 2012/04/19 16:31:46 schizzi Exp $
 
 
 
@@ -126,6 +126,9 @@ EfficiencyFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSetup)
   iEvent.getByLabel (theElectronCollectionLabel, electronCollection);
   if (!electronCollection.isValid ()) return false;
 
+  Handle < edm::RefToBaseVector<reco::GsfElectron> > HLTelectronCollection;
+  iEvent.getByLabel (theHLTElectronCollectionLabel, HLTelectronCollection);
+  if (Debug && !electronCollection.isValid()) cout << "Invalid HLT Electron Collection for matching" << endl;
 
   pat::ElectronCollection::const_iterator highestptele;
   pat::ElectronCollection::const_iterator secondptele;
@@ -134,16 +137,24 @@ EfficiencyFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSetup)
   int HLTmatches_TOTAL=0;
   int HLTmatches_FAIL=0;
 
+  bool HLTmatch = false;
+
   int i=0;
   if (electronCollection->size()<=1) return false;
   bool protection=false;
   
   for (pat::ElectronCollection::const_iterator recoElectron = electronCollection->begin (); recoElectron != electronCollection->end (); recoElectron++) {
+    for (edm::RefToBaseVector<reco::GsfElectron>::const_iterator HLTElectron = HLTelectronCollection->begin (); HLTElectron != HLTelectronCollection->end (); HLTElectron++) {
+      double deltaReles = sqrt( pow((*HLTElectron)->eta()-recoElectron->eta(),2)+pow((*HLTElectron)->phi()-recoElectron->phi(),2) );
+      if (deltaReles < 0.1) {
+	HLTmatch = true;
+      }
+    }
     protection=true;
     if (Debug) cout<<"Electron pt value ->"<<recoElectron->pt()<<endl;
     if (Debug) cout<<" MMMM ele trigger size "<<recoElectron->triggerObjectMatches().size()<<endl;
     HLTmatches_TOTAL++;
-    if ( SelectionUtils::DoHLTMatch(recoElectron,iEvent) ) {HLTmatches_PASS++;} else {HLTmatches_FAIL++;}
+    if ( HLTmatch ) {HLTmatches_PASS++;} else {HLTmatches_FAIL++;}
     if (recoElectron->pt()>20.0 && (WP80_efficiency_ || HLTele17_efficiency_ || HLTele8_efficiency_)) {
       if (i==0) highestptele=recoElectron;
       if (i==1){
@@ -195,6 +206,29 @@ EfficiencyFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSetup)
 
   if((WP80_efficiency_ || HLTele17_efficiency_ || HLTele8_efficiency_) && i<2) return false;
   if(i<1) return false;
+
+  bool HLTmatch_highestptele = false;
+  bool HLTmatch_secondptele = false;
+
+  double deltaReles2;
+  double deltaReles1;
+
+  for (edm::RefToBaseVector<reco::GsfElectron>::const_iterator HLTElectron = HLTelectronCollection->begin (); HLTElectron != HLTelectronCollection->end (); HLTElectron++) {
+
+    if (WP80_efficiency_ || HLTele17_efficiency_ || HLTele8_efficiency_) {
+      deltaReles2 = sqrt( pow((*HLTElectron)->eta()-secondptele->eta(),2)+pow((*HLTElectron)->phi()-secondptele->phi(),2) );
+    } else {
+      deltaReles2 = sqrt( pow((*HLTElectron)->eta()-highestenergy_SC->eta(),2)+pow((*HLTElectron)->phi()-highestenergy_SC->phi(),2) );
+    }
+    deltaReles1 = sqrt( pow((*HLTElectron)->eta()-highestptele->eta(),2)+pow((*HLTElectron)->phi()-highestptele->phi(),2) );
+    if (deltaReles1 < 0.1) {
+      HLTmatch_highestptele = true;
+    }
+    if (deltaReles2 < 0.1) {
+      HLTmatch_secondptele = true;
+    }
+  }
+
 
   //Calculating tag & probe stuff
   TLorentzVector tagv;
@@ -268,7 +302,7 @@ EfficiencyFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSetup)
 
   if (WP80_efficiency_ || HLTele17_efficiency_ || HLTele8_efficiency_) {
     // 1st leg WP80 efficiency
-    if ((WP80_efficiency_ && SelectionUtils::DoWP80Pf(highestptele,iEvent,removePU_) && SelectionUtils::DoHLTMatch(highestptele,iEvent)) ||
+    if ((WP80_efficiency_ && SelectionUtils::DoWP80Pf(highestptele,iEvent,removePU_) && HLTmatch_highestptele) ||
 	((HLTele17_efficiency_ || HLTele8_efficiency_) && SelectionUtils::DoWP80Pf(highestptele,iEvent,removePU_))
 	){
       probeall_pt->Fill(secondptele->pt());
@@ -277,7 +311,7 @@ EfficiencyFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSetup)
       probeall_leadjetpt->Fill(leadingJet_pT);
       if ((WP80_efficiency_ && !New_HE_ && SelectionUtils::DoWP80Pf(secondptele,iEvent,removePU_)) || 
 	  (WP80_efficiency_ && New_HE_ && SelectionUtils::DoWP80Pf_NewHE(secondptele,iEvent,removePU_)) ||
-	  ((HLTele17_efficiency_ || HLTele8_efficiency_) && SelectionUtils::DoHLTMatch(secondptele,iEvent))
+	  ((HLTele17_efficiency_ || HLTele8_efficiency_) && HLTmatch_secondptele)
 	  ){
 	probepass_pt->Fill(secondptele->pt());
 	probepass_eta->Fill(secondptele->eta());
@@ -385,7 +419,7 @@ EfficiencyFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSetup)
 	}
       }
     }  
-    if ((WP80_efficiency_ && SelectionUtils::DoWP80Pf(secondptele,iEvent,removePU_) && SelectionUtils::DoHLTMatch(secondptele,iEvent)) ||
+    if ((WP80_efficiency_ && SelectionUtils::DoWP80Pf(secondptele,iEvent,removePU_) && HLTmatch_secondptele) ||
 	((HLTele17_efficiency_ || HLTele8_efficiency_) && SelectionUtils::DoWP80Pf(secondptele,iEvent,removePU_))
 	){
       tagall_pt->Fill(highestptele->pt());
@@ -394,7 +428,7 @@ EfficiencyFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSetup)
       tagall_leadjetpt->Fill(leadingJet_pT);
       if ( (WP80_efficiency_ && !New_HE_ && SelectionUtils::DoWP80Pf(highestptele,iEvent,removePU_)) || 
 	   (WP80_efficiency_ && New_HE_ && SelectionUtils::DoWP80Pf_NewHE(highestptele,iEvent,removePU_)) ||
-	   ((HLTele17_efficiency_ || HLTele8_efficiency_) && SelectionUtils::DoHLTMatch(highestptele,iEvent))
+	   ((HLTele17_efficiency_ || HLTele8_efficiency_) && HLTmatch_highestptele)
 	   ){
 	tagpass_pt->Fill(highestptele->pt());
 	tagpass_eta->Fill(highestptele->eta());
