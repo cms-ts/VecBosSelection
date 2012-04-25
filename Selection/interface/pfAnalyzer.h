@@ -46,8 +46,15 @@ class pfAnalyzer : public edm::EDProducer, public SelectionUtils {
 		edm::InputTag theElectronCollectionLabel;
 		edm::InputTag pflowEleCollection_;
 		bool removePU_;
+		double secondEleEnThrhold_; 
+		double firstEleEnThrhold_;
+		double lowZmassLimit_;
+		double highZmassLimit_;
+		double maxEtaForElectron_;
+
 		bool Debug2; //Activate with true if you wonna have verbosity for debug
 		TH1I* passIDEleCriteria;
+		TH1I* eleSelStepByStep;
 		TH1D* eventMultip;
 		TH1F* gsfelEt;
 		TH1D* Conversion;
@@ -79,13 +86,19 @@ pfAnalyzer::pfAnalyzer (const edm::ParameterSet & parameters)
    theElectronCollectionLabel = parameters.getParameter <edm::InputTag> ("electronCollection");
    pflowEleCollection_ = parameters.getUntrackedParameter<edm::InputTag>("pflowEleCollection",edm::InputTag("particleFlow"));
    removePU_ = parameters.getParameter<bool>("removePU");
+   secondEleEnThrhold_   = parameters.getParameter<double>("secondEleEnThrhold");
+   firstEleEnThrhold_    = parameters.getParameter<double>("firstEleEnThrhold");
+   lowZmassLimit_        = parameters.getParameter<double>("lowZmassLimit");
+   highZmassLimit_       = parameters.getParameter<double>("highZmassLimit");
+   maxEtaForElectron_    = parameters.getParameter<double>("maxEtaForElectron");
    produces<reco::PFCandidateCollection>();
    
 
    //Initializations...
    edm::Service<TFileService> fs;
 
-   passIDEleCriteria = fs->make<TH1I>("passIDEleCriteria","Ele Id pass/not pass... 3 entries each ele", 3, 0, 3);
+   passIDEleCriteria = fs->make<TH1I>("passIDEleCriteria","Ele Id pass/not pass... 3 entries each ele", 4, 0, 4);
+   eleSelStepByStep = fs->make<TH1I>("eleSelStepByStep","History of selected/rejected ele", 13, 0, 13);
    
    eventAccept= fs->make<TH1D>("eventAccept","There is corresponding PF", 20, 0, 20);
    h_electronEn= fs->make<TH1D>("h_electronEn","electronEn", 200, 0, 200);
