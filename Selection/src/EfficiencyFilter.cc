@@ -13,7 +13,7 @@ Implementation:
 //
 // Original Author:  Vieri Candelise & Matteo Marone
 //         Created:  Wed May 11 14:53:26 CESDo2011
-// $Id: EfficiencyFilter.cc,v 1.24 2012/04/19 16:31:46 schizzi Exp $
+// $Id: EfficiencyFilter.cc,v 1.25 2012/04/24 16:31:09 schizzi Exp $
 
 
 
@@ -144,6 +144,7 @@ EfficiencyFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSetup)
   bool protection=false;
   
   for (pat::ElectronCollection::const_iterator recoElectron = electronCollection->begin (); recoElectron != electronCollection->end (); recoElectron++) {
+    HLTmatch = false;
     for (edm::RefToBaseVector<reco::GsfElectron>::const_iterator HLTElectron = HLTelectronCollection->begin (); HLTElectron != HLTelectronCollection->end (); HLTElectron++) {
       double deltaReles = sqrt( pow((*HLTElectron)->eta()-recoElectron->eta(),2)+pow((*HLTElectron)->phi()-recoElectron->phi(),2) );
       if (deltaReles < 0.1) {
@@ -206,6 +207,8 @@ EfficiencyFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSetup)
 
   if((WP80_efficiency_ || HLTele17_efficiency_ || HLTele8_efficiency_) && i<2) return false;
   if(i<1) return false;
+
+  // Verify matching with trigger for the two hisghest pt electrons (set flags to TRUE if matched):
 
   bool HLTmatch_highestptele = false;
   bool HLTmatch_secondptele = false;
@@ -541,7 +544,7 @@ EfficiencyFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSetup)
   // RECO:
 
   if (RECO_efficiency_) {
-    if (SelectionUtils::DoWP80Pf(highestptele,iEvent,removePU_)){
+    if (SelectionUtils::DoWP80Pf(highestptele,iEvent,removePU_) && HLTmatch_highestptele){
       probeall_pt->Fill(highestenergy_SC->energy());
       probeall_eta->Fill(highestenergy_SC->eta());
       probeall_mee->Fill(e_ee_invMass);
