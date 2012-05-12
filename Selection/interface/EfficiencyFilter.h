@@ -131,6 +131,26 @@ class EfficiencyFilter : public edm::EDFilter, public SelectionUtils {
       TH1D *probefail7leadjetpt; 
       TH1D *probefail8leadjetpt; 
 
+      TH1D *probepass0subleadjetpt;
+      TH1D *probepass1subleadjetpt;
+      TH1D *probepass2subleadjetpt;
+      TH1D *probepass3subleadjetpt;
+      TH1D *probepass4subleadjetpt;
+      TH1D *probepass5subleadjetpt;
+      TH1D *probefail0subleadjetpt ;
+      TH1D *probefail1subleadjetpt ;
+      TH1D *probefail2subleadjetpt ;
+      TH1D *probefail3subleadjetpt ;
+      TH1D *probefail4subleadjetpt; 
+      TH1D *probefail5subleadjetpt; 
+
+      TH1D *probepass0subsubleadjetpt;
+      TH1D *probepass1subsubleadjetpt;
+      TH1D *probepass2subsubleadjetpt;
+      TH1D *probefail0subsubleadjetpt ;
+      TH1D *probefail1subsubleadjetpt ;
+      TH1D *probefail2subsubleadjetpt ;
+
       TH1D *probepass0th2f;
       TH1D *probepass1th2f;
       TH1D *probepass2th2f;
@@ -226,6 +246,26 @@ class EfficiencyFilter : public edm::EDFilter, public SelectionUtils {
       TH1D *tagfail7leadjetpt; 
       TH1D *tagfail8leadjetpt; 
 
+      TH1D *tagpass0subleadjetpt;
+      TH1D *tagpass1subleadjetpt;
+      TH1D *tagpass2subleadjetpt;
+      TH1D *tagpass3subleadjetpt;
+      TH1D *tagpass4subleadjetpt;
+      TH1D *tagpass5subleadjetpt;
+      TH1D *tagfail0subleadjetpt ;
+      TH1D *tagfail1subleadjetpt ;
+      TH1D *tagfail2subleadjetpt ;
+      TH1D *tagfail3subleadjetpt ;
+      TH1D *tagfail4subleadjetpt; 
+      TH1D *tagfail5subleadjetpt; 
+
+      TH1D *tagpass0subsubleadjetpt;
+      TH1D *tagpass1subsubleadjetpt;
+      TH1D *tagpass2subsubleadjetpt;
+      TH1D *tagfail0subsubleadjetpt ;
+      TH1D *tagfail1subsubleadjetpt ;
+      TH1D *tagfail2subsubleadjetpt ;
+
       TH1D *tagpass0th2f;
       TH1D *tagpass1th2f;
       TH1D *tagpass2th2f;
@@ -289,9 +329,9 @@ EfficiencyFilter::EfficiencyFilter (const edm::ParameterSet & parameters)
   //Initializations...
   edm::Service<TFileService> fs;
 
-  int nInvMassBins = 40;
-  double InvMassLowLimit = 71.0;
-  double InvMassHighLimit = 111.0;
+  int nInvMassBins = 60;
+  double InvMassLowLimit = 60.0;
+  double InvMassHighLimit = 120.0;
 
   probeall_mee  = fs->make<TH1D>("probeall_mee","Invariant mass when probe fails or passes", nInvMassBins, InvMassLowLimit, InvMassHighLimit);
   probefail_mee = fs->make<TH1D>("probefail_mee","Invariant mass when probe fails", nInvMassBins, InvMassLowLimit, InvMassHighLimit);
@@ -354,6 +394,28 @@ EfficiencyFilter::EfficiencyFilter (const edm::ParameterSet & parameters)
   probefail6leadjetpt = fs->make<TH1D>("probefail6leadjetpt","Invariant mass when probe fail", nInvMassBins, InvMassLowLimit, InvMassHighLimit);
   probefail7leadjetpt = fs->make<TH1D>("probefail7leadjetpt","Invariant mass when probe fail", nInvMassBins, InvMassLowLimit, InvMassHighLimit);
   probefail8leadjetpt = fs->make<TH1D>("probefail8leadjetpt","Invariant mass when probe fail", nInvMassBins, InvMassLowLimit, InvMassHighLimit);
+
+  probepass0subleadjetpt = fs->make<TH1D>("probepass0subleadjetpt","Invariant mass when probe pass", nInvMassBins, InvMassLowLimit, InvMassHighLimit);
+  probepass1subleadjetpt = fs->make<TH1D>("probepass1subleadjetpt","Invariant mass when probe pass", nInvMassBins, InvMassLowLimit, InvMassHighLimit);
+  probepass2subleadjetpt = fs->make<TH1D>("probepass2subleadjetpt","Invariant mass when probe pass", nInvMassBins, InvMassLowLimit, InvMassHighLimit);
+  probepass3subleadjetpt = fs->make<TH1D>("probepass3subleadjetpt","Invariant mass when probe pass", nInvMassBins, InvMassLowLimit, InvMassHighLimit);
+  probepass4subleadjetpt = fs->make<TH1D>("probepass4subleadjetpt","Invariant mass when probe pass", nInvMassBins, InvMassLowLimit, InvMassHighLimit);
+  probepass5subleadjetpt = fs->make<TH1D>("probepass5subleadjetpt","Invariant mass when probe pass", nInvMassBins, InvMassLowLimit, InvMassHighLimit);
+
+  probefail0subleadjetpt = fs->make<TH1D>("probefail0subleadjetpt","Invariant mass when probe fail", nInvMassBins, InvMassLowLimit, InvMassHighLimit);
+  probefail1subleadjetpt = fs->make<TH1D>("probefail1subleadjetpt","Invariant mass when probe fail", nInvMassBins, InvMassLowLimit, InvMassHighLimit);
+  probefail2subleadjetpt = fs->make<TH1D>("probefail2subleadjetpt","Invariant mass when probe fail", nInvMassBins, InvMassLowLimit, InvMassHighLimit);
+  probefail3subleadjetpt = fs->make<TH1D>("probefail3subleadjetpt","Invariant mass when probe fail", nInvMassBins, InvMassLowLimit, InvMassHighLimit);
+  probefail4subleadjetpt = fs->make<TH1D>("probefail4subleadjetpt","Invariant mass when probe fail", nInvMassBins, InvMassLowLimit, InvMassHighLimit);
+  probefail5subleadjetpt = fs->make<TH1D>("probefail5subleadjetpt","Invariant mass when probe fail", nInvMassBins, InvMassLowLimit, InvMassHighLimit);
+
+  probepass0subsubleadjetpt = fs->make<TH1D>("probepass0subsubleadjetpt","Invariant mass when probe pass", nInvMassBins, InvMassLowLimit, InvMassHighLimit);
+  probepass1subsubleadjetpt = fs->make<TH1D>("probepass1subsubleadjetpt","Invariant mass when probe pass", nInvMassBins, InvMassLowLimit, InvMassHighLimit);
+  probepass2subsubleadjetpt = fs->make<TH1D>("probepass2subsubleadjetpt","Invariant mass when probe pass", nInvMassBins, InvMassLowLimit, InvMassHighLimit);
+
+  probefail0subsubleadjetpt = fs->make<TH1D>("probefail0subsubleadjetpt","Invariant mass when probe fail", nInvMassBins, InvMassLowLimit, InvMassHighLimit);
+  probefail1subsubleadjetpt = fs->make<TH1D>("probefail1subsubleadjetpt","Invariant mass when probe fail", nInvMassBins, InvMassLowLimit, InvMassHighLimit);
+  probefail2subsubleadjetpt = fs->make<TH1D>("probefail2subsubleadjetpt","Invariant mass when probe fail", nInvMassBins, InvMassLowLimit, InvMassHighLimit);
 
   probepass0th2f = fs->make<TH1D>("probepass0th2f","Invariant mass when probe pass", nInvMassBins, InvMassLowLimit, InvMassHighLimit);
   probepass1th2f = fs->make<TH1D>("probepass1th2f","Invariant mass when probe pass", nInvMassBins, InvMassLowLimit, InvMassHighLimit);
@@ -444,6 +506,28 @@ EfficiencyFilter::EfficiencyFilter (const edm::ParameterSet & parameters)
   tagfail6leadjetpt = fs->make<TH1D>("tagfail6leadjetpt","Invariant mass when tag fail", nInvMassBins, InvMassLowLimit, InvMassHighLimit);
   tagfail7leadjetpt = fs->make<TH1D>("tagfail7leadjetpt","Invariant mass when tag fail", nInvMassBins, InvMassLowLimit, InvMassHighLimit);
   tagfail8leadjetpt = fs->make<TH1D>("tagfail8leadjetpt","Invariant mass when tag fail", nInvMassBins, InvMassLowLimit, InvMassHighLimit);
+
+  tagpass0subleadjetpt = fs->make<TH1D>("tagpass0subleadjetpt","Invariant mass when tag pass", nInvMassBins, InvMassLowLimit, InvMassHighLimit);
+  tagpass1subleadjetpt = fs->make<TH1D>("tagpass1subleadjetpt","Invariant mass when tag pass", nInvMassBins, InvMassLowLimit, InvMassHighLimit);
+  tagpass2subleadjetpt = fs->make<TH1D>("tagpass2subleadjetpt","Invariant mass when tag pass", nInvMassBins, InvMassLowLimit, InvMassHighLimit);
+  tagpass3subleadjetpt = fs->make<TH1D>("tagpass3subleadjetpt","Invariant mass when tag pass", nInvMassBins, InvMassLowLimit, InvMassHighLimit);
+  tagpass4subleadjetpt = fs->make<TH1D>("tagpass4subleadjetpt","Invariant mass when tag pass", nInvMassBins, InvMassLowLimit, InvMassHighLimit);
+  tagpass5subleadjetpt = fs->make<TH1D>("tagpass5subleadjetpt","Invariant mass when tag pass", nInvMassBins, InvMassLowLimit, InvMassHighLimit);
+
+  tagfail0subleadjetpt = fs->make<TH1D>("tagfail0subleadjetpt","Invariant mass when tag fail", nInvMassBins, InvMassLowLimit, InvMassHighLimit);
+  tagfail1subleadjetpt = fs->make<TH1D>("tagfail1subleadjetpt","Invariant mass when tag fail", nInvMassBins, InvMassLowLimit, InvMassHighLimit);
+  tagfail2subleadjetpt = fs->make<TH1D>("tagfail2subleadjetpt","Invariant mass when tag fail", nInvMassBins, InvMassLowLimit, InvMassHighLimit);
+  tagfail3subleadjetpt = fs->make<TH1D>("tagfail3subleadjetpt","Invariant mass when tag fail", nInvMassBins, InvMassLowLimit, InvMassHighLimit);
+  tagfail4subleadjetpt = fs->make<TH1D>("tagfail4subleadjetpt","Invariant mass when tag fail", nInvMassBins, InvMassLowLimit, InvMassHighLimit);
+  tagfail5subleadjetpt = fs->make<TH1D>("tagfail5subleadjetpt","Invariant mass when tag fail", nInvMassBins, InvMassLowLimit, InvMassHighLimit);
+
+  tagpass0subsubleadjetpt = fs->make<TH1D>("tagpass0subsubleadjetpt","Invariant mass when tag pass", nInvMassBins, InvMassLowLimit, InvMassHighLimit);
+  tagpass1subsubleadjetpt = fs->make<TH1D>("tagpass1subsubleadjetpt","Invariant mass when tag pass", nInvMassBins, InvMassLowLimit, InvMassHighLimit);
+  tagpass2subsubleadjetpt = fs->make<TH1D>("tagpass2subsubleadjetpt","Invariant mass when tag pass", nInvMassBins, InvMassLowLimit, InvMassHighLimit);
+
+  tagfail0subsubleadjetpt = fs->make<TH1D>("tagfail0subsubleadjetpt","Invariant mass when tag fail", nInvMassBins, InvMassLowLimit, InvMassHighLimit);
+  tagfail1subsubleadjetpt = fs->make<TH1D>("tagfail1subsubleadjetpt","Invariant mass when tag fail", nInvMassBins, InvMassLowLimit, InvMassHighLimit);
+  tagfail2subsubleadjetpt = fs->make<TH1D>("tagfail2subsubleadjetpt","Invariant mass when tag fail", nInvMassBins, InvMassLowLimit, InvMassHighLimit);
 
   tagpass0th2f = fs->make<TH1D>("tagpass0th2f","Invariant mass when tag pass", nInvMassBins, InvMassLowLimit, InvMassHighLimit);
   tagpass1th2f = fs->make<TH1D>("tagpass1th2f","Invariant mass when tag pass", nInvMassBins, InvMassLowLimit, InvMassHighLimit);
