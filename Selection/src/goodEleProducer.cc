@@ -50,7 +50,7 @@ goodEleProducer::produce(edm::Event & iEvent, edm::EventSetup const & iSetup)
 	if (result[1]) passIDEleCriteria->SetBinContent(2,passIDEleCriteria->GetBinContent(2)+1);
 	if (result[2]) passIDEleCriteria->SetBinContent(3,passIDEleCriteria->GetBinContent(3)+1);
 	
-	if ( SelectionUtils::DoWP80Pf(recoElectron,iEvent,removePU_) 
+	if ( SelectionUtils::DoWP80Pf(recoElectron,iEvent) 
 	     && SelectionUtils::DoHLTMatch(recoElectron,iEvent) 
 	     //&& recoElectron->pt()>20.0
 	   ){

@@ -13,7 +13,7 @@ Implementation:
 //
 // Original Author:  Vieri Candelise, Matteo Marone & Davide Scaini
 //         Created:  Thu Dec 11 10:46:26 CEST 2011
-// $Id: ZpatFilterPf.cc,v 1.6 2012/03/08 11:11:18 montanin Exp $
+// $Id: ZpatFilterPf.cc,v 1.7 2012/03/29 17:55:39 montanin Exp $
 //
 //
 
@@ -247,7 +247,7 @@ ZpatFilterPf::filter (edm::Event & iEvent, edm::EventSetup const & iSetup)
     if (result[0] && result[1] && result[2]) WP80Count++;
     if (WP80Count==2) eleSelStepByStep->SetBinContent(9,eleSelStepByStep->GetBinContent(9)+1); //(4) + 2 ele WP80 (5)
 
-    if ( SelectionUtils::DoWP80Pf(recoElectron,iEvent,removePU_) && SelectionUtils::DoHLTMatch(recoElectron,iEvent) && recoElectron->pt()>secondEleEnThrhold){
+    if ( SelectionUtils::DoWP80Pf(recoElectron,iEvent) && SelectionUtils::DoHLTMatch(recoElectron,iEvent) && recoElectron->pt()>secondEleEnThrhold){
        lowThrholdCount++;
       if (lowThrholdCount==2)eleSelStepByStep->SetBinContent(10,eleSelStepByStep->GetBinContent(10)+1); // (5) + 2 ele pt > lowTh (6)
 

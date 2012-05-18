@@ -98,7 +98,7 @@ pfAnalyzer::produce(edm::Event & iEvent, edm::EventSetup const & iSetup)
 	if (WP80Count==2) eleSelStepByStep->SetBinContent(9,eleSelStepByStep->GetBinContent(9)+1); //(4) + 2 ele WP80 (5)
 
 
-	if ( SelectionUtils::DoWP80Pf(recoElectron,iEvent,removePU_) && SelectionUtils::DoHLTMatch(recoElectron,iEvent) 
+	if ( SelectionUtils::DoWP80Pf(recoElectron,iEvent) && SelectionUtils::DoHLTMatch(recoElectron,iEvent) 
 	     && recoElectron->pt()>secondEleEnThrhold){
 	   lowThrholdCount++;
 	   if (lowThrholdCount==2)
