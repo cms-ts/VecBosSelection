@@ -127,41 +127,14 @@ bool SelectionUtils::DoWP80(pat::ElectronCollection::const_iterator recoElectron
 }
 
 //DO the WP80Pf analysis
-bool SelectionUtils::DoWP80Pf(pat::ElectronCollection::const_iterator recoElectron,edm::Event& iEvent,bool removePU_)
+bool SelectionUtils::DoWP80Pf(pat::ElectronCollection::const_iterator recoElectron,edm::Event& iEvent)
 {
-   double IsoChg = 0;
-   double IsoNeut = 0;
-   double IsoPhot = 0;
-   double IsoTot = 0;
    double HE=0.;
    
    //  if (recoElectron->et () <= 25) return false;
    
    HE = recoElectron->hadronicOverEm();
-   if (removePU_){
-      double lepIsoRho;
-      
-      /////// Pileup density "rho" for lepton isolation subtraction /////
-      //cout << "1- removing PU ..."<<endl;
-      edm::Handle<double> rhoLepIso;
-      const edm::InputTag eventrhoLepIso("kt6PFJetsForIsolation", "rho");
-      iEvent.getByLabel(eventrhoLepIso, rhoLepIso);
-      if( *rhoLepIso == *rhoLepIso)  lepIsoRho = *rhoLepIso;
-      else  lepIsoRho =  -999999.9;      
-      IsoNeut = (recoElectron->pfIsolationVariables().neutralHadronIso - lepIsoRho*0.096);
-      IsoChg = (recoElectron->pfIsolationVariables().chargedHadronIso - lepIsoRho*0.096);
-      IsoPhot = (recoElectron->pfIsolationVariables().photonIso  - lepIsoRho*0.096);
-      IsoTot = ((IsoNeut + IsoChg + IsoPhot)/ recoElectron->pt ());
-   }
-   else{
-      
-      //cout << "2- NOT removing PU ..."<<endl;
-      // Define Isolation variables
-      IsoNeut = recoElectron->pfIsolationVariables().neutralHadronIso;
-      IsoChg = recoElectron->pfIsolationVariables().chargedHadronIso;
-      IsoPhot = recoElectron->pfIsolationVariables().photonIso;
-      IsoTot = ((IsoNeut + IsoChg + IsoPhot)/ recoElectron->pt ());
-   }
+   
    //Define ID variables
   
   float DeltaPhiTkClu = recoElectron->deltaPhiSuperClusterTrackAtVtx ();
@@ -178,18 +151,14 @@ bool SelectionUtils::DoWP80Pf(pat::ElectronCollection::const_iterator recoElectr
 
   bool isBarrelElectrons;
   bool isEndcapElectrons;
-  bool isIsolatedBarrel;
   bool isIDBarrel;
   bool isConvertedBarrel;
-  bool isIsolatedEndcap;
   bool isIDEndcap;
   bool isConvertedEndcap;
   isBarrelElectrons = false;
   isEndcapElectrons = false;
-  isIsolatedBarrel = false;
   isIDBarrel = false;
   isConvertedBarrel = false;
-  isIsolatedEndcap = false;
   isIDEndcap = false;
   isConvertedEndcap = false;
  
@@ -198,10 +167,6 @@ bool SelectionUtils::DoWP80Pf(pat::ElectronCollection::const_iterator recoElectr
   
   if (fabs (recoElectron ->superCluster()->eta()) <= 1.4442) {
     
-    /* Isolation */
-    if (IsoTot < 0.20) {
-      isIsolatedBarrel = true;
-    }
     
     /* Identification */
     if (fabs (DeltaEtaTkClu) < 0.004 && fabs (DeltaPhiTkClu) < 0.06
@@ -217,7 +182,7 @@ bool SelectionUtils::DoWP80Pf(pat::ElectronCollection::const_iterator recoElectr
       //cout<<"isIsolatedBarrel "<<isIsolatedBarrel<<" isIDBarrel "<< isIDBarrel<<" isConvertedBarrel "<<isConvertedBarrel<<endl;
   }
   
-  if (isIsolatedBarrel && isIDBarrel && isConvertedBarrel) {
+  if (isIDBarrel && isConvertedBarrel) {
     return true;
   }
 
@@ -226,10 +191,6 @@ bool SelectionUtils::DoWP80Pf(pat::ElectronCollection::const_iterator recoElectr
     if (fabs (recoElectron ->superCluster()->eta()) >= 1.5660
 	&& fabs (recoElectron ->superCluster()->eta()) <= 2.5000) {
 
-      /* Isolation */  
-      if (IsoTot < 0.20)  {
-	 isIsolatedEndcap = true;
-      }
 
       /* Identification */
       if (fabs (DeltaEtaTkClu) < 0.007 && fabs (DeltaPhiTkClu) < 0.03
@@ -245,7 +206,7 @@ bool SelectionUtils::DoWP80Pf(pat::ElectronCollection::const_iterator recoElectr
       //cout<<"isIsolatedEndcap "<<isIsolatedEndcap<<" isIDEndcap "<< isIDEndcap<<" isConvertedEndcap "<<isConvertedEndcap<<endl;
     }
     
-    if (isIsolatedEndcap && isIDEndcap && isConvertedEndcap) {
+    if (isIDEndcap && isConvertedEndcap) {
       return true;
     }
     return false;
@@ -254,10 +215,6 @@ bool SelectionUtils::DoWP80Pf(pat::ElectronCollection::const_iterator recoElectr
 //DO the WP80Pf analysis with NEW HE VARIABLE!! (testing!!!)
 bool SelectionUtils::DoWP80Pf_NewHE(pat::ElectronCollection::const_iterator recoElectron,edm::Event& iEvent,bool removePU_)
 {
-   double IsoChg = 0;
-   double IsoNeut = 0;
-   double IsoPhot = 0;
-   double IsoTot = 0;
    double HE=0.;
    
    //  if (recoElectron->et () <= 25) return false;
@@ -265,28 +222,6 @@ bool SelectionUtils::DoWP80Pf_NewHE(pat::ElectronCollection::const_iterator reco
    // New definition of HE variable (!!!):
    HE = recoElectron->hcalOverEcalBc();
 
-   if (removePU_){
-      double lepIsoRho;
-      
-      /////// Pileup density "rho" for lepton isolation subtraction /////
-      
-      edm::Handle<double> rhoLepIso;
-      const edm::InputTag eventrhoLepIso("kt6PFJetsForIsolation", "rho");
-      iEvent.getByLabel(eventrhoLepIso, rhoLepIso);
-      if( *rhoLepIso == *rhoLepIso)  lepIsoRho = *rhoLepIso;
-      else  lepIsoRho =  -999999.9;      
-      IsoNeut = (recoElectron->pfIsolationVariables().neutralHadronIso - lepIsoRho*0.096);
-      IsoChg = (recoElectron->pfIsolationVariables().chargedHadronIso - lepIsoRho*0.096);
-      IsoPhot = (recoElectron->pfIsolationVariables().photonIso  - lepIsoRho*0.096);
-      IsoTot = ((IsoNeut + IsoChg + IsoPhot)/ recoElectron->pt ());
-   }
-   else{
-      // Define Isolation variables
-      IsoNeut = recoElectron->pfIsolationVariables().neutralHadronIso;
-      IsoChg = recoElectron->pfIsolationVariables().chargedHadronIso;
-      IsoPhot = recoElectron->pfIsolationVariables().photonIso;
-      IsoTot = ((IsoNeut + IsoChg + IsoPhot)/ recoElectron->pt ());
-   }
    //Define ID variables
   
   float DeltaPhiTkClu = recoElectron->deltaPhiSuperClusterTrackAtVtx ();
@@ -303,18 +238,14 @@ bool SelectionUtils::DoWP80Pf_NewHE(pat::ElectronCollection::const_iterator reco
 
   bool isBarrelElectrons;
   bool isEndcapElectrons;
-  bool isIsolatedBarrel;
   bool isIDBarrel;
   bool isConvertedBarrel;
-  bool isIsolatedEndcap;
   bool isIDEndcap;
   bool isConvertedEndcap;
   isBarrelElectrons = false;
   isEndcapElectrons = false;
-  isIsolatedBarrel = false;
   isIDBarrel = false;
   isConvertedBarrel = false;
-  isIsolatedEndcap = false;
   isIDEndcap = false;
   isConvertedEndcap = false;
  
@@ -322,11 +253,6 @@ bool SelectionUtils::DoWP80Pf_NewHE(pat::ElectronCollection::const_iterator reco
 /***** Barrel WP80 Cuts *****/
   
   if (fabs (recoElectron ->superCluster()->eta()) <= 1.4442) {
-    
-    /* Isolation */
-    if (IsoTot < 0.20) {
-      isIsolatedBarrel = true;
-    }
     
     /* Identification */
     if (fabs (DeltaEtaTkClu) < 0.004 && fabs (DeltaPhiTkClu) < 0.06
@@ -342,7 +268,7 @@ bool SelectionUtils::DoWP80Pf_NewHE(pat::ElectronCollection::const_iterator reco
       //cout<<"isIsolatedBarrel "<<isIsolatedBarrel<<" isIDBarrel "<< isIDBarrel<<" isConvertedBarrel "<<isConvertedBarrel<<endl;
   }
   
-  if (isIsolatedBarrel && isIDBarrel && isConvertedBarrel) {
+  if (isIDBarrel && isConvertedBarrel) {
     return true;
   }
 
@@ -350,11 +276,6 @@ bool SelectionUtils::DoWP80Pf_NewHE(pat::ElectronCollection::const_iterator reco
 
     if (fabs (recoElectron ->superCluster()->eta()) >= 1.5660
 	&& fabs (recoElectron ->superCluster()->eta()) <= 2.5000) {
-
-      /* Isolation */  
-      if (IsoTot < 0.20)  {
-	 isIsolatedEndcap = true;
-      }
 
       /* Identification */
       if (fabs (DeltaEtaTkClu) < 0.007 && fabs (DeltaPhiTkClu) < 0.03
@@ -369,8 +290,8 @@ bool SelectionUtils::DoWP80Pf_NewHE(pat::ElectronCollection::const_iterator reco
       }
       //cout<<"isIsolatedEndcap "<<isIsolatedEndcap<<" isIDEndcap "<< isIDEndcap<<" isConvertedEndcap "<<isConvertedEndcap<<endl;
     }
-
-    if (isIsolatedEndcap && isIDEndcap && isConvertedEndcap) {
+    
+    if (isIDEndcap && isConvertedEndcap) {
       return true;
     }
     return false;
@@ -663,4 +584,410 @@ std::vector<bool> SelectionUtils::MakePfEleIDAnalysis(pat::ElectronCollection::c
     rec.push_back(0);
     rec.push_back(0);
   return rec;
+}
+
+// ================================================ 
+//|                                                |
+//|    N E W    S E L E C T I O N S   x   2011     |
+//|                                                |
+// ================================================
+
+//DO the MEDIUM cuts VBTF 2011 analysis
+bool SelectionUtils::DoMedSel2011(pat::ElectronCollection::const_iterator recoElectron,
+				  edm::Event& iEvent,
+				  const edm::Handle<reco::ConversionCollection> &conversions,
+				  const reco::BeamSpot &beamspot,
+				  const edm::Handle<reco::VertexCollection> &vtxs)
+{
+  
+
+   //Define ID variables
+   
+   float DeltaPhiTkClu = recoElectron->deltaPhiSuperClusterTrackAtVtx ();
+   float DeltaEtaTkClu = recoElectron->deltaEtaSuperClusterTrackAtVtx ();
+   float sigmaIeIe     = recoElectron->sigmaIetaIeta (); 
+   float HE            = recoElectron->hadronicOverEm();
+   float ooemoop       = (1.0/recoElectron->ecalEnergy() - recoElectron->eSuperClusterOverP()/recoElectron->ecalEnergy());
+
+   // impact parameter variables
+   float d0vtx         = 0.0;
+   float dzvtx         = 0.0;
+   if (vtxs->size() > 0) {
+      reco::VertexRef vtx(vtxs, 0);    
+      d0vtx = recoElectron->gsfTrack()->dxy(vtx->position());
+      dzvtx = recoElectron->gsfTrack()->dz(vtx->position());
+   } else {
+      d0vtx = recoElectron->gsfTrack()->dxy();
+      dzvtx = recoElectron->gsfTrack()->dz();
+   }
+   
+   // conversion rejection variables
+   
+   bool vtxFitConversion = SelectionUtils::hasMatchedConversion(*recoElectron, conversions, beamspot.position());
+   float mHits           = recoElectron->gsfTrack()->trackerExpectedHitsInner().numberOfHits(); 
+   
+   //quality flags
+   
+   bool isIDBarrel;
+   bool isConvertedBarrel;
+   bool isIDEndcap;
+   bool isConvertedEndcap;
+   isIDBarrel = false;
+   isConvertedBarrel = false;
+   isIDEndcap = false;
+   isConvertedEndcap = false;
+   
+   
+/***** Barrel Medium 2011 Cuts *****/
+  
+   if (fabs (recoElectron ->superCluster()->eta()) <= 1.4442) {
+      
+      /* Identification */
+      if (fabs (DeltaEtaTkClu) < 0.004 && fabs (DeltaPhiTkClu) < 0.06
+	  && sigmaIeIe < 0.01 && HE < 0.12 && fabs (ooemoop) < 0.05
+	  && fabs(d0vtx) < 0.02 && fabs(dzvtx) < 0.1) {
+	 isIDBarrel = true;
+      }
+      
+      /* Conversion Rejection */
+      if ( !vtxFitConversion && mHits <=1) {
+	 isConvertedBarrel = true;
+      }
+      //cout<<"isIsolatedBarrel "<<isIsolatedBarrel<<" isIDBarrel "<< isIDBarrel<<" isConvertedBarrel "<<isConvertedBarrel<<endl;
+   }
+   
+   if (isIDBarrel && isConvertedBarrel) {
+      return true;
+   }
+
+    /***** Endcap Medium 2011 Cuts *****/
+
+    if (fabs (recoElectron ->superCluster()->eta()) >= 1.5660
+	&& fabs (recoElectron ->superCluster()->eta()) <= 2.5000) {
+
+      /* Identification */
+      if (fabs (DeltaEtaTkClu) < 0.007 && fabs (DeltaPhiTkClu) < 0.03
+	&& sigmaIeIe < 0.03 && HE < 0.10 && fabs (ooemoop) < 0.05
+	&& fabs (d0vtx) < 0.02 && fabs (dzvtx) < 0.1) {
+	isIDEndcap = true;
+      }
+
+      /* Conversion Rejection */
+      if (!vtxFitConversion && mHits <=1) {
+	isConvertedEndcap = true;
+      }
+      //cout<<"isIsolatedEndcap "<<isIsolatedEndcap<<" isIDEndcap "<< isIDEndcap<<" isConvertedEndcap "<<isConvertedEndcap<<endl;
+    }
+    
+    if (isIDEndcap && isConvertedEndcap) {
+      return true;
+    }
+    return false;
+}
+
+
+bool SelectionUtils::isGoodConversion(const reco::Conversion &conv, const math::XYZPoint &beamspot, float lxyMin, float probMin, unsigned int nHitsBeforeVtxMax)
+{
+  
+  //Check if a given conversion candidate passes the conversion selection cuts
+  
+  const reco::Vertex &vtx = conv.conversionVertex();
+
+  //vertex validity
+  if (!vtx.isValid()) return false;
+
+  //fit probability
+  if (TMath::Prob( vtx.chi2(),  vtx.ndof() )<probMin) return false;
+
+  //compute transverse decay length
+  math::XYZVector mom(conv.refittedPairMomentum()); 
+  double dbsx = vtx.x() - beamspot.x();
+  double dbsy = vtx.y() - beamspot.y();
+  double lxy = (mom.x()*dbsx + mom.y()*dbsy)/mom.rho();
+
+  //transverse decay length  
+  if ( lxy<lxyMin )
+    return false;
+    
+  //loop through daughters to check nhitsbeforevtx
+  for (std::vector<uint8_t>::const_iterator it = conv.nHitsBeforeVtx().begin(); it!=conv.nHitsBeforeVtx().end(); ++it) {
+    if ( (*it)>nHitsBeforeVtxMax ) return false;
+  }
+  
+  return true;
+}
+
+bool SelectionUtils::matchesConversion(const pat::Electron &ele, const reco::Conversion &conv, bool allowCkfMatch)
+{
+
+  //check if a given GsfElectron matches a given conversion (no quality cuts applied)
+  //matching is always attempted through the gsf track ref, and optionally attempted through the
+  //closest ctf track ref
+
+  const std::vector<edm::RefToBase<reco::Track> > &convTracks = conv.tracks();
+  for (std::vector<edm::RefToBase<reco::Track> >::const_iterator it=convTracks.begin(); it!=convTracks.end(); ++it) {
+    if ( ele.gsfTrack().isNonnull() && ele.gsfTrack().id()==it->id() && ele.gsfTrack().key()==it->key()) return true;
+    else if ( allowCkfMatch && ele.closestCtfTrackRef().isNonnull() && ele.closestCtfTrackRef().id()==it->id() && ele.closestCtfTrackRef().key()==it->key() ) return true;
+  }
+
+  return false;
+}
+
+bool SelectionUtils::hasMatchedConversion(const pat::Electron &ele,
+					  const edm::Handle<reco::ConversionCollection> &convCol,
+					  const math::XYZPoint &beamspot, bool allowCkfMatch, float lxyMin, float probMin, unsigned int nHitsBeforeVtxMax)
+{
+  //check if a given electron candidate matches to at least one conversion candidate in the
+  //collection which also passes the selection cuts, optionally match with the closestckf track in
+  //in addition to just the gsf track (enabled in default arguments)
+  
+  for (reco::ConversionCollection::const_iterator it = convCol->begin(); it!=convCol->end(); ++it) {
+    if (!matchesConversion(ele, *it, allowCkfMatch)) continue;
+    if (!isGoodConversion(*it,beamspot,lxyMin,probMin,nHitsBeforeVtxMax)) continue;
+   
+    return true;
+  }
+  
+  return false;
+  
+}
+
+// ************ Isolation cuts ***************
+
+//bool SelectionUtils::DoIso2011(pat::ElectronCollection::const_iterator recoElectron,edm::Event& iEvent, std::vector< edm::Handle< edm::ValueMap<reco::IsoDeposit> > >  &IsoMap, std::vector< edm::Handle< edm::ValueMap<double> > > &IsoVal){
+bool SelectionUtils::DoIso2011(pat::ElectronCollection::const_iterator recoElectron, edm::Event& iEvent, std::vector< edm::Handle< edm::ValueMap<double> > > &IsoVals){
+
+   double lepIsoRho;
+  
+   /////// Pileup density "rho" for lepton isolation subtraction /////
+   //cout << "1- removing PU ..."<<endl;
+   edm::Handle<double> rhoLepIso;
+   const edm::InputTag eventrhoLepIso("kt6PFJetsForIsolation", "rho");
+   iEvent.getByLabel(eventrhoLepIso, rhoLepIso);
+   if( *rhoLepIso == *rhoLepIso)  lepIsoRho = *rhoLepIso;
+   else  lepIsoRho =  -999999.9;     
+
+   
+   //const std::vector< edm::Handle< edm::ValueMap<double> > > * electronIsoVals = &IsoVals;
+   
+    // use the reference to the original gsfElectron from PAT::electron
+
+    // double charged =  (*(*electronIsoVals)[0])[recoElectron->originalObjectRef()];//myElectronRef
+//     double photon = (*(*electronIsoVals)[1])[recoElectron->originalObjectRef()]; //myElectronRef
+//     double neutral = (*(*electronIsoVals)[2])[recoElectron->originalObjectRef()];//myElectronRef 
+    double charged = (*IsoVals[0])[recoElectron->originalObjectRef()];//myElectronRef
+    double photon  = (*IsoVals[1])[recoElectron->originalObjectRef()]; //myElectronRef
+    double neutral = (*IsoVals[2])[recoElectron->originalObjectRef()];//myElectronRef 
+
+    // Effective area for 2011 data (Delta_R=0.3) (taken from https://twiki.cern.ch/twiki/bin/view/Main/HVVElectronId2012 )
+    double A_eff_PH, A_eff_NH;
+    if(abs(recoElectron->eta())<=1.0){A_eff_PH=0.081; A_eff_NH=0.024;}
+    else if(abs(recoElectron->eta())>1.0 && abs(recoElectron->eta())<=1.479){A_eff_PH=0.084 ; A_eff_NH=0.037;}
+    else if(abs(recoElectron->eta())>1.479 && abs(recoElectron->eta())<=2.0){A_eff_PH=0.048 ; A_eff_NH=0.037;}
+    else if(abs(recoElectron->eta())>2.0 && abs(recoElectron->eta())<=2.2){A_eff_PH=0.089 ; A_eff_NH=0.023;}
+    else if(abs(recoElectron->eta())>2.2 && abs(recoElectron->eta())<=2.3){A_eff_PH=0.092 ; A_eff_NH=0.023;}
+    else if(abs(recoElectron->eta())>2.3 && abs(recoElectron->eta())<=2.4){A_eff_PH=0.097 ; A_eff_NH=0.021;}   
+    else {A_eff_PH=0.11 ; A_eff_NH=0.021;}
+    
+    float PFIsoPUCorrected =(charged + max(photon - lepIsoRho*A_eff_PH  , 0.) +  max(neutral - lepIsoRho * A_eff_NH, 0.))/std::max(0.5, recoElectron->pt());
+
+    if (PFIsoPUCorrected < 0.15) return true;
+    
+    return false;
+
+}
+
+std::vector<bool> SelectionUtils::MakePfEleNewIDAnalysis(pat::ElectronCollection::const_iterator recoElectron,edm::Event& iEvent,bool useNewID_,const edm::Handle<reco::ConversionCollection> &conversions,const reco::BeamSpot &beamspot,const edm::Handle<reco::VertexCollection> &vtxs, IsoDepositVals &IsoVals)
+{
+  std::vector<bool> rec;
+  
+  // Define ISOLATION variable
+
+  
+   double lepIsoRho;
+  
+   /////// Pileup density "rho" for lepton isolation subtraction /////
+   //cout << "1- removing PU ..."<<endl;
+   edm::Handle<double> rhoLepIso;
+   const edm::InputTag eventrhoLepIso("kt6PFJetsForIsolation", "rho");
+   iEvent.getByLabel(eventrhoLepIso, rhoLepIso);
+   if( *rhoLepIso == *rhoLepIso)  lepIsoRho = *rhoLepIso;
+   else  lepIsoRho =  -999999.9;     
+
+   
+   //const std::vector< edm::Handle< edm::ValueMap<double> > > * electronIsoVals = &IsoVals;
+   
+    // use the reference to the original gsfElectron from PAT::electron
+
+    // double charged =  (*(*electronIsoVals)[0])[recoElectron->originalObjectRef()];//myElectronRef
+//     double photon = (*(*electronIsoVals)[1])[recoElectron->originalObjectRef()]; //myElectronRef
+//     double neutral = (*(*electronIsoVals)[2])[recoElectron->originalObjectRef()];//myElectronRef 
+    double charged = (*IsoVals[0])[recoElectron->originalObjectRef()];//myElectronRef
+    double photon  = (*IsoVals[1])[recoElectron->originalObjectRef()]; //myElectronRef
+    double neutral = (*IsoVals[2])[recoElectron->originalObjectRef()];//myElectronRef 
+
+    // Effective area for 2011 data (Delta_R=0.3) (taken from https://twiki.cern.ch/twiki/bin/view/Main/HVVElectronId2012 )
+    double A_eff_PH, A_eff_NH;
+    if(abs(recoElectron->eta())<=1.0){A_eff_PH=0.081; A_eff_NH=0.024;}
+    else if(abs(recoElectron->eta())>1.0 && abs(recoElectron->eta())<=1.479){A_eff_PH=0.084 ; A_eff_NH=0.037;}
+    else if(abs(recoElectron->eta())>1.479 && abs(recoElectron->eta())<=2.0){A_eff_PH=0.048 ; A_eff_NH=0.037;}
+    else if(abs(recoElectron->eta())>2.0 && abs(recoElectron->eta())<=2.2){A_eff_PH=0.089 ; A_eff_NH=0.023;}
+    else if(abs(recoElectron->eta())>2.2 && abs(recoElectron->eta())<=2.3){A_eff_PH=0.092 ; A_eff_NH=0.023;}
+    else if(abs(recoElectron->eta())>2.3 && abs(recoElectron->eta())<=2.4){A_eff_PH=0.097 ; A_eff_NH=0.021;}   
+    else {A_eff_PH=0.11 ; A_eff_NH=0.021;}
+    
+    float PFIsoPUCorrected =(charged + max(photon - lepIsoRho*A_eff_PH  , 0.) +  max(neutral - lepIsoRho * A_eff_NH, 0.))/std::max(0.5, recoElectron->pt());
+
+  //Define ID variables                            
+  float DeltaPhiTkClu = recoElectron->deltaPhiSuperClusterTrackAtVtx ();
+  float DeltaEtaTkClu = recoElectron->deltaEtaSuperClusterTrackAtVtx ();
+  float sigmaIeIe     = recoElectron->sigmaIetaIeta ();
+  float HE            = recoElectron->hadronicOverEm();
+  float ooemoop       = (1.0/recoElectron->ecalEnergy() - recoElectron->eSuperClusterOverP()/recoElectron->ecalEnergy());
+
+  //Define Conversion Rejection Variables   
+  float Dcot = recoElectron->convDcot ();
+  float Dist = recoElectron->convDist ();
+  int NumberOfExpectedInnerHits = recoElectron->gsfTrack ()->trackerExpectedHitsInner ().numberOfHits ();
+  bool vtxFitConversion = SelectionUtils::hasMatchedConversion(*recoElectron, conversions, beamspot.position());
+
+
+   // impact parameter variables
+   float d0vtx         = 0.0;
+   float dzvtx         = 0.0;
+   if (vtxs->size() > 0) {
+      reco::VertexRef vtx(vtxs, 0);    
+      d0vtx = recoElectron->gsfTrack()->dxy(vtx->position());
+      dzvtx = recoElectron->gsfTrack()->dz(vtx->position());
+   } else {
+      d0vtx = recoElectron->gsfTrack()->dxy();
+      dzvtx = recoElectron->gsfTrack()->dz();
+   }
+  
+
+  //quality flags                                                                                                                                            
+  bool isBarrelElectrons;
+  bool isEndcapElectrons;
+  bool isIDBarrel;
+  bool isConvertedBarrel;
+  bool isIDEndcap;
+  bool isConvertedEndcap;  
+  bool isIsolated;
+  isBarrelElectrons = false;
+  isEndcapElectrons = false;
+  isIDBarrel = false;
+  isConvertedBarrel = false;
+  isIDEndcap = false;
+  isConvertedEndcap = false;
+  isIsolated = false;
+   
+  // *************** isolation *************  
+  // ---------------------------------------
+  if (PFIsoPUCorrected < 0.15) isIsolated= true;
+
+  if (!useNewID_){
+     /***** Barrel WP80 Cuts *****/
+     
+     if (fabs (recoElectron ->superCluster()->eta()) <= 1.4442) {
+	isBarrelElectrons=true;
+	
+	/* Identification */
+	if (fabs (DeltaEtaTkClu) < 0.004 && fabs (DeltaPhiTkClu) < 0.06
+	    && sigmaIeIe < 0.01 && HE < 0.04) {
+	   isIDBarrel = true;
+	}
+	
+	/* Conversion Rejection */
+	if ((fabs (Dist) >= 0.02 || fabs (Dcot) >= 0.02)
+	    && NumberOfExpectedInnerHits == 0) {
+	   isConvertedBarrel = true;
+	}
+	//cout<<"isIsolatedBarrel "<<isIsolatedBarrel<<" isIDBarrel "<< isIDBarrel<<" isConvertedBarrel "<<isConvertedBarrel<<endl;                            
+     }
+     
+     /***** Endcap WP80 Cuts *****/
+     
+     if (fabs (recoElectron ->superCluster()->eta()) >= 1.5660
+	 && fabs (recoElectron ->superCluster()->eta()) <= 2.5000) {
+	isEndcapElectrons=true;
+	
+	/* Identification */
+	if (fabs (DeltaEtaTkClu) < 0.007 && fabs (DeltaPhiTkClu) < 0.03
+	    && sigmaIeIe < 0.03 && HE < 0.15) {
+	   isIDEndcap = true;
+	}
+	
+	/* Conversion Rejection */
+	if ((fabs (Dcot) > 0.02 || fabs (Dist) > 0.02)
+	    && NumberOfExpectedInnerHits == 0) {
+	   isConvertedEndcap = true;
+	}
+	//cout<<"isIsolatedEndcap "<<isIsolatedEndcap<<" isIDEndcap "<< isIDEndcap<<" isConvertedEndcap "<<isConvertedEndcap<<endl;                            
+     }
+  } else {
+     
+/***** Barrel Medium 2011 Cuts *****/
+     
+     if (fabs (recoElectron ->superCluster()->eta()) <= 1.4442) {
+	isBarrelElectrons=true;
+	
+	/* Identification */
+	if (fabs (DeltaEtaTkClu) < 0.004 && fabs (DeltaPhiTkClu) < 0.06
+	    && sigmaIeIe < 0.01 && HE < 0.12 && fabs (ooemoop) < 0.05
+	    && fabs(d0vtx) < 0.02 && fabs(dzvtx) < 0.1) {
+	   isIDBarrel = true;
+	}
+	
+	/* Conversion Rejection */
+	if ( !vtxFitConversion && NumberOfExpectedInnerHits <=1) {
+	   isConvertedBarrel = true;
+	}
+	//cout<<"isIsolatedBarrel "<<isIsolatedBarrel<<" isIDBarrel "<< isIDBarrel<<" isConvertedBarrel "<<isConvertedBarrel<<endl;
+     }
+     
+
+    /***** Endcap Medium 2011 Cuts *****/
+
+    if (fabs (recoElectron ->superCluster()->eta()) >= 1.5660
+	&& fabs (recoElectron ->superCluster()->eta()) <= 2.5000) {
+       isEndcapElectrons=true;
+
+      /* Identification */
+      if (fabs (DeltaEtaTkClu) < 0.007 && fabs (DeltaPhiTkClu) < 0.03
+	&& sigmaIeIe < 0.03 && HE < 0.10 && fabs (ooemoop) < 0.05
+	&& fabs (d0vtx) < 0.02 && fabs (dzvtx) < 0.1) {
+	isIDEndcap = true;
+      }
+
+      /* Conversion Rejection */
+      if (!vtxFitConversion && NumberOfExpectedInnerHits <=1) {
+	isConvertedEndcap = true;
+      }
+      //cout<<"isIsolatedEndcap "<<isIsolatedEndcap<<" isIDEndcap "<< isIDEndcap<<" isConvertedEndcap "<<isConvertedEndcap<<endl;
+    }
+   
+  }
+
+  if (isBarrelElectrons) {
+    rec.push_back(isIsolated);
+    rec.push_back(isIDBarrel);
+    rec.push_back(isConvertedBarrel);
+    return rec;
+  }
+
+ 
+  
+  if (isEndcapElectrons) {
+    rec.push_back(isIsolated);
+    rec.push_back(isIDEndcap);
+    rec.push_back(isConvertedEndcap);
+    return rec;
+  }
+
+  //In the unlikely event of electrons in crack regions, return 0,0,0
+    rec.push_back(0);
+    rec.push_back(0);
+    rec.push_back(0);
+  return rec;
+
 }
