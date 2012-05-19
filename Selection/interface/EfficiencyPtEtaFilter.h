@@ -51,6 +51,7 @@ class EfficiencyPtEtaFilter : public edm::EDFilter, public SelectionUtils {
       edm::InputTag candTag_ ;
       edm::InputTag theJetCollectionLabel_;
       edm::InputTag VertexCollectionTag_;
+      std::vector<edm::InputTag>  isoValInputTags_;
       bool useCombinedPrescales_; // switch between HLT only and L1*HLT prescales
       bool useAllTriggers_; // if no trigger names are provided, use all triggers to find event weight
       HLTConfigProvider hltConfig_;        // to get configuration for L1s/Pre
@@ -139,7 +140,7 @@ EfficiencyPtEtaFilter::EfficiencyPtEtaFilter (const edm::ParameterSet & paramete
   candTag_ = parameters.getParameter< edm::InputTag > ("candTag");
   theJetCollectionLabel_       = parameters.getParameter<edm::InputTag>("JetCollectionLabel");
   triggerNames_         = parameters.getParameter< std::vector<std::string> > ("TriggerNames");
-
+  isoValInputTags_      = parameters.getParameter<std::vector<edm::InputTag> >("isoValInputTags");
 
  
   //Initializations...

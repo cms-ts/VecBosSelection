@@ -13,7 +13,7 @@ Implementation:
 //
 // Original Author:  superben
 //         Created:  Wed May 11 14:53:26 CESDo2011
-// $Id: EfficiencyPtEtaFilter.cc,v 1.1 2012/05/15 21:27:56 schizzi Exp $
+// $Id: EfficiencyPtEtaFilter.cc,v 1.2 2012/05/17 15:04:11 schizzi Exp $
 
 
 
@@ -77,10 +77,10 @@ EfficiencyPtEtaFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSet
   if (Debug_flag) cout<<"------- NEW Event -----"<<endl;
   using namespace edm;
 
-  if (Debug_flag) cout<<"WP80_efficiency_ = "<<WP80_efficiency_<<endl;  
-  if (Debug_flag) cout<<"HLTele17_efficiency_ = "<<HLTele17_efficiency_<<endl;  
-  if (Debug_flag) cout<<"HLTele8_efficiency_ = "<<HLTele8_efficiency_<<endl;  
-  if (Debug_flag) cout<<"RECO_efficiency_ = "<<RECO_efficiency_<<endl;  
+  //  if (Debug_flag) cout<<"WP80_efficiency_ = "<<WP80_efficiency_<<endl;  
+  //  if (Debug_flag) cout<<"HLTele17_efficiency_ = "<<HLTele17_efficiency_<<endl;  
+  //  if (Debug_flag) cout<<"HLTele8_efficiency_ = "<<HLTele8_efficiency_<<endl;  
+  //  if (Debug_flag) cout<<"RECO_efficiency_ = "<<RECO_efficiency_<<endl;  
 
   // Pick up SUPERCLUSTERS:
 
@@ -155,6 +155,12 @@ EfficiencyPtEtaFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSet
   pat::ElectronCollection::const_iterator tag_ele;
   pat::ElectronCollection::const_iterator probe_ele;
 
+  // iso deposits
+  IsoDepositVals isoVals(isoValInputTags_.size());
+  for (size_t j = 0; j < isoValInputTags_.size(); ++j) {
+     iEvent.getByLabel(isoValInputTags_[j], isoVals[j]);
+  }
+
   int i=0;
   if (electronCollection->size()<=1) return false;
   bool protection=false;
@@ -173,11 +179,11 @@ EfficiencyPtEtaFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSet
 	SC_isPassingProbe=true;
 	continue;
       }
-      if (i==0 && SelectionUtils::DoWP80Pf(recoElectron,iEvent,removePU_)) { candidate0_ele=recoElectron; i++; continue;}
-      if (i==1 && SelectionUtils::DoWP80Pf(recoElectron,iEvent,removePU_)) { candidate1_ele=recoElectron; i++; continue;}
-      if (i==2 && SelectionUtils::DoWP80Pf(recoElectron,iEvent,removePU_)) { candidate2_ele=recoElectron; i++; continue;}
-      if (i==3 && SelectionUtils::DoWP80Pf(recoElectron,iEvent,removePU_)) { candidate3_ele=recoElectron; i++; continue;}
-      if (i==4 && SelectionUtils::DoWP80Pf(recoElectron,iEvent,removePU_)) { candidate4_ele=recoElectron; i++; continue;}
+      if (i==0 && SelectionUtils::DoWP80Pf(recoElectron,iEvent) && SelectionUtils::DoIso2011(recoElectron, iEvent, isoVals)) { candidate0_ele=recoElectron; i++; continue;}
+      if (i==1 && SelectionUtils::DoWP80Pf(recoElectron,iEvent) && SelectionUtils::DoIso2011(recoElectron, iEvent, isoVals)) { candidate1_ele=recoElectron; i++; continue;}
+      if (i==2 && SelectionUtils::DoWP80Pf(recoElectron,iEvent) && SelectionUtils::DoIso2011(recoElectron, iEvent, isoVals)) { candidate2_ele=recoElectron; i++; continue;}
+      if (i==3 && SelectionUtils::DoWP80Pf(recoElectron,iEvent) && SelectionUtils::DoIso2011(recoElectron, iEvent, isoVals)) { candidate3_ele=recoElectron; i++; continue;}
+      if (i==4 && SelectionUtils::DoWP80Pf(recoElectron,iEvent) && SelectionUtils::DoIso2011(recoElectron, iEvent, isoVals)) { candidate4_ele=recoElectron; i++; continue;}
     }
   }
   if (!protection) {
@@ -215,30 +221,10 @@ EfficiencyPtEtaFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSet
     if (ntag==2) { tag_ele=candidate2_ele;}
     if (ntag==3) { tag_ele=candidate3_ele;}
     if (ntag==4) { tag_ele=candidate4_ele;}
-    if (!SelectionUtils::DoWP80Pf(tag_ele,iEvent,removePU_)) return false;
+    if (!(SelectionUtils::DoWP80Pf(tag_ele,iEvent) && SelectionUtils::DoIso2011(tag_ele, iEvent, isoVals))) return false;
   }
 
   if (Debug_flag) cout << "nsc = " << nsc << "; ntag = " << ntag << endl;
-
-  if (Debug_flag) cout<<"l = "<<l<<"; i = "<<i<<"; SC_isPassingProbe  = "<<SC_isPassingProbe<<endl;  
-  if (Debug_flag) cout<<"-------------" <<endl;  
-  if (Debug_flag) cout<<"tag_ele->pt() = "<<tag_ele->pt() <<endl;  
-  if (Debug_flag) cout<<"tag_ele->superCluster()->eta() = "<<tag_ele->superCluster()->eta() <<endl;  
-  if (Debug_flag) cout<<"tag_ele->phi() = "<<tag_ele->phi() <<endl;  
-  if (Debug_flag) cout<<"-------------" <<endl;  
-  if (RECO_efficiency_)  {
-    if (Debug_flag) cout<<"-------------" <<endl;  
-    if (Debug_flag) cout<<"probe_SC->energy() = "<<probe_SC->energy() <<endl;  
-    if (Debug_flag) cout<<"probe_SC->eta() = "<<probe_SC->eta() <<endl;  
-    if (Debug_flag) cout<<"probe_SC->phi() = "<<probe_SC->phi() <<endl;  
-    if (Debug_flag) cout<<"-------------" <<endl;  
-  } else {
-    if (Debug_flag) cout<<"-------------" <<endl;  
-    if (Debug_flag) cout<<"probe_ele->pt() = "<<probe_ele->pt() <<endl;  
-    if (Debug_flag) cout<<"probe_ele->superCluster()->eta() = "<<probe_ele->superCluster()->eta() <<endl;  
-    if (Debug_flag) cout<<"probe_ele->phi() = "<<probe_ele->phi() <<endl;  
-    if (Debug_flag) cout<<"-------------" <<endl;  
-  }
 
   // TRIGGER MATCHING (set flags to TRUE if matched):
 
@@ -299,6 +285,36 @@ EfficiencyPtEtaFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSet
 
   if (Debug_flag) cout<<"Start filling TAP histos..."<<endl;
 
+  if (RECO_efficiency_) {
+    if (probe_SC->energy() > tag_ele->pt()) { cout << "PROBE wins!" << endl;} else { cout << "TAG wins!" << endl;}
+  } else {
+    if (probe_ele->pt() > tag_ele->pt()) { cout << "PROBE wins!" << endl;} else { cout << "TAG wins!" << endl;}
+  }
+
+
+  if (Debug_flag) cout<<"l = "<<l<<"; i = "<<i<<"; SC_isPassingProbe  = "<<SC_isPassingProbe<<endl;  
+  if (Debug_flag) cout<<"-------------" <<endl;  
+  if (Debug_flag) cout<<"tag_ele->pt() = "<<tag_ele->pt() <<endl;  
+  if (Debug_flag) cout<<"tag_ele->superCluster()->eta() = "<<tag_ele->superCluster()->eta() <<endl;  
+  if (Debug_flag) cout<<"tag_ele->phi() = "<<tag_ele->phi() <<endl;  
+  if (Debug_flag) cout<<"-------------" <<endl;  
+  if (RECO_efficiency_)  {
+    if (Debug_flag) cout<<"-------------" <<endl;  
+    if (Debug_flag) cout<<"probe_SC->energy() = "<<probe_SC->energy() <<endl;  
+    if (Debug_flag) cout<<"probe_SC->eta() = "<<probe_SC->eta() <<endl;  
+    if (Debug_flag) cout<<"probe_SC->phi() = "<<probe_SC->phi() <<endl;  
+    if (Debug_flag) cout<<"-------------" <<endl;  
+  } else {
+    if (Debug_flag) cout<<"-------------" <<endl;  
+    if (Debug_flag) cout<<"probe_ele->pt() = "<<probe_ele->pt() <<endl;  
+    if (Debug_flag) cout<<"probe_ele->superCluster()->eta() = "<<probe_ele->superCluster()->eta() <<endl;  
+    if (Debug_flag) cout<<"probe_ele->phi() = "<<probe_ele->phi() <<endl;  
+    if (Debug_flag) cout<<"-------------" <<endl;  
+  }
+  if (Debug_flag) cout<<"-------------" <<endl;  
+  if (Debug_flag) cout<<"ee Invariant mass = "<< e_ee_invMass <<endl;    
+  if (Debug_flag) cout<<"-------------" <<endl;
+  
   // Filling TAP distributions:
 
   // WP80 & HLT:
@@ -308,7 +324,7 @@ EfficiencyPtEtaFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSet
     probeall_mee->Fill(e_ee_invMass);
     tagall_pt->Fill(tag_ele->pt());
     tagall_eta->Fill(tag_ele->superCluster()->eta());
-    if ((WP80_efficiency_ && SelectionUtils::DoWP80Pf(probe_ele,iEvent,removePU_)) || ((HLTele17_efficiency_ || HLTele8_efficiency_) && HLTmatch)) {
+    if ((WP80_efficiency_ && SelectionUtils::DoWP80Pf(probe_ele,iEvent) && SelectionUtils::DoIso2011(probe_ele, iEvent, isoVals)) || ((HLTele17_efficiency_ || HLTele8_efficiency_) && HLTmatch)) {
       probepass_pt->Fill(probe_ele->pt());
       probepass_eta->Fill(probe_ele->superCluster()->eta());
       probepass_mee->Fill(e_ee_invMass);

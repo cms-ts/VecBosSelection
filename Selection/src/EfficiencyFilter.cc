@@ -13,7 +13,7 @@ Implementation:
 //
 // Original Author:  Vieri Candelise & Matteo Marone
 //         Created:  Wed May 11 14:53:26 CESDo2011
-// $Id: EfficiencyFilter.cc,v 1.26 2012/05/02 14:12:37 schizzi Exp $
+// $Id: EfficiencyFilter.cc,v 1.27 2012/05/12 11:34:59 schizzi Exp $
 
 
 
@@ -132,6 +132,12 @@ EfficiencyFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSetup)
 
   pat::ElectronCollection::const_iterator highestptele;
   pat::ElectronCollection::const_iterator secondptele;
+
+  // iso deposits
+  IsoDepositVals isoVals(isoValInputTags_.size());
+  for (size_t j = 0; j < isoValInputTags_.size(); ++j) {
+     iEvent.getByLabel(isoValInputTags_[j], isoVals[j]);
+  }
 
   int HLTmatches_PASS=0;
   int HLTmatches_TOTAL=0;
@@ -316,14 +322,14 @@ EfficiencyFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSetup)
 
   if (WP80_efficiency_ || HLTele17_efficiency_ || HLTele8_efficiency_) {
     // 1st leg WP80 efficiency
-    if ((WP80_efficiency_ && SelectionUtils::DoWP80Pf(highestptele,iEvent,removePU_) && HLTmatch_highestptele) ||
-	((HLTele17_efficiency_ || HLTele8_efficiency_) && SelectionUtils::DoWP80Pf(highestptele,iEvent,removePU_))
+    if ((WP80_efficiency_ && SelectionUtils::DoWP80Pf(highestptele,iEvent) && SelectionUtils::DoIso2011(highestptele, iEvent, isoVals) && HLTmatch_highestptele) ||
+	((HLTele17_efficiency_ || HLTele8_efficiency_) && SelectionUtils::DoWP80Pf(highestptele,iEvent) && SelectionUtils::DoIso2011(highestptele, iEvent, isoVals))
 	){
       probeall_pt->Fill(secondptele->pt());
       probeall_eta->Fill(secondptele->superCluster()->eta());
       probeall_mee->Fill(e_ee_invMass);
       probeall_leadjetpt->Fill(leadingJet_pT);
-      if ((WP80_efficiency_ && !New_HE_ && SelectionUtils::DoWP80Pf(secondptele,iEvent,removePU_)) || 
+      if ((WP80_efficiency_ && !New_HE_ && SelectionUtils::DoWP80Pf(secondptele,iEvent) && SelectionUtils::DoIso2011(secondptele, iEvent, isoVals)) || 
 	  (WP80_efficiency_ && New_HE_ && SelectionUtils::DoWP80Pf_NewHE(secondptele,iEvent,removePU_)) ||
 	  ((HLTele17_efficiency_ || HLTele8_efficiency_) && HLTmatch_secondptele)
 	  ){
@@ -459,15 +465,15 @@ EfficiencyFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSetup)
 	}
       }
     }  
-    if ((WP80_efficiency_ && SelectionUtils::DoWP80Pf(secondptele,iEvent,removePU_) && HLTmatch_secondptele) ||
-	((HLTele17_efficiency_ || HLTele8_efficiency_) && SelectionUtils::DoWP80Pf(secondptele,iEvent,removePU_))
+    if ((WP80_efficiency_ && SelectionUtils::DoWP80Pf(secondptele,iEvent) && SelectionUtils::DoIso2011(secondptele, iEvent, isoVals) && HLTmatch_secondptele) ||
+	((HLTele17_efficiency_ || HLTele8_efficiency_) && SelectionUtils::DoWP80Pf(secondptele,iEvent) && SelectionUtils::DoIso2011(secondptele, iEvent, isoVals))
 	){
       tagall_pt->Fill(highestptele->pt());
       tagall_eta->Fill(highestptele->superCluster()->eta());
       tagall_mee->Fill(e_ee_invMass);
       tagall_leadjetpt->Fill(leadingJet_pT);
-      if ( (WP80_efficiency_ && !New_HE_ && SelectionUtils::DoWP80Pf(highestptele,iEvent,removePU_)) || 
-	   (WP80_efficiency_ && New_HE_ && SelectionUtils::DoWP80Pf_NewHE(highestptele,iEvent,removePU_)) ||
+      if ( (WP80_efficiency_ && !New_HE_ && SelectionUtils::DoWP80Pf(highestptele,iEvent) && SelectionUtils::DoIso2011(highestptele, iEvent, isoVals)) || 
+	(WP80_efficiency_ && New_HE_ && SelectionUtils::DoWP80Pf_NewHE(highestptele,iEvent,removePU_)) ||
 	   ((HLTele17_efficiency_ || HLTele8_efficiency_) && HLTmatch_highestptele)
 	   ){
 	tagpass_pt->Fill(highestptele->pt());
@@ -607,7 +613,7 @@ EfficiencyFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSetup)
   // RECO:
 
   if (RECO_efficiency_) {
-    if (SelectionUtils::DoWP80Pf(highestptele,iEvent,removePU_) && HLTmatch_highestptele){
+    if (SelectionUtils::DoWP80Pf(highestptele,iEvent) && SelectionUtils::DoIso2011(highestptele, iEvent, isoVals) && HLTmatch_highestptele){
       probeall_pt->Fill(highestenergy_SC->energy());
       probeall_eta->Fill(highestenergy_SC->eta());
       probeall_mee->Fill(e_ee_invMass);
