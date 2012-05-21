@@ -58,6 +58,7 @@ class ZpatFilter2011 : public edm::EDFilter, public SelectionUtils {
 		bool useNewID_;
 		bool doIsolation_;
 		bool doID_;
+		bool doWP90_;
 		double secondEleEnThrhold_; 
 		double firstEleEnThrhold_;
 		double lowZmassLimit_;
@@ -97,6 +98,7 @@ ZpatFilter2011::ZpatFilter2011 (const edm::ParameterSet & parameters)
 	useNewID_             = parameters.getParameter<bool>("useNewID");
 	doIsolation_          = parameters.getUntrackedParameter<bool>("doIsolation",true);
 	doID_                 = parameters.getUntrackedParameter<bool>("doID",true);
+	doWP90_                 = parameters.getUntrackedParameter<bool>("doWP90",false);
 	secondEleEnThrhold_   = parameters.getParameter<double>("secondEleEnThrhold");
 	firstEleEnThrhold_    = parameters.getParameter<double>("firstEleEnThrhold");
 	lowZmassLimit_        = parameters.getParameter<double>("lowZmassLimit");

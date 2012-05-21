@@ -97,7 +97,7 @@ goodEPairProducer2011::produce(edm::Event & iEvent, edm::EventSetup const & iSet
 	//Perform checks on each ele ID criteria
 	// Here you get a plot full of information. Each electron contributes with one entry (so total numer of entries = 3* #electrons)
 	// To have the "%", each bin value shold be divided by total numer of entries/3
-	std::vector<bool> result=SelectionUtils::MakePfEleNewIDAnalysis(recoElectron,iEvent,useNewID_,conversions_h,beamSpot,vtx_h, isoVals);
+	std::vector<bool> result=SelectionUtils::MakePfEleNewIDAnalysis(recoElectron,iEvent,useNewID_,doWP90_,conversions_h,beamSpot,vtx_h, isoVals);
 	passIDEleCriteria->SetBinContent(1,passIDEleCriteria->GetBinContent(1)+1);
 	if (result[0]) {
 	   passIDEleCriteria->SetBinContent(2,passIDEleCriteria->GetBinContent(2)+1);
@@ -119,9 +119,10 @@ goodEPairProducer2011::produce(edm::Event & iEvent, edm::EventSetup const & iSet
 	if (WP80Count==2) eleSelStepByStep->SetBinContent(9,eleSelStepByStep->GetBinContent(9)+1); //(4) + 2 ele WP80 (5)
 
 
-	if ( (!doID_ || ((!useNewID_ && SelectionUtils::DoWP80Pf(recoElectron,iEvent))
-		       || (useNewID_ && SelectionUtils::DoMedSel2011(recoElectron,iEvent,conversions_h,beamSpot,vtx_h))))
-	   && (!doIsolation_ ||  SelectionUtils::DoIso2011(recoElectron, iEvent, isoVals))
+	if ( (!doID_ || ((!useNewID_ && ((doWP90_ || SelectionUtils::DoWP80Pf(recoElectron,iEvent)) && 
+					 (!doWP90_ || SelectionUtils::DoWP90Pf(recoElectron,iEvent))) ))
+	      || (useNewID_ && SelectionUtils::DoMedSel2011(recoElectron,iEvent,conversions_h,beamSpot,vtx_h)))
+	     && ( !doIsolation_ || SelectionUtils::DoIso2011(recoElectron, iEvent, isoVals))
 	     && SelectionUtils::DoHLTMatch(recoElectron,iEvent) && recoElectron->pt()>secondEleEnThrhold){
 	   lowThrholdCount++;
 	   if (lowThrholdCount==2)

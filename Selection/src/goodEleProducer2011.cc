@@ -49,7 +49,7 @@ goodEleProducer2011::produce(edm::Event & iEvent, edm::EventSetup const & iSetup
 
   if (electronCollection.isValid () && electronCollection->size()>1){
 
-     int i=0;
+     //int i=0;
      bool protection=false;
      int jj=0;
      int sizePat=electronCollection->size();
@@ -66,15 +66,16 @@ goodEleProducer2011::produce(edm::Event & iEvent, edm::EventSetup const & iSetup
 	//Perform checks on each ele ID criteria
 	// Here you get a plot full of information. Each electron contributes with one entry (so total numer of entries = 3* #electrons)
 	// To have the "%", each bin value shold be divided by total numer of entries/3
-	std::vector<bool> result=SelectionUtils::MakePfEleNewIDAnalysis(recoElectron,iEvent,useNewID_,conversions_h,beamSpot,vtx_h, isoVals);
+	std::vector<bool> result=SelectionUtils::MakePfEleNewIDAnalysis(recoElectron,iEvent,useNewID_,doWP90_,conversions_h,beamSpot,vtx_h, isoVals);
 	passIDEleCriteria->SetBinContent(1,passIDEleCriteria->GetBinContent(1)+1);
 	if (result[0]) passIDEleCriteria->SetBinContent(2,passIDEleCriteria->GetBinContent(2)+1);
 	if (result[1]) passIDEleCriteria->SetBinContent(3,passIDEleCriteria->GetBinContent(3)+1);
 	if (result[2]) passIDEleCriteria->SetBinContent(4,passIDEleCriteria->GetBinContent(4)+1);
 
-	if ( (!doID_ || ((!useNewID_ && SelectionUtils::DoWP80Pf(recoElectron,iEvent))
-			|| (useNewID_ && SelectionUtils::DoMedSel2011(recoElectron,iEvent,conversions_h,beamSpot,vtx_h))))
-	     && (!doIsolation_ ||  SelectionUtils::DoIso2011(recoElectron, iEvent, isoVals))
+	if ( (!doID_ || ((!useNewID_ && ((doWP90_  || SelectionUtils::DoWP80Pf(recoElectron,iEvent)) && 
+					 (!doWP90_ || SelectionUtils::DoWP90Pf(recoElectron,iEvent))) ))
+	      || (useNewID_ && SelectionUtils::DoMedSel2011(recoElectron,iEvent,conversions_h,beamSpot,vtx_h)))
+	     && ( !doIsolation_ || SelectionUtils::DoIso2011(recoElectron, iEvent, isoVals))
 	     //&& SelectionUtils::DoHLTMatch(recoElectron,iEvent) 
 	     //&& recoElectron->pt()>secondEleEnThrhold
 	   ){

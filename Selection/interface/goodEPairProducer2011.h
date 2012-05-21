@@ -52,6 +52,7 @@ class goodEPairProducer2011 : public edm::EDProducer, public SelectionUtils {
 		bool useNewID_;
 		bool doIsolation_;
 		bool doID_;
+		bool doWP90_;
 		double secondEleEnThrhold_; 
 		double firstEleEnThrhold_;
 		double lowZmassLimit_;
@@ -94,6 +95,7 @@ goodEPairProducer2011::goodEPairProducer2011 (const edm::ParameterSet & paramete
    useNewID_ = parameters.getParameter<bool>("useNewID");
    doIsolation_          = parameters.getUntrackedParameter<bool>("doIsolation",true);
    doID_                 = parameters.getUntrackedParameter<bool>("doID",true);
+   doWP90_               = parameters.getUntrackedParameter<bool>("doWP90",false);
    secondEleEnThrhold_   = parameters.getParameter<double>("secondEleEnThrhold");
    firstEleEnThrhold_    = parameters.getParameter<double>("firstEleEnThrhold");
    lowZmassLimit_        = parameters.getParameter<double>("lowZmassLimit");

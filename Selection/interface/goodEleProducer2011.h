@@ -52,6 +52,7 @@ class goodEleProducer2011 : public edm::EDProducer, public SelectionUtils {
 		bool useNewID_;
 		bool doIsolation_;
 		bool doID_;
+		bool doWP90_;
 		bool Debug2; //Activate with true if you wonna have verbosity for debug
 
 		TH1I* passIDEleCriteria;
@@ -88,6 +89,7 @@ goodEleProducer2011::goodEleProducer2011 (const edm::ParameterSet & parameters)
    useNewID_ = parameters.getParameter<bool>("useNewID");
    doIsolation_          = parameters.getUntrackedParameter<bool>("doIsolation",true);
    doID_                 = parameters.getUntrackedParameter<bool>("doID",true);
+   doWP90_               = parameters.getUntrackedParameter<bool>("doWP90",false);
    conversionsInputTag_  = parameters.getParameter<edm::InputTag>("conversionsInputTag");
    beamSpotInputTag_     = parameters.getParameter<edm::InputTag>("beamSpotInputTag");
    primaryVertexInputTag_= parameters.getParameter<edm::InputTag>("primaryVertexInputTag");

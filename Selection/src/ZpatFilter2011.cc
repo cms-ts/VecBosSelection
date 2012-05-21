@@ -13,7 +13,7 @@ Implementation:
 //
 // Original Author:  Vieri Candelise, Matteo Marone & Davide Scaini
 //         Created:  Thu Dec 11 10:46:26 CEST 2011
-// $Id: ZpatFilter2011.cc,v 1.7 2012/03/29 17:55:39 montanin Exp $
+// $Id: ZpatFilter2011.cc,v 1.1 2012/05/18 13:14:54 montanin Exp $
 //
 //
 
@@ -245,7 +245,7 @@ ZpatFilter2011::filter (edm::Event & iEvent, edm::EventSetup const & iSetup)
     //Perform checks on each ele ID criteria
     // Here you get a plot full of information. Each electron contributes with one entry (so total numer of entries = 3* #electrons)
     // To have the "%", each bin value shold be divided by total numer of entries/3
-    std::vector<bool> result=SelectionUtils::MakePfEleNewIDAnalysis(recoElectron,iEvent,useNewID_,conversions_h,beamSpot,vtx_h, isoVals); 
+    std::vector<bool> result=SelectionUtils::MakePfEleNewIDAnalysis(recoElectron,iEvent,useNewID_,doWP90_,conversions_h,beamSpot,vtx_h, isoVals); 
     passIDEleCriteria->SetBinContent(1,passIDEleCriteria->GetBinContent(1)+1);
     if (result[0]) {
       passIDEleCriteria->SetBinContent(2,passIDEleCriteria->GetBinContent(2)+1);
@@ -268,10 +268,11 @@ ZpatFilter2011::filter (edm::Event & iEvent, edm::EventSetup const & iSetup)
 
 //******************************* SELECTIONS ***************************************************8
 
-    if ( (!doID_ || ((!useNewID_ && SelectionUtils::DoWP80Pf(recoElectron,iEvent))
-		    || (useNewID_ && SelectionUtils::DoMedSel2011(recoElectron,iEvent,conversions_h,beamSpot,vtx_h))))
+    if ( (!doID_ || ((!useNewID_ && ((doWP90_ || SelectionUtils::DoWP80Pf(recoElectron,iEvent)) && 
+				     (!doWP90_ || SelectionUtils::DoWP90Pf(recoElectron,iEvent))) ))
+	  || (useNewID_ && SelectionUtils::DoMedSel2011(recoElectron,iEvent,conversions_h,beamSpot,vtx_h)))
 	 && ( !doIsolation_ || SelectionUtils::DoIso2011(recoElectron, iEvent, isoVals))
-	 && SelectionUtils::DoHLTMatch(recoElectron,iEvent) && recoElectron->pt()>secondEleEnThrhold){
+	 && SelectionUtils::DoHLTMatch(recoElectron,iEvent) && recoElectron->pt()>secondEleEnThrhold ){
        lowThrholdCount++;
       if (lowThrholdCount==2)eleSelStepByStep->SetBinContent(10,eleSelStepByStep->GetBinContent(10)+1); // (5) + 2 ele pt > lowTh (6)
 

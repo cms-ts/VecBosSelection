@@ -212,6 +212,92 @@ bool SelectionUtils::DoWP80Pf(pat::ElectronCollection::const_iterator recoElectr
     return false;
 }
 
+//DO the WP80Pf analysis
+bool SelectionUtils::DoWP90Pf(pat::ElectronCollection::const_iterator recoElectron,edm::Event& iEvent)
+{
+   double HE=0.;
+   
+   //  if (recoElectron->et () <= 25) return false;
+   
+   HE = recoElectron->hadronicOverEm();
+   
+   //Define ID variables
+  
+  float DeltaPhiTkClu = recoElectron->deltaPhiSuperClusterTrackAtVtx ();
+  float DeltaEtaTkClu = recoElectron->deltaEtaSuperClusterTrackAtVtx ();
+  float sigmaIeIe = recoElectron->sigmaIetaIeta ();
+  
+  //Define Conversion Rejection Variables
+  
+  float Dcot = recoElectron->convDcot ();
+  float Dist = recoElectron->convDist ();
+  int NumberOfExpectedInnerHits = recoElectron->gsfTrack ()->trackerExpectedHitsInner ().numberOfHits ();
+  
+  //quality flags
+
+  bool isBarrelElectrons;
+  bool isEndcapElectrons;
+  bool isIDBarrel;
+  bool isConvertedBarrel;
+  bool isIDEndcap;
+  bool isConvertedEndcap;
+  isBarrelElectrons = false;
+  isEndcapElectrons = false;
+  isIDBarrel = false;
+  isConvertedBarrel = false;
+  isIDEndcap = false;
+  isConvertedEndcap = false;
+ 
+
+/***** Barrel WP80 Cuts *****/
+  
+  if (fabs (recoElectron ->superCluster()->eta()) <= 1.4442) {
+    
+    
+    /* Identification */
+    if (fabs (DeltaEtaTkClu) < 0.007 && fabs (DeltaPhiTkClu) < 0.8
+	&& sigmaIeIe < 0.01 && HE < 0.12) {
+      isIDBarrel = true;
+    }
+    
+    /* Conversion Rejection */
+      if ((fabs (Dist) >= 0.02 || fabs (Dcot) >= 0.02)
+	  && NumberOfExpectedInnerHits <= 1) {
+	isConvertedBarrel = true;
+      }
+      //cout<<"isIsolatedBarrel "<<isIsolatedBarrel<<" isIDBarrel "<< isIDBarrel<<" isConvertedBarrel "<<isConvertedBarrel<<endl;
+  }
+  
+  if (isIDBarrel && isConvertedBarrel) {
+    return true;
+  }
+
+    /***** Endcap WP80 Cuts *****/
+
+    if (fabs (recoElectron ->superCluster()->eta()) >= 1.5660
+	&& fabs (recoElectron ->superCluster()->eta()) <= 2.5000) {
+
+
+      /* Identification */
+      if (fabs (DeltaEtaTkClu) < 0.009 && fabs (DeltaPhiTkClu) < 0.7
+	  && sigmaIeIe < 0.03 && HE < 0.15) {
+	isIDEndcap = true;
+      }
+
+      /* Conversion Rejection */
+      if ((fabs (Dcot) > 0.02 || fabs (Dist) > 0.02)
+	  && NumberOfExpectedInnerHits <=1) {
+	isConvertedEndcap = true;
+      }
+      //cout<<"isIsolatedEndcap "<<isIsolatedEndcap<<" isIDEndcap "<< isIDEndcap<<" isConvertedEndcap "<<isConvertedEndcap<<endl;
+    }
+    
+    if (isIDEndcap && isConvertedEndcap) {
+      return true;
+    }
+    return false;
+}
+
 //DO the WP80Pf analysis with NEW HE VARIABLE!! (testing!!!)
 bool SelectionUtils::DoWP80Pf_NewHE(pat::ElectronCollection::const_iterator recoElectron,edm::Event& iEvent,bool removePU_)
 {
@@ -797,13 +883,40 @@ bool SelectionUtils::DoIso2011(pat::ElectronCollection::const_iterator recoElect
 
 }
 
-std::vector<bool> SelectionUtils::MakePfEleNewIDAnalysis(pat::ElectronCollection::const_iterator recoElectron,edm::Event& iEvent,bool useNewID_,const edm::Handle<reco::ConversionCollection> &conversions,const reco::BeamSpot &beamspot,const edm::Handle<reco::VertexCollection> &vtxs, IsoDepositVals &IsoVals)
+std::vector<bool> SelectionUtils::MakePfEleNewIDAnalysis(pat::ElectronCollection::const_iterator recoElectron,edm::Event& iEvent,bool useNewID_,bool doWP90_,const edm::Handle<reco::ConversionCollection> &conversions,const reco::BeamSpot &beamspot,const edm::Handle<reco::VertexCollection> &vtxs, IsoDepositVals &IsoVals)
 {
   std::vector<bool> rec;
-  
-  // Define ISOLATION variable
 
-  
+  // Define all the cuts
+
+  float mHitsCut, distCut, dcotCut, sigmaEBCut, sigmaEECut, dPhiEBCut, dPhiEECut, dEtaEBCut, dEtaEECut, hoeEBCut, hoeEECut;
+  if (!doWP90_){
+     mHitsCut= 0;
+     distCut= 0.02;
+     dcotCut= 0.02; 
+     sigmaEBCut= 0.01;
+     sigmaEECut= 0.03;
+     dPhiEBCut= 0.06;
+     dPhiEECut= 0.03;
+     dEtaEBCut= 0.004;
+     dEtaEECut= 0.007;
+     hoeEBCut= 0.04;
+     hoeEECut= 0.15;
+  } else {
+     mHitsCut= 1;
+     distCut= 0.02;
+     dcotCut= 0.02; 
+     sigmaEBCut= 0.01;
+     sigmaEECut= 0.03;
+     dPhiEBCut= 0.8;
+     dPhiEECut= 0.7;
+     dEtaEBCut= 0.007;
+     dEtaEECut= 0.009;
+     hoeEBCut= 0.12;
+     hoeEECut= 0.15;
+  } 
+
+  // Define ISOLATION variable
    double lepIsoRho;
   
    /////// Pileup density "rho" for lepton isolation subtraction /////
@@ -892,14 +1005,14 @@ std::vector<bool> SelectionUtils::MakePfEleNewIDAnalysis(pat::ElectronCollection
 	isBarrelElectrons=true;
 	
 	/* Identification */
-	if (fabs (DeltaEtaTkClu) < 0.004 && fabs (DeltaPhiTkClu) < 0.06
-	    && sigmaIeIe < 0.01 && HE < 0.04) {
+	if (fabs (DeltaEtaTkClu) < dEtaEBCut && fabs (DeltaPhiTkClu) < dPhiEBCut
+	    && sigmaIeIe < sigmaEBCut && HE < hoeEBCut) {
 	   isIDBarrel = true;
 	}
 	
 	/* Conversion Rejection */
-	if ((fabs (Dist) >= 0.02 || fabs (Dcot) >= 0.02)
-	    && NumberOfExpectedInnerHits == 0) {
+	if ((fabs (Dist) >= distCut || fabs (Dcot) >= dcotCut)
+	    && NumberOfExpectedInnerHits <= mHitsCut) {
 	   isConvertedBarrel = true;
 	}
 	//cout<<"isIsolatedBarrel "<<isIsolatedBarrel<<" isIDBarrel "<< isIDBarrel<<" isConvertedBarrel "<<isConvertedBarrel<<endl;                            
@@ -912,14 +1025,14 @@ std::vector<bool> SelectionUtils::MakePfEleNewIDAnalysis(pat::ElectronCollection
 	isEndcapElectrons=true;
 	
 	/* Identification */
-	if (fabs (DeltaEtaTkClu) < 0.007 && fabs (DeltaPhiTkClu) < 0.03
-	    && sigmaIeIe < 0.03 && HE < 0.15) {
+	if (fabs (DeltaEtaTkClu) < dEtaEECut && fabs (DeltaPhiTkClu) < dPhiEECut
+	    && sigmaIeIe < sigmaEECut && HE < hoeEECut) {
 	   isIDEndcap = true;
 	}
 	
 	/* Conversion Rejection */
-	if ((fabs (Dcot) > 0.02 || fabs (Dist) > 0.02)
-	    && NumberOfExpectedInnerHits == 0) {
+	if ((fabs (Dcot) > dcotCut || fabs (Dist) > distCut)
+	    && NumberOfExpectedInnerHits <= mHitsCut) {
 	   isConvertedEndcap = true;
 	}
 	//cout<<"isIsolatedEndcap "<<isIsolatedEndcap<<" isIDEndcap "<< isIDEndcap<<" isConvertedEndcap "<<isConvertedEndcap<<endl;                            

@@ -24,6 +24,7 @@ class SelectionUtils {
 
    bool DoWP80(pat::ElectronCollection::const_iterator recoElectron,edm::Event& iEvent,bool removePU_);
    bool DoWP80Pf(pat::ElectronCollection::const_iterator recoElectron,edm::Event& iEvent);
+   bool DoWP90Pf(pat::ElectronCollection::const_iterator recoElectron,edm::Event& iEvent);
    bool DoWP80Pf_NewHE(pat::ElectronCollection::const_iterator recoElectron,edm::Event& iEvent,bool removePU_);
    bool DoHLTMatch(pat::ElectronCollection::const_iterator,edm::Event&);
    std::vector<bool> MakeEleIDAnalysis(pat::ElectronCollection::const_iterator recoElectron,edm::Event& iEvent,bool removePU_);
@@ -36,7 +37,10 @@ class SelectionUtils {
 		     const edm::Handle<reco::VertexCollection> &vtxs);
    //bool DoIso2011(pat::ElectronCollection::const_iterator recoElectron,edm::Event& iEvent, IsoDepositMaps &IsoMap, IsoDepositVals &IsoVal); 
    bool DoIso2011(pat::ElectronCollection::const_iterator recoElectron, edm::Event& iEvent, IsoDepositVals &IsoVals); 
-   std::vector<bool> MakePfEleNewIDAnalysis(pat::ElectronCollection::const_iterator recoElectron,edm::Event& iEvent,bool useNewID_,const edm::Handle<reco::ConversionCollection> &conversions,const reco::BeamSpot &beamspot,const edm::Handle<reco::VertexCollection> &vtxs, IsoDepositVals &IsoVals);
+   std::vector<bool> MakePfEleNewIDAnalysis(pat::ElectronCollection::const_iterator recoElectron,edm::Event& iEvent,
+					    bool useNewID_,bool doWP90_,const edm::Handle<reco::ConversionCollection> &conversions,
+					    const reco::BeamSpot &beamspot,const edm::Handle<reco::VertexCollection> &vtxs, 
+					    IsoDepositVals &IsoVals);
 
    static bool isGoodConversion(const reco::Conversion &conv, const math::XYZPoint &beamspot, float lxyMin=2.0, float probMin=1e-6, unsigned int nHitsBeforeVtxMax=1);   
    static bool matchesConversion(const pat::Electron &ele, const reco::Conversion &conv, bool allowCkfMatch=true);
