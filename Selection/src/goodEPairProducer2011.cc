@@ -118,10 +118,9 @@ goodEPairProducer2011::produce(edm::Event & iEvent, edm::EventSetup const & iSet
 	if (result[0] && result[1] && result[2]) WP80Count++;
 	if (WP80Count==2) eleSelStepByStep->SetBinContent(9,eleSelStepByStep->GetBinContent(9)+1); //(4) + 2 ele WP80 (5)
 
-
-	if ( (!doID_ || ((!useNewID_ && ((doWP90_ || SelectionUtils::DoWP80Pf(recoElectron,iEvent)) && 
-					 (!doWP90_ || SelectionUtils::DoWP90Pf(recoElectron,iEvent))) ))
-	      || (useNewID_ && SelectionUtils::DoMedSel2011(recoElectron,iEvent,conversions_h,beamSpot,vtx_h)))
+	if ( (!doID_ || ( (!useNewID_ && ((doWP90_ || SelectionUtils::DoWP80Pf(recoElectron,iEvent)) && 
+					  (!doWP90_ || SelectionUtils::DoWP90Pf(recoElectron,iEvent))) )
+			  || (useNewID_ && SelectionUtils::DoMedSel2011(recoElectron,iEvent,conversions_h,beamSpot,vtx_h))) )
 	     && ( !doIsolation_ || SelectionUtils::DoIso2011(recoElectron, iEvent, isoVals))
 	     && SelectionUtils::DoHLTMatch(recoElectron,iEvent) && recoElectron->pt()>secondEleEnThrhold){
 	   lowThrholdCount++;

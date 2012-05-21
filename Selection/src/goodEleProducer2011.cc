@@ -72,9 +72,9 @@ goodEleProducer2011::produce(edm::Event & iEvent, edm::EventSetup const & iSetup
 	if (result[1]) passIDEleCriteria->SetBinContent(3,passIDEleCriteria->GetBinContent(3)+1);
 	if (result[2]) passIDEleCriteria->SetBinContent(4,passIDEleCriteria->GetBinContent(4)+1);
 
-	if ( (!doID_ || ((!useNewID_ && ((doWP90_  || SelectionUtils::DoWP80Pf(recoElectron,iEvent)) && 
-					 (!doWP90_ || SelectionUtils::DoWP90Pf(recoElectron,iEvent))) ))
-	      || (useNewID_ && SelectionUtils::DoMedSel2011(recoElectron,iEvent,conversions_h,beamSpot,vtx_h)))
+	if ( (!doID_ || ( (!useNewID_ && ((doWP90_ || SelectionUtils::DoWP80Pf(recoElectron,iEvent)) && 
+					  (!doWP90_ || SelectionUtils::DoWP90Pf(recoElectron,iEvent))) )
+			  || (useNewID_ && SelectionUtils::DoMedSel2011(recoElectron,iEvent,conversions_h,beamSpot,vtx_h))) )
 	     && ( !doIsolation_ || SelectionUtils::DoIso2011(recoElectron, iEvent, isoVals))
 	     //&& SelectionUtils::DoHLTMatch(recoElectron,iEvent) 
 	     //&& recoElectron->pt()>secondEleEnThrhold

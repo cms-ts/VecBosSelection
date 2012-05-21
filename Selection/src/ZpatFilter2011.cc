@@ -13,7 +13,7 @@ Implementation:
 //
 // Original Author:  Vieri Candelise, Matteo Marone & Davide Scaini
 //         Created:  Thu Dec 11 10:46:26 CEST 2011
-// $Id: ZpatFilter2011.cc,v 1.1 2012/05/18 13:14:54 montanin Exp $
+// $Id: ZpatFilter2011.cc,v 1.2 2012/05/21 09:56:01 montanin Exp $
 //
 //
 
@@ -268,9 +268,9 @@ ZpatFilter2011::filter (edm::Event & iEvent, edm::EventSetup const & iSetup)
 
 //******************************* SELECTIONS ***************************************************8
 
-    if ( (!doID_ || ((!useNewID_ && ((doWP90_ || SelectionUtils::DoWP80Pf(recoElectron,iEvent)) && 
-				     (!doWP90_ || SelectionUtils::DoWP90Pf(recoElectron,iEvent))) ))
-	  || (useNewID_ && SelectionUtils::DoMedSel2011(recoElectron,iEvent,conversions_h,beamSpot,vtx_h)))
+    if ( (!doID_ || ( (!useNewID_ && ((doWP90_ || SelectionUtils::DoWP80Pf(recoElectron,iEvent)) && 
+ 				      (!doWP90_ || SelectionUtils::DoWP90Pf(recoElectron,iEvent)) ) )
+ 		      || (useNewID_ && SelectionUtils::DoMedSel2011(recoElectron,iEvent,conversions_h,beamSpot,vtx_h)) ) )
 	 && ( !doIsolation_ || SelectionUtils::DoIso2011(recoElectron, iEvent, isoVals))
 	 && SelectionUtils::DoHLTMatch(recoElectron,iEvent) && recoElectron->pt()>secondEleEnThrhold ){
        lowThrholdCount++;
