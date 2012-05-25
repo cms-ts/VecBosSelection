@@ -13,7 +13,7 @@ Implementation:
 //
 // Original Author:  superben
 //         Created:  Wed May 11 14:53:26 CESDo2011
-// $Id: EfficiencyPtEtaFilter.cc,v 1.2 2012/05/17 15:04:11 schizzi Exp $
+// $Id: EfficiencyPtEtaFilter.cc,v 1.3 2012/05/19 11:40:19 schizzi Exp $
 
 
 
@@ -63,8 +63,8 @@ using namespace std;
 using namespace edm;
 using namespace reco;
 
-bool Debug_flag=true
-; //Activate with true if you wonna have verbosity for Debug
+bool Debug_flag=false;
+bool Debug_flag2=false;
 
 //
 // member functions
@@ -77,11 +77,6 @@ EfficiencyPtEtaFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSet
   if (Debug_flag) cout<<"------- NEW Event -----"<<endl;
   using namespace edm;
 
-  //  if (Debug_flag) cout<<"WP80_efficiency_ = "<<WP80_efficiency_<<endl;  
-  //  if (Debug_flag) cout<<"HLTele17_efficiency_ = "<<HLTele17_efficiency_<<endl;  
-  //  if (Debug_flag) cout<<"HLTele8_efficiency_ = "<<HLTele8_efficiency_<<endl;  
-  //  if (Debug_flag) cout<<"RECO_efficiency_ = "<<RECO_efficiency_<<endl;  
-
   // Pick up SUPERCLUSTERS:
 
   Handle<reco::SuperClusterCollection> superClusters_EB_h;
@@ -92,65 +87,45 @@ EfficiencyPtEtaFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSet
   iEvent.getByLabel(superClusterCollection_EE_,superClusters_EE_h );
   if ( ! superClusters_EE_h.isValid() ) return false;
   
-  reco::SuperClusterCollection::const_iterator candidate0_SC;
-  reco::SuperClusterCollection::const_iterator candidate1_SC;
-  reco::SuperClusterCollection::const_iterator candidate2_SC;
-  reco::SuperClusterCollection::const_iterator candidate3_SC;
-  reco::SuperClusterCollection::const_iterator candidate4_SC;
-
   reco::SuperClusterCollection::const_iterator probe_SC;
-
   bool SC_isPassingProbe=false;
-  
   int l=0;
   
   //EB superclusters:
   for (reco::SuperClusterCollection::const_iterator superCluster = superClusters_EB_h->begin(); superCluster != superClusters_EB_h->end(); superCluster++) {
     if (superCluster->energy()>20.0 && fabs(superCluster->eta())<=1.4442) {
-      if (l==0) { candidate0_SC=superCluster; l++; continue;}
-      if (l==1) { candidate1_SC=superCluster; l++; continue;}
-      if (l==2) { candidate2_SC=superCluster; l++; continue;}
-      if (l==3) { candidate3_SC=superCluster; l++; continue;}
-      if (l==4) { candidate4_SC=superCluster; l++; continue;}
+      if (l==0) probe_SC=superCluster;
+      if (l>0){
+	if (probe_SC->energy() < superCluster->energy()){
+	  probe_SC=superCluster;
+	}
+      }
+      l++;
     }
   }
 
   //EE superclusters:  
   for (reco::SuperClusterCollection::const_iterator superCluster = superClusters_EE_h->begin(); superCluster != superClusters_EE_h->end(); superCluster++) {
     if (superCluster->energy()>20.0 && (fabs(superCluster->eta())>=1.5660 && fabs(superCluster->eta())<=2.4000)) {
-      if (l==0) { candidate0_SC=superCluster; l++; continue;}
-      if (l==1) { candidate1_SC=superCluster; l++; continue;}
-      if (l==2) { candidate2_SC=superCluster; l++; continue;}
-      if (l==3) { candidate3_SC=superCluster; l++; continue;}
-      if (l==4) { candidate4_SC=superCluster; l++; continue;}
+      if (l==0) probe_SC=superCluster;
+      if (l>0){
+	if (probe_SC->energy() < superCluster->energy()){
+	  probe_SC=superCluster;
+	}
+      }
+      l++;
     }
   }
 
   if (Debug_flag && l<1) cout<<"No valid SuperCluster: exiting."<<endl;
   if (l<1) return false;
 
-  //  srand ( time(NULL) );
-  int nsc = rand()%l;
-
-  //  cout << "time: " << time(NULL) << endl;
-
-  if (nsc==0) { probe_SC = candidate0_SC;}
-  if (nsc==1) { probe_SC = candidate1_SC;}
-  if (nsc==2) { probe_SC = candidate2_SC;}
-  if (nsc==3) { probe_SC = candidate3_SC;}
-  if (nsc==4) { probe_SC = candidate4_SC;}
 
   // Pick up ELECTRONS:
 
   Handle < pat::ElectronCollection > electronCollection;
   iEvent.getByLabel (theElectronCollectionLabel, electronCollection);
   if (!electronCollection.isValid ()) return false;
-
-  pat::ElectronCollection::const_iterator candidate0_ele;
-  pat::ElectronCollection::const_iterator candidate1_ele;
-  pat::ElectronCollection::const_iterator candidate2_ele;
-  pat::ElectronCollection::const_iterator candidate3_ele;
-  pat::ElectronCollection::const_iterator candidate4_ele;
 
   pat::ElectronCollection::const_iterator tag_ele;
   pat::ElectronCollection::const_iterator probe_ele;
@@ -168,22 +143,39 @@ EfficiencyPtEtaFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSet
   for (pat::ElectronCollection::const_iterator recoElectron = electronCollection->begin (); recoElectron != electronCollection->end (); recoElectron++) {
     protection=true;
     if (recoElectron->pt()>20.0 && recoElectron->superCluster()->eta()<2.4 && (WP80_efficiency_ || HLTele17_efficiency_ || HLTele8_efficiency_)) {
-      if (i==0) { candidate0_ele=recoElectron; i++; continue;}
-      if (i==1) { candidate1_ele=recoElectron; i++; continue;}
-      if (i==2) { candidate2_ele=recoElectron; i++; continue;}
-      if (i==3) { candidate3_ele=recoElectron; i++; continue;}
-      if (i==4) { candidate4_ele=recoElectron; i++; continue;}
+      if (i==0) tag_ele=recoElectron;
+      if (i==1){
+	if (tag_ele->pt()<recoElectron->pt()){
+	  probe_ele=tag_ele;
+	  tag_ele=recoElectron;
+	}
+	else{
+	  probe_ele=recoElectron;
+	}
+      }
+      if (i>1){
+	if (tag_ele->pt()<recoElectron->pt()){
+	  probe_ele=tag_ele;
+	  tag_ele=recoElectron;
+	}
+	else{
+	  if (probe_ele->pt()<recoElectron->pt()) probe_ele=recoElectron;
+	}
+      }
+      i++;
     }
     if (recoElectron->pt()>20.0 && recoElectron->superCluster()->eta()<2.4 && RECO_efficiency_) {
       if (sqrt((probe_SC->eta()-recoElectron->superCluster()->eta())*(probe_SC->eta()-recoElectron->superCluster()->eta())+(probe_SC->phi()-recoElectron->phi())*(probe_SC->phi()-recoElectron->phi())) < 0.2) {
 	SC_isPassingProbe=true;
 	continue;
       }
-      if (i==0 && SelectionUtils::DoWP80Pf(recoElectron,iEvent) && SelectionUtils::DoIso2011(recoElectron, iEvent, isoVals)) { candidate0_ele=recoElectron; i++; continue;}
-      if (i==1 && SelectionUtils::DoWP80Pf(recoElectron,iEvent) && SelectionUtils::DoIso2011(recoElectron, iEvent, isoVals)) { candidate1_ele=recoElectron; i++; continue;}
-      if (i==2 && SelectionUtils::DoWP80Pf(recoElectron,iEvent) && SelectionUtils::DoIso2011(recoElectron, iEvent, isoVals)) { candidate2_ele=recoElectron; i++; continue;}
-      if (i==3 && SelectionUtils::DoWP80Pf(recoElectron,iEvent) && SelectionUtils::DoIso2011(recoElectron, iEvent, isoVals)) { candidate3_ele=recoElectron; i++; continue;}
-      if (i==4 && SelectionUtils::DoWP80Pf(recoElectron,iEvent) && SelectionUtils::DoIso2011(recoElectron, iEvent, isoVals)) { candidate4_ele=recoElectron; i++; continue;}
+      if (i==0) tag_ele=recoElectron;
+      if (i>0){
+	if (tag_ele->pt()<recoElectron->pt()){
+	  tag_ele=recoElectron;
+	}
+      }
+      i++;
     }
   }
   if (!protection) {
@@ -195,36 +187,21 @@ EfficiencyPtEtaFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSet
   if (Debug_flag) cout<<"Out of the SC and RECOele loops!"<<endl;  
 
   if (i<1) return false;
-  if (i<2 && (WP80_efficiency_ || HLTele17_efficiency_ || HLTele8_efficiency_)) return false;
+  if ((i<2 || tag_ele->charge() == probe_ele->charge()) && (WP80_efficiency_ || HLTele17_efficiency_ || HLTele8_efficiency_)) return false;
 
-  int nele = rand()%i;
-  int ntag = 0;
 
-  if (RECO_efficiency_) {
-    if (nele==0) { tag_ele=candidate0_ele;}
-    if (nele==1) { tag_ele=candidate1_ele;}
-    if (nele==2) { tag_ele=candidate2_ele;}
-    if (nele==3) { tag_ele=candidate3_ele;}
-    if (nele==4) { tag_ele=candidate4_ele;}
-  }
+  // Mixing TAG and PROBE electrons
 
   if (WP80_efficiency_ || HLTele17_efficiency_ || HLTele8_efficiency_) {
-    if (nele==0) { probe_ele=candidate0_ele;}
-    if (nele==1) { probe_ele=candidate1_ele;}
-    if (nele==2) { probe_ele=candidate2_ele;}
-    if (nele==3) { probe_ele=candidate3_ele;}
-    if (nele==4) { probe_ele=candidate4_ele;}
-
-    while (1) { ntag = rand()%i; if (ntag!=nsc) break;}
-    if (ntag==0) { tag_ele=candidate0_ele;}
-    if (ntag==1) { tag_ele=candidate1_ele;}
-    if (ntag==2) { tag_ele=candidate2_ele;}
-    if (ntag==3) { tag_ele=candidate3_ele;}
-    if (ntag==4) { tag_ele=candidate4_ele;}
-    if (!(SelectionUtils::DoWP80Pf(tag_ele,iEvent) && SelectionUtils::DoIso2011(tag_ele, iEvent, isoVals))) return false;
+    int tagchoice = rand()%2;
+    if (tagchoice == 1) {
+      pat::ElectronCollection::const_iterator temp_ele;
+      temp_ele = tag_ele;
+      tag_ele = probe_ele;
+      probe_ele = temp_ele;
+    }
   }
 
-  if (Debug_flag) cout << "nsc = " << nsc << "; ntag = " << ntag << endl;
 
   // TRIGGER MATCHING (set flags to TRUE if matched):
 
@@ -244,7 +221,7 @@ EfficiencyPtEtaFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSet
     if (deltaReles < 0.2) HLTmatch = true;
   }
   
-  if (!HLTmatch) return false;
+  if (!(HLTmatch && SelectionUtils::DoWP80Pf(tag_ele,iEvent) && SelectionUtils::DoIso2011(tag_ele, iEvent, isoVals))) return false;
 
   Handle < edm::RefToBaseVector<reco::GsfElectron> > ProbeHLTelectronCollection;
   iEvent.getByLabel (theProbeHLTElectronCollectionLabel, ProbeHLTelectronCollection);
@@ -285,13 +262,14 @@ EfficiencyPtEtaFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSet
 
   if (Debug_flag) cout<<"Start filling TAP histos..."<<endl;
 
-  if (RECO_efficiency_) {
-    if (probe_SC->energy() > tag_ele->pt()) { cout << "PROBE wins!" << endl;} else { cout << "TAG wins!" << endl;}
-  } else {
-    if (probe_ele->pt() > tag_ele->pt()) { cout << "PROBE wins!" << endl;} else { cout << "TAG wins!" << endl;}
+  if (Debug_flag2) {
+    if (RECO_efficiency_) {
+      if (probe_SC->energy() > tag_ele->pt()) { cout << "PROBE wins!" << endl;} else { cout << "TAG wins!" << endl;}
+    } else {
+      if (probe_ele->pt() > tag_ele->pt()) { cout << "PROBE wins!" << endl;} else { cout << "TAG wins!" << endl;}
+    }
   }
-
-
+  
   if (Debug_flag) cout<<"l = "<<l<<"; i = "<<i<<"; SC_isPassingProbe  = "<<SC_isPassingProbe<<endl;  
   if (Debug_flag) cout<<"-------------" <<endl;  
   if (Debug_flag) cout<<"tag_ele->pt() = "<<tag_ele->pt() <<endl;  
