@@ -13,7 +13,7 @@ Implementation:
 //
 // Original Author:  superben
 //         Created:  Wed May 11 14:53:26 CESDo2011
-// $Id: EfficiencyPtEtaFilter.cc,v 1.3 2012/05/19 11:40:19 schizzi Exp $
+// $Id: EfficiencyPtEtaFilter.cc,v 1.4 2012/05/25 14:58:48 schizzi Exp $
 
 
 
@@ -187,7 +187,7 @@ EfficiencyPtEtaFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSet
   if (Debug_flag) cout<<"Out of the SC and RECOele loops!"<<endl;  
 
   if (i<1) return false;
-  if ((i<2 || tag_ele->charge() == probe_ele->charge()) && (WP80_efficiency_ || HLTele17_efficiency_ || HLTele8_efficiency_)) return false;
+  if ((WP80_efficiency_ || HLTele17_efficiency_ || HLTele8_efficiency_) && (i<2 || tag_ele->charge() == probe_ele->charge())) return false;
 
 
   // Mixing TAG and PROBE electrons
@@ -202,6 +202,7 @@ EfficiencyPtEtaFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSet
     }
   }
 
+  if (Debug_flag) cout << "Finished mixing Tag and Probe eles." << endl;
 
   // TRIGGER MATCHING (set flags to TRUE if matched):
 
