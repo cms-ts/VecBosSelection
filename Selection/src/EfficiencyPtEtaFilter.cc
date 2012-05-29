@@ -13,7 +13,7 @@ Implementation:
 //
 // Original Author:  superben
 //         Created:  Wed May 11 14:53:26 CESDo2011
-// $Id: EfficiencyPtEtaFilter.cc,v 1.4 2012/05/25 14:58:48 schizzi Exp $
+// $Id: EfficiencyPtEtaFilter.cc,v 1.5 2012/05/26 00:42:53 schizzi Exp $
 
 
 
@@ -87,6 +87,7 @@ EfficiencyPtEtaFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSet
   iEvent.getByLabel(superClusterCollection_EE_,superClusters_EE_h );
   if ( ! superClusters_EE_h.isValid() ) return false;
   
+  reco::SuperClusterCollection::const_iterator tag_SC;
   reco::SuperClusterCollection::const_iterator probe_SC;
   bool SC_isPassingProbe=false;
   int l=0;
@@ -94,10 +95,23 @@ EfficiencyPtEtaFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSet
   //EB superclusters:
   for (reco::SuperClusterCollection::const_iterator superCluster = superClusters_EB_h->begin(); superCluster != superClusters_EB_h->end(); superCluster++) {
     if (superCluster->energy()>20.0 && fabs(superCluster->eta())<=1.4442) {
-      if (l==0) probe_SC=superCluster;
-      if (l>0){
-	if (probe_SC->energy() < superCluster->energy()){
-	  probe_SC=superCluster;
+      if (l==0) tag_SC=superCluster;
+      if (l==1){
+	if (tag_SC->energy()<superCluster->energy()){
+          probe_SC=tag_SC;
+          tag_SC=superCluster;
+        }
+        else{
+          probe_SC=superCluster;
+	}
+      }
+      if (l>1){
+	if (tag_SC->energy()<superCluster->energy()){
+          probe_SC=tag_SC;
+          tag_SC=superCluster;
+        }
+        else{
+          if (probe_SC->energy()<superCluster->energy()) probe_SC=superCluster;
 	}
       }
       l++;
@@ -107,10 +121,23 @@ EfficiencyPtEtaFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSet
   //EE superclusters:  
   for (reco::SuperClusterCollection::const_iterator superCluster = superClusters_EE_h->begin(); superCluster != superClusters_EE_h->end(); superCluster++) {
     if (superCluster->energy()>20.0 && (fabs(superCluster->eta())>=1.5660 && fabs(superCluster->eta())<=2.4000)) {
-      if (l==0) probe_SC=superCluster;
-      if (l>0){
-	if (probe_SC->energy() < superCluster->energy()){
-	  probe_SC=superCluster;
+      if (l==0) tag_SC=superCluster;
+      if (l==1){
+	if (tag_SC->energy()<superCluster->energy()){
+          probe_SC=tag_SC;
+          tag_SC=superCluster;
+        }
+        else{
+          probe_SC=superCluster;
+	}
+      }
+      if (l>1){
+	if (tag_SC->energy()<superCluster->energy()){
+          probe_SC=tag_SC;
+          tag_SC=superCluster;
+        }
+        else{
+          if (probe_SC->energy()<superCluster->energy()) probe_SC=superCluster;
 	}
       }
       l++;
@@ -118,7 +145,19 @@ EfficiencyPtEtaFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSet
   }
 
   if (Debug_flag && l<1) cout<<"No valid SuperCluster: exiting."<<endl;
-  if (l<1) return false;
+  if (l<2) return false;
+
+  // Mixing TAG and PROBE SuperClusters
+
+  if (RECO_efficiency_) {
+    int SCchoice = rand()%2;
+    if (SCchoice == 1) {
+      reco::SuperClusterCollection::const_iterator temp_SC;
+      temp_SC = tag_SC;
+      tag_SC = probe_SC;
+      probe_SC = temp_SC;
+    }
+  }
 
 
   // Pick up ELECTRONS:
@@ -303,7 +342,7 @@ EfficiencyPtEtaFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSet
     probeall_mee->Fill(e_ee_invMass);
     tagall_pt->Fill(tag_ele->pt());
     tagall_eta->Fill(tag_ele->superCluster()->eta());
-    if ((WP80_efficiency_ && SelectionUtils::DoWP80Pf(probe_ele,iEvent) && SelectionUtils::DoIso2011(probe_ele, iEvent, isoVals)) || ((HLTele17_efficiency_ || HLTele8_efficiency_) && HLTmatch)) {
+    if ((WP80_efficiency_ && SelectionUtils::DoWP90Pf(probe_ele,iEvent) && SelectionUtils::DoIso2011(probe_ele, iEvent, isoVals)) || ((HLTele17_efficiency_ || HLTele8_efficiency_) && HLTmatch)) {
       probepass_pt->Fill(probe_ele->pt());
       probepass_eta->Fill(probe_ele->superCluster()->eta());
       probepass_mee->Fill(e_ee_invMass);
