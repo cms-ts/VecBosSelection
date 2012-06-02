@@ -13,7 +13,7 @@ Implementation:
 //
 // Original Author:  superben
 //         Created:  Wed May 11 14:53:26 CESDo2011
-// $Id: EfficiencyPtEtaFilter.cc,v 1.5 2012/05/26 00:42:53 schizzi Exp $
+// $Id: EfficiencyPtEtaFilter.cc,v 1.6 2012/05/29 13:40:32 schizzi Exp $
 
 
 
@@ -94,10 +94,10 @@ EfficiencyPtEtaFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSet
   
   //EB superclusters:
   for (reco::SuperClusterCollection::const_iterator superCluster = superClusters_EB_h->begin(); superCluster != superClusters_EB_h->end(); superCluster++) {
-    if (superCluster->energy()>20.0 && fabs(superCluster->eta())<=1.4442) {
+    if ((superCluster->energy()/cosh(superCluster->eta()))>20.0 && fabs(superCluster->eta())<=1.4442) {
       if (l==0) tag_SC=superCluster;
       if (l==1){
-	if (tag_SC->energy()<superCluster->energy()){
+	if (tag_SC->energy()/cosh(tag_SC->eta()) < superCluster->energy()/cosh(superCluster->eta())){
           probe_SC=tag_SC;
           tag_SC=superCluster;
         }
@@ -106,12 +106,12 @@ EfficiencyPtEtaFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSet
 	}
       }
       if (l>1){
-	if (tag_SC->energy()<superCluster->energy()){
+	if (tag_SC->energy()/cosh(tag_SC->eta()) < superCluster->energy()/cosh(superCluster->eta())){
           probe_SC=tag_SC;
           tag_SC=superCluster;
         }
         else{
-          if (probe_SC->energy()<superCluster->energy()) probe_SC=superCluster;
+          if (probe_SC->energy()/cosh(probe_SC->eta()) < superCluster->energy()/cosh(superCluster->eta())) probe_SC=superCluster;
 	}
       }
       l++;
@@ -120,10 +120,10 @@ EfficiencyPtEtaFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSet
 
   //EE superclusters:  
   for (reco::SuperClusterCollection::const_iterator superCluster = superClusters_EE_h->begin(); superCluster != superClusters_EE_h->end(); superCluster++) {
-    if (superCluster->energy()>20.0 && (fabs(superCluster->eta())>=1.5660 && fabs(superCluster->eta())<=2.4000)) {
+    if ((superCluster->energy()/cosh(superCluster->eta()))>20.0 && (fabs(superCluster->eta())>=1.5660 && fabs(superCluster->eta())<=2.4000)) {
       if (l==0) tag_SC=superCluster;
       if (l==1){
-	if (tag_SC->energy()<superCluster->energy()){
+	if (tag_SC->energy()/cosh(tag_SC->eta()) < superCluster->energy()/cosh(superCluster->eta())){
           probe_SC=tag_SC;
           tag_SC=superCluster;
         }
@@ -132,12 +132,12 @@ EfficiencyPtEtaFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSet
 	}
       }
       if (l>1){
-	if (tag_SC->energy()<superCluster->energy()){
+	if (tag_SC->energy()/cosh(tag_SC->eta()) < superCluster->energy()/cosh(superCluster->eta())){
           probe_SC=tag_SC;
           tag_SC=superCluster;
         }
         else{
-          if (probe_SC->energy()<superCluster->energy()) probe_SC=superCluster;
+          if (probe_SC->energy()/cosh(probe_SC->eta()) < superCluster->energy()/cosh(superCluster->eta())) probe_SC=superCluster;
 	}
       }
       l++;
@@ -178,6 +178,7 @@ EfficiencyPtEtaFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSet
   int i=0;
   if (electronCollection->size()<=1) return false;
   bool protection=false;
+  double deltaPhi = 0.0;
   
   for (pat::ElectronCollection::const_iterator recoElectron = electronCollection->begin (); recoElectron != electronCollection->end (); recoElectron++) {
     protection=true;
@@ -204,7 +205,12 @@ EfficiencyPtEtaFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSet
       i++;
     }
     if (recoElectron->pt()>20.0 && recoElectron->superCluster()->eta()<2.4 && RECO_efficiency_) {
-      if (sqrt((probe_SC->eta()-recoElectron->superCluster()->eta())*(probe_SC->eta()-recoElectron->superCluster()->eta())+(probe_SC->phi()-recoElectron->phi())*(probe_SC->phi()-recoElectron->phi())) < 0.2) {
+      if (fabs(probe_SC->phi()-recoElectron->superCluster()->phi()) < 3.1416) {
+	deltaPhi = probe_SC->phi()-recoElectron->superCluster()->phi();
+      } else {
+	deltaPhi = fabs(probe_SC->phi()-recoElectron->superCluster()->phi()) - 6.2832;
+      }
+      if (sqrt((probe_SC->eta()-recoElectron->superCluster()->eta())*(probe_SC->eta()-recoElectron->superCluster()->eta())+(deltaPhi*deltaPhi)) < 0.2) {
 	SC_isPassingProbe=true;
 	continue;
       }
@@ -254,10 +260,14 @@ EfficiencyPtEtaFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSet
   double deltaReles = 999.0;
 
   for (edm::RefToBaseVector<reco::GsfElectron>::const_iterator TagHLTElectron = TagHLTelectronCollection->begin (); TagHLTElectron != TagHLTelectronCollection->end (); TagHLTElectron++) {
-    deltaReles = sqrt((tag_ele->superCluster()->eta()-(*TagHLTElectron)->superCluster()->eta())*
-		      (tag_ele->superCluster()->eta()-(*TagHLTElectron)->superCluster()->eta())+
-		      (tag_ele->phi()-(*TagHLTElectron)->phi())*
-		      (tag_ele->phi()-(*TagHLTElectron)->phi()));
+    if (fabs(tag_ele->phi()-(*TagHLTElectron)->phi()) < 3.1416) {
+      deltaPhi = tag_ele->phi()-(*TagHLTElectron)->phi();
+    } else {
+      deltaPhi = fabs(tag_ele->phi()-(*TagHLTElectron)->phi()) - 6.2832;
+    }
+    deltaReles = sqrt((tag_ele->superCluster()->eta()-(*TagHLTElectron)->eta())*
+		      (tag_ele->superCluster()->eta()-(*TagHLTElectron)->eta())+
+		      (deltaPhi*deltaPhi));
     if (deltaReles < 0.2) HLTmatch = true;
   }
   
@@ -270,10 +280,14 @@ EfficiencyPtEtaFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSet
   if (HLTele17_efficiency_ || HLTele8_efficiency_) {
     HLTmatch = false;
     for (edm::RefToBaseVector<reco::GsfElectron>::const_iterator ProbeHLTElectron = ProbeHLTelectronCollection->begin (); ProbeHLTElectron != ProbeHLTelectronCollection->end (); ProbeHLTElectron++) {
-      deltaReles = sqrt((probe_ele->superCluster()->eta()-(*ProbeHLTElectron)->superCluster()->eta())*
-			(probe_ele->superCluster()->eta()-(*ProbeHLTElectron)->superCluster()->eta())+
-			(probe_ele->phi()-(*ProbeHLTElectron)->phi())*
-			(probe_ele->phi()-(*ProbeHLTElectron)->phi()));
+      if (fabs(probe_ele->phi()-(*ProbeHLTElectron)->phi()) < 3.1416) {
+	deltaPhi = probe_ele->phi()-(*ProbeHLTElectron)->phi();
+      } else {
+	deltaPhi = fabs(probe_ele->phi()-(*ProbeHLTElectron)->phi()) - 6.2832;
+      }
+      deltaReles = sqrt((probe_ele->superCluster()->eta()-(*ProbeHLTElectron)->eta())*
+			(probe_ele->superCluster()->eta()-(*ProbeHLTElectron)->eta())+
+			(deltaPhi*deltaPhi));
       if (deltaReles < 0.2) HLTmatch = true;
     }
   }
@@ -282,7 +296,7 @@ EfficiencyPtEtaFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSet
 
   //Calculating tag & probe stuff
   TLorentzVector tagv;
-  tagv.SetPtEtaPhiM(tag_ele->pt(),tag_ele->superCluster()->eta(),tag_ele->phi(), 0.0);
+  tagv.SetPtEtaPhiM(tag_ele->pt(),tag_ele->eta(),tag_ele->phi(), 0.0);
   TLorentzVector probev;
   if (RECO_efficiency_)  {
     probev.SetXYZT(probe_SC->energy()*cos(probe_SC->phi())/cosh(probe_SC->eta()),
@@ -290,7 +304,7 @@ EfficiencyPtEtaFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSet
 		   probe_SC->energy()*tanh(probe_SC->eta()),
 		   probe_SC->energy());
   } else {
-    probev.SetPtEtaPhiM(probe_ele->pt(),probe_ele->superCluster()->eta(),probe_ele->phi(), 0.0);
+    probev.SetPtEtaPhiM(probe_ele->pt(),probe_ele->eta(),probe_ele->phi(), 0.0);
   }
 
 
@@ -301,38 +315,8 @@ EfficiencyPtEtaFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSet
   if (e_ee_invMass>120.0 || e_ee_invMass<60.0) return false;
 
   if (Debug_flag) cout<<"Start filling TAP histos..."<<endl;
+  
 
-  if (Debug_flag2) {
-    if (RECO_efficiency_) {
-      if (probe_SC->energy() > tag_ele->pt()) { cout << "PROBE wins!" << endl;} else { cout << "TAG wins!" << endl;}
-    } else {
-      if (probe_ele->pt() > tag_ele->pt()) { cout << "PROBE wins!" << endl;} else { cout << "TAG wins!" << endl;}
-    }
-  }
-  
-  if (Debug_flag) cout<<"l = "<<l<<"; i = "<<i<<"; SC_isPassingProbe  = "<<SC_isPassingProbe<<endl;  
-  if (Debug_flag) cout<<"-------------" <<endl;  
-  if (Debug_flag) cout<<"tag_ele->pt() = "<<tag_ele->pt() <<endl;  
-  if (Debug_flag) cout<<"tag_ele->superCluster()->eta() = "<<tag_ele->superCluster()->eta() <<endl;  
-  if (Debug_flag) cout<<"tag_ele->phi() = "<<tag_ele->phi() <<endl;  
-  if (Debug_flag) cout<<"-------------" <<endl;  
-  if (RECO_efficiency_)  {
-    if (Debug_flag) cout<<"-------------" <<endl;  
-    if (Debug_flag) cout<<"probe_SC->energy() = "<<probe_SC->energy() <<endl;  
-    if (Debug_flag) cout<<"probe_SC->eta() = "<<probe_SC->eta() <<endl;  
-    if (Debug_flag) cout<<"probe_SC->phi() = "<<probe_SC->phi() <<endl;  
-    if (Debug_flag) cout<<"-------------" <<endl;  
-  } else {
-    if (Debug_flag) cout<<"-------------" <<endl;  
-    if (Debug_flag) cout<<"probe_ele->pt() = "<<probe_ele->pt() <<endl;  
-    if (Debug_flag) cout<<"probe_ele->superCluster()->eta() = "<<probe_ele->superCluster()->eta() <<endl;  
-    if (Debug_flag) cout<<"probe_ele->phi() = "<<probe_ele->phi() <<endl;  
-    if (Debug_flag) cout<<"-------------" <<endl;  
-  }
-  if (Debug_flag) cout<<"-------------" <<endl;  
-  if (Debug_flag) cout<<"ee Invariant mass = "<< e_ee_invMass <<endl;    
-  if (Debug_flag) cout<<"-------------" <<endl;
-  
   // Filling TAP distributions:
 
   // WP80 & HLT:
@@ -403,66 +387,66 @@ EfficiencyPtEtaFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSet
 
   // RECO:
   if (RECO_efficiency_) {
-    probeall_pt->Fill(probe_SC->energy());
+    probeall_pt->Fill((probe_SC->energy()/cosh(probe_SC->eta())));
     probeall_eta->Fill(probe_SC->eta());
     probeall_mee->Fill(e_ee_invMass);
     tagall_pt->Fill(tag_ele->pt());
     tagall_eta->Fill(tag_ele->superCluster()->eta());
     if (SC_isPassingProbe){
-      probepass_pt->Fill(probe_SC->energy());
+      probepass_pt->Fill((probe_SC->energy()/cosh(probe_SC->eta())));
       probepass_eta->Fill(probe_SC->eta());
       probepass_mee->Fill(e_ee_invMass);
       if (fabs(probe_SC->eta()) >= 0.0    && fabs(probe_SC->eta()) < 0.8) {
-	if (probe_SC->energy() >= 20.0 && probe_SC->energy() <  30.0) probepass1eta1pt->Fill(e_ee_invMass);
-	if (probe_SC->energy() >= 30.0 && probe_SC->energy() <  40.0) probepass1eta2pt->Fill(e_ee_invMass);
-	if (probe_SC->energy() >= 40.0 && probe_SC->energy() <  50.0) probepass1eta3pt->Fill(e_ee_invMass);
-	if (probe_SC->energy() >= 50.0 && probe_SC->energy() < 999.0) probepass1eta4pt->Fill(e_ee_invMass);
+	if ((probe_SC->energy()/cosh(probe_SC->eta())) >= 20.0 && (probe_SC->energy()/cosh(probe_SC->eta())) <  30.0) probepass1eta1pt->Fill(e_ee_invMass);
+	if ((probe_SC->energy()/cosh(probe_SC->eta())) >= 30.0 && (probe_SC->energy()/cosh(probe_SC->eta())) <  40.0) probepass1eta2pt->Fill(e_ee_invMass);
+	if ((probe_SC->energy()/cosh(probe_SC->eta())) >= 40.0 && (probe_SC->energy()/cosh(probe_SC->eta())) <  50.0) probepass1eta3pt->Fill(e_ee_invMass);
+	if ((probe_SC->energy()/cosh(probe_SC->eta())) >= 50.0 && (probe_SC->energy()/cosh(probe_SC->eta())) < 999.0) probepass1eta4pt->Fill(e_ee_invMass);
       }
       if (fabs(probe_SC->eta()) >= 0.8    && fabs(probe_SC->eta()) < 1.4442) {
-	if (probe_SC->energy() >= 20.0 && probe_SC->energy() <  30.0) probepass2eta1pt->Fill(e_ee_invMass);
-	if (probe_SC->energy() >= 30.0 && probe_SC->energy() <  40.0) probepass2eta2pt->Fill(e_ee_invMass);
-	if (probe_SC->energy() >= 40.0 && probe_SC->energy() <  50.0) probepass2eta3pt->Fill(e_ee_invMass);
-	if (probe_SC->energy() >= 50.0 && probe_SC->energy() < 999.0) probepass2eta4pt->Fill(e_ee_invMass);
+	if ((probe_SC->energy()/cosh(probe_SC->eta())) >= 20.0 && (probe_SC->energy()/cosh(probe_SC->eta())) <  30.0) probepass2eta1pt->Fill(e_ee_invMass);
+	if ((probe_SC->energy()/cosh(probe_SC->eta())) >= 30.0 && (probe_SC->energy()/cosh(probe_SC->eta())) <  40.0) probepass2eta2pt->Fill(e_ee_invMass);
+	if ((probe_SC->energy()/cosh(probe_SC->eta())) >= 40.0 && (probe_SC->energy()/cosh(probe_SC->eta())) <  50.0) probepass2eta3pt->Fill(e_ee_invMass);
+	if ((probe_SC->energy()/cosh(probe_SC->eta())) >= 50.0 && (probe_SC->energy()/cosh(probe_SC->eta())) < 999.0) probepass2eta4pt->Fill(e_ee_invMass);
       }
       if (fabs(probe_SC->eta()) >= 1.566  && fabs(probe_SC->eta()) < 2.0) {
-	if (probe_SC->energy() >= 20.0 && probe_SC->energy() <  30.0) probepass3eta1pt->Fill(e_ee_invMass);
-	if (probe_SC->energy() >= 30.0 && probe_SC->energy() <  40.0) probepass3eta2pt->Fill(e_ee_invMass);
-	if (probe_SC->energy() >= 40.0 && probe_SC->energy() <  50.0) probepass3eta3pt->Fill(e_ee_invMass);
-	if (probe_SC->energy() >= 50.0 && probe_SC->energy() < 999.0) probepass3eta4pt->Fill(e_ee_invMass);
+	if ((probe_SC->energy()/cosh(probe_SC->eta())) >= 20.0 && (probe_SC->energy()/cosh(probe_SC->eta())) <  30.0) probepass3eta1pt->Fill(e_ee_invMass);
+	if ((probe_SC->energy()/cosh(probe_SC->eta())) >= 30.0 && (probe_SC->energy()/cosh(probe_SC->eta())) <  40.0) probepass3eta2pt->Fill(e_ee_invMass);
+	if ((probe_SC->energy()/cosh(probe_SC->eta())) >= 40.0 && (probe_SC->energy()/cosh(probe_SC->eta())) <  50.0) probepass3eta3pt->Fill(e_ee_invMass);
+	if ((probe_SC->energy()/cosh(probe_SC->eta())) >= 50.0 && (probe_SC->energy()/cosh(probe_SC->eta())) < 999.0) probepass3eta4pt->Fill(e_ee_invMass);
       }
       if (fabs(probe_SC->eta()) >= 2.0    && fabs(probe_SC->eta()) < 2.5) {
-	if (probe_SC->energy() >= 20.0 && probe_SC->energy() <  30.0) probepass4eta1pt->Fill(e_ee_invMass);
-	if (probe_SC->energy() >= 30.0 && probe_SC->energy() <  40.0) probepass4eta2pt->Fill(e_ee_invMass);
-	if (probe_SC->energy() >= 40.0 && probe_SC->energy() <  50.0) probepass4eta3pt->Fill(e_ee_invMass);
-	if (probe_SC->energy() >= 50.0 && probe_SC->energy() < 999.0) probepass4eta4pt->Fill(e_ee_invMass);
+	if ((probe_SC->energy()/cosh(probe_SC->eta())) >= 20.0 && (probe_SC->energy()/cosh(probe_SC->eta())) <  30.0) probepass4eta1pt->Fill(e_ee_invMass);
+	if ((probe_SC->energy()/cosh(probe_SC->eta())) >= 30.0 && (probe_SC->energy()/cosh(probe_SC->eta())) <  40.0) probepass4eta2pt->Fill(e_ee_invMass);
+	if ((probe_SC->energy()/cosh(probe_SC->eta())) >= 40.0 && (probe_SC->energy()/cosh(probe_SC->eta())) <  50.0) probepass4eta3pt->Fill(e_ee_invMass);
+	if ((probe_SC->energy()/cosh(probe_SC->eta())) >= 50.0 && (probe_SC->energy()/cosh(probe_SC->eta())) < 999.0) probepass4eta4pt->Fill(e_ee_invMass);
       }
     } else {
-      probefail_pt->Fill(probe_SC->energy());
+      probefail_pt->Fill((probe_SC->energy()/cosh(probe_SC->eta())));
       probefail_eta->Fill(probe_SC->eta());
       probefail_mee->Fill(e_ee_invMass);
       if (fabs(probe_SC->eta()) >= 0.0    && fabs(probe_SC->eta()) < 0.8) {
-	if (probe_SC->energy() >= 20.0 && probe_SC->energy() <  30.0) probefail1eta1pt->Fill(e_ee_invMass);
-	if (probe_SC->energy() >= 30.0 && probe_SC->energy() <  40.0) probefail1eta2pt->Fill(e_ee_invMass);
-	if (probe_SC->energy() >= 40.0 && probe_SC->energy() <  50.0) probefail1eta3pt->Fill(e_ee_invMass);
-	if (probe_SC->energy() >= 50.0 && probe_SC->energy() < 999.0) probefail1eta4pt->Fill(e_ee_invMass);
+	if ((probe_SC->energy()/cosh(probe_SC->eta())) >= 20.0 && (probe_SC->energy()/cosh(probe_SC->eta())) <  30.0) probefail1eta1pt->Fill(e_ee_invMass);
+	if ((probe_SC->energy()/cosh(probe_SC->eta())) >= 30.0 && (probe_SC->energy()/cosh(probe_SC->eta())) <  40.0) probefail1eta2pt->Fill(e_ee_invMass);
+	if ((probe_SC->energy()/cosh(probe_SC->eta())) >= 40.0 && (probe_SC->energy()/cosh(probe_SC->eta())) <  50.0) probefail1eta3pt->Fill(e_ee_invMass);
+	if ((probe_SC->energy()/cosh(probe_SC->eta())) >= 50.0 && (probe_SC->energy()/cosh(probe_SC->eta())) < 999.0) probefail1eta4pt->Fill(e_ee_invMass);
       }
       if (fabs(probe_SC->eta()) >= 0.8    && fabs(probe_SC->eta()) < 1.4442) {
-	if (probe_SC->energy() >= 20.0 && probe_SC->energy() <  30.0) probefail2eta1pt->Fill(e_ee_invMass);
-	if (probe_SC->energy() >= 30.0 && probe_SC->energy() <  40.0) probefail2eta2pt->Fill(e_ee_invMass);
-	if (probe_SC->energy() >= 40.0 && probe_SC->energy() <  50.0) probefail2eta3pt->Fill(e_ee_invMass);
-	if (probe_SC->energy() >= 50.0 && probe_SC->energy() < 999.0) probefail2eta4pt->Fill(e_ee_invMass);
+	if ((probe_SC->energy()/cosh(probe_SC->eta())) >= 20.0 && (probe_SC->energy()/cosh(probe_SC->eta())) <  30.0) probefail2eta1pt->Fill(e_ee_invMass);
+	if ((probe_SC->energy()/cosh(probe_SC->eta())) >= 30.0 && (probe_SC->energy()/cosh(probe_SC->eta())) <  40.0) probefail2eta2pt->Fill(e_ee_invMass);
+	if ((probe_SC->energy()/cosh(probe_SC->eta())) >= 40.0 && (probe_SC->energy()/cosh(probe_SC->eta())) <  50.0) probefail2eta3pt->Fill(e_ee_invMass);
+	if ((probe_SC->energy()/cosh(probe_SC->eta())) >= 50.0 && (probe_SC->energy()/cosh(probe_SC->eta())) < 999.0) probefail2eta4pt->Fill(e_ee_invMass);
       }
       if (fabs(probe_SC->eta()) >= 1.566  && fabs(probe_SC->eta()) < 2.0) {
-	if (probe_SC->energy() >= 20.0 && probe_SC->energy() <  30.0) probefail3eta1pt->Fill(e_ee_invMass);
-	if (probe_SC->energy() >= 30.0 && probe_SC->energy() <  40.0) probefail3eta2pt->Fill(e_ee_invMass);
-	if (probe_SC->energy() >= 40.0 && probe_SC->energy() <  50.0) probefail3eta3pt->Fill(e_ee_invMass);
-	if (probe_SC->energy() >= 50.0 && probe_SC->energy() < 999.0) probefail3eta4pt->Fill(e_ee_invMass);
+	if ((probe_SC->energy()/cosh(probe_SC->eta())) >= 20.0 && (probe_SC->energy()/cosh(probe_SC->eta())) <  30.0) probefail3eta1pt->Fill(e_ee_invMass);
+	if ((probe_SC->energy()/cosh(probe_SC->eta())) >= 30.0 && (probe_SC->energy()/cosh(probe_SC->eta())) <  40.0) probefail3eta2pt->Fill(e_ee_invMass);
+	if ((probe_SC->energy()/cosh(probe_SC->eta())) >= 40.0 && (probe_SC->energy()/cosh(probe_SC->eta())) <  50.0) probefail3eta3pt->Fill(e_ee_invMass);
+	if ((probe_SC->energy()/cosh(probe_SC->eta())) >= 50.0 && (probe_SC->energy()/cosh(probe_SC->eta())) < 999.0) probefail3eta4pt->Fill(e_ee_invMass);
       }
       if (fabs(probe_SC->eta()) >= 2.0    && fabs(probe_SC->eta()) < 2.5) {
-	if (probe_SC->energy() >= 20.0 && probe_SC->energy() <  30.0) probefail4eta1pt->Fill(e_ee_invMass);
-	if (probe_SC->energy() >= 30.0 && probe_SC->energy() <  40.0) probefail4eta2pt->Fill(e_ee_invMass);
-	if (probe_SC->energy() >= 40.0 && probe_SC->energy() <  50.0) probefail4eta3pt->Fill(e_ee_invMass);
-	if (probe_SC->energy() >= 50.0 && probe_SC->energy() < 999.0) probefail4eta4pt->Fill(e_ee_invMass);
+	if ((probe_SC->energy()/cosh(probe_SC->eta())) >= 20.0 && (probe_SC->energy()/cosh(probe_SC->eta())) <  30.0) probefail4eta1pt->Fill(e_ee_invMass);
+	if ((probe_SC->energy()/cosh(probe_SC->eta())) >= 30.0 && (probe_SC->energy()/cosh(probe_SC->eta())) <  40.0) probefail4eta2pt->Fill(e_ee_invMass);
+	if ((probe_SC->energy()/cosh(probe_SC->eta())) >= 40.0 && (probe_SC->energy()/cosh(probe_SC->eta())) <  50.0) probefail4eta3pt->Fill(e_ee_invMass);
+	if ((probe_SC->energy()/cosh(probe_SC->eta())) >= 50.0 && (probe_SC->energy()/cosh(probe_SC->eta())) < 999.0) probefail4eta4pt->Fill(e_ee_invMass);
       }
     }
   }
