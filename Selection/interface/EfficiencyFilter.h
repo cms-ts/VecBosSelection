@@ -42,7 +42,8 @@ class EfficiencyFilter : public edm::EDFilter, public SelectionUtils {
       // ----------member data ---------------------------
 
       edm::InputTag theElectronCollectionLabel;
-      edm::InputTag theHLTElectronCollectionLabel;
+      edm::InputTag theTagHLTElectronCollectionLabel;
+      edm::InputTag theProbeHLTElectronCollectionLabel;
       edm::InputTag superClusterCollection_EB_;
       edm::InputTag superClusterCollection_EE_;
       edm::InputTag triggerCollection_; 
@@ -62,7 +63,6 @@ class EfficiencyFilter : public edm::EDFilter, public SelectionUtils {
       bool HLTele8_efficiency_;
       bool HLTele17_efficiency_;
       bool RECO_efficiency_;
-      bool New_HE_;
 
       TH1D *probeall_mee;
       TH1D *probepass_mee;
@@ -90,28 +90,6 @@ class EfficiencyFilter : public edm::EDFilter, public SelectionUtils {
       TH1D *probefail3jet ;
       TH1D *probefail4jet; 
       TH1D *probefail5jet; 
-
-      TH1D *probepass0pu;
-      TH1D *probepass1pu;
-      TH1D *probepass2pu;
-      TH1D *probepass3pu;
-      TH1D *probepass4pu;
-      TH1D *probefail0pu ;
-      TH1D *probefail1pu ;
-      TH1D *probefail2pu ;
-      TH1D *probefail3pu ;
-      TH1D *probefail4pu; 
-
-      TH1D *probepass0eta;
-      TH1D *probepass1eta;
-      TH1D *probepass2eta;
-      TH1D *probepass3eta;
-      TH1D *probepass4eta;
-      TH1D *probefail0eta ;
-      TH1D *probefail1eta ;
-      TH1D *probefail2eta ;
-      TH1D *probefail3eta ;
-      TH1D *probefail4eta; 
 
       TH1D *probepass0leadjetpt;
       TH1D *probepass1leadjetpt;
@@ -152,32 +130,8 @@ class EfficiencyFilter : public edm::EDFilter, public SelectionUtils {
       TH1D *probefail1subsubleadjetpt ;
       TH1D *probefail2subsubleadjetpt ;
 
-      TH1D *probepass0th2f;
-      TH1D *probepass1th2f;
-      TH1D *probepass2th2f;
-      TH1D *probepass3th2f;
-      TH1D *probepass4th2f;
-      TH1D *probepass5th2f;
-      TH1D *probepass6th2f;
-      TH1D *probepass7th2f;
-      TH1D *probepass8th2f;
-      TH1D *probepass9th2f;
-      TH1D *probepass10th2f;
-      TH1D *probepass11th2f;
-      TH1D *probepass12th2f;
-      TH1D *probefail0th2f;
-      TH1D *probefail1th2f;
-      TH1D *probefail2th2f;
-      TH1D *probefail3th2f;
-      TH1D *probefail4th2f; 
-      TH1D *probefail5th2f; 
-      TH1D *probefail6th2f; 
-      TH1D *probefail7th2f; 
-      TH1D *probefail8th2f; 
-      TH1D *probefail9th2f; 
-      TH1D *probefail10th2f; 
-      TH1D *probefail11th2f; 
-      TH1D *probefail12th2f; 
+      TH1D *probepass0subsubsubleadjetpt;
+      TH1D *probefail0subsubsubleadjetpt ;
 
       TH1D *tagall_mee;
       TH1D *tagpass_mee;
@@ -205,28 +159,6 @@ class EfficiencyFilter : public edm::EDFilter, public SelectionUtils {
       TH1D *tagfail3jet ;
       TH1D *tagfail4jet; 
       TH1D *tagfail5jet; 
-
-      TH1D *tagpass0pu;
-      TH1D *tagpass1pu;
-      TH1D *tagpass2pu;
-      TH1D *tagpass3pu;
-      TH1D *tagpass4pu;
-      TH1D *tagfail0pu ;
-      TH1D *tagfail1pu ;
-      TH1D *tagfail2pu ;
-      TH1D *tagfail3pu ;
-      TH1D *tagfail4pu; 
-
-      TH1D *tagpass0eta;
-      TH1D *tagpass1eta;
-      TH1D *tagpass2eta;
-      TH1D *tagpass3eta;
-      TH1D *tagpass4eta;
-      TH1D *tagfail0eta ;
-      TH1D *tagfail1eta ;
-      TH1D *tagfail2eta ;
-      TH1D *tagfail3eta ;
-      TH1D *tagfail4eta; 
 
       TH1D *tagpass0leadjetpt;
       TH1D *tagpass1leadjetpt;
@@ -267,36 +199,8 @@ class EfficiencyFilter : public edm::EDFilter, public SelectionUtils {
       TH1D *tagfail1subsubleadjetpt ;
       TH1D *tagfail2subsubleadjetpt ;
 
-      TH1D *tagpass0th2f;
-      TH1D *tagpass1th2f;
-      TH1D *tagpass2th2f;
-      TH1D *tagpass3th2f;
-      TH1D *tagpass4th2f;
-      TH1D *tagpass5th2f;
-      TH1D *tagpass6th2f;
-      TH1D *tagpass7th2f;
-      TH1D *tagpass8th2f;
-      TH1D *tagpass9th2f;
-      TH1D *tagpass10th2f;
-      TH1D *tagpass11th2f;
-      TH1D *tagpass12th2f;
-      TH1D *tagfail0th2f;
-      TH1D *tagfail1th2f;
-      TH1D *tagfail2th2f;
-      TH1D *tagfail3th2f;
-      TH1D *tagfail4th2f; 
-      TH1D *tagfail5th2f; 
-      TH1D *tagfail6th2f; 
-      TH1D *tagfail7th2f; 
-      TH1D *tagfail8th2f; 
-      TH1D *tagfail9th2f; 
-      TH1D *tagfail10th2f; 
-      TH1D *tagfail11th2f; 
-      TH1D *tagfail12th2f; 
-
-      TH1D *HLTnumberOfMatches_PASS;
-      TH1D *HLTnumberOfMatches_FAIL;
-      TH1D *HLTnumberOfMatches_TOTALELE;
+      TH1D *tagpass0subsubsubleadjetpt;
+      TH1D *tagfail0subsubsubleadjetpt ;
 };
 
 //
@@ -305,9 +209,10 @@ class EfficiencyFilter : public edm::EDFilter, public SelectionUtils {
 EfficiencyFilter::EfficiencyFilter (const edm::ParameterSet & parameters)
 {
   theElectronCollectionLabel = parameters.getParameter < edm::InputTag > ("electronCollection");
-  theHLTElectronCollectionLabel = parameters.getParameter < edm::InputTag > ("HLTelectronCollection");
   superClusterCollection_EB_ = parameters.getParameter < edm::InputTag > ("superClusterCollection_EB");
   superClusterCollection_EE_ = parameters.getParameter < edm::InputTag > ("superClusterCollection_EE");
+  theTagHLTElectronCollectionLabel = parameters.getParameter < edm::InputTag > ("TagHLTelectronCollection");
+  theProbeHLTElectronCollectionLabel = parameters.getParameter < edm::InputTag > ("ProbeHLTelectronCollection");
   VertexCollectionTag_  = parameters.getParameter<edm::InputTag>("VertexCollectionTag");
   std::string outputfile_D = parameters.getUntrackedParameter<std::string>("filename");
   triggerCollection_=parameters.getUntrackedParameter<edm::InputTag>("triggerCollectionTag");
@@ -319,7 +224,6 @@ EfficiencyFilter::EfficiencyFilter (const edm::ParameterSet & parameters)
   HLTele17_efficiency_              = parameters.getParameter<bool>("HLTele17_efficiency");
   HLTele8_efficiency_       = parameters.getParameter<bool>("HLTele8_efficiency");
   RECO_efficiency_                  = parameters.getParameter<bool>("RECO_efficiency");
-  New_HE_                           = parameters.getParameter<bool>("New_HE");
   electronIsolatedProducer_ = parameters.getParameter< edm::InputTag > ("electronIsolatedProducer");
   candTag_ = parameters.getParameter< edm::InputTag > ("candTag");
   theJetCollectionLabel_       = parameters.getParameter<edm::InputTag>("JetCollectionLabel");
@@ -352,30 +256,6 @@ EfficiencyFilter::EfficiencyFilter (const edm::ParameterSet & parameters)
   probefail3jet = fs->make<TH1D>("probefail3Jet","Invariant mass when probe fail + 3 Jets", nInvMassBins, InvMassLowLimit, InvMassHighLimit);
   probefail4jet = fs->make<TH1D>("probefail4Jet","Invariant mass when probe fail + 4 Jets", nInvMassBins, InvMassLowLimit, InvMassHighLimit);
   probefail5jet = fs->make<TH1D>("probefail5Jet","Invariant mass when probe fail + 5 or more Jets", nInvMassBins, InvMassLowLimit, InvMassHighLimit);
-
-  probepass0pu = fs->make<TH1D>("probepass0pu","Invariant mass when probe pass", nInvMassBins, InvMassLowLimit, InvMassHighLimit);
-  probepass1pu = fs->make<TH1D>("probepass1pu","Invariant mass when probe pass", nInvMassBins, InvMassLowLimit, InvMassHighLimit);
-  probepass2pu = fs->make<TH1D>("probepass2pu","Invariant mass when probe pass", nInvMassBins, InvMassLowLimit, InvMassHighLimit);
-  probepass3pu = fs->make<TH1D>("probepass3pu","Invariant mass when probe pass", nInvMassBins, InvMassLowLimit, InvMassHighLimit);
-  probepass4pu = fs->make<TH1D>("probepass4pu","Invariant mass when probe pass", nInvMassBins, InvMassLowLimit, InvMassHighLimit);
-
-  probefail0pu = fs->make<TH1D>("probefail0pu","Invariant mass when probe fail", nInvMassBins, InvMassLowLimit, InvMassHighLimit);
-  probefail1pu = fs->make<TH1D>("probefail1pu","Invariant mass when probe fail", nInvMassBins, InvMassLowLimit, InvMassHighLimit);
-  probefail2pu = fs->make<TH1D>("probefail2pu","Invariant mass when probe fail", nInvMassBins, InvMassLowLimit, InvMassHighLimit);
-  probefail3pu = fs->make<TH1D>("probefail3pu","Invariant mass when probe fail", nInvMassBins, InvMassLowLimit, InvMassHighLimit);
-  probefail4pu = fs->make<TH1D>("probefail4pu","Invariant mass when probe fail", nInvMassBins, InvMassLowLimit, InvMassHighLimit);
-
-  probepass0eta = fs->make<TH1D>("probepass0eta","Invariant mass when probe pass", nInvMassBins, InvMassLowLimit, InvMassHighLimit);
-  probepass1eta = fs->make<TH1D>("probepass1eta","Invariant mass when probe pass", nInvMassBins, InvMassLowLimit, InvMassHighLimit);
-  probepass2eta = fs->make<TH1D>("probepass2eta","Invariant mass when probe pass", nInvMassBins, InvMassLowLimit, InvMassHighLimit);
-  probepass3eta = fs->make<TH1D>("probepass3eta","Invariant mass when probe pass", nInvMassBins, InvMassLowLimit, InvMassHighLimit);
-  probepass4eta = fs->make<TH1D>("probepass4eta","Invariant mass when probe pass", nInvMassBins, InvMassLowLimit, InvMassHighLimit);
-
-  probefail0eta = fs->make<TH1D>("probefail0eta","Invariant mass when probe fail", nInvMassBins, InvMassLowLimit, InvMassHighLimit);
-  probefail1eta = fs->make<TH1D>("probefail1eta","Invariant mass when probe fail", nInvMassBins, InvMassLowLimit, InvMassHighLimit);
-  probefail2eta = fs->make<TH1D>("probefail2eta","Invariant mass when probe fail", nInvMassBins, InvMassLowLimit, InvMassHighLimit);
-  probefail3eta = fs->make<TH1D>("probefail3eta","Invariant mass when probe fail", nInvMassBins, InvMassLowLimit, InvMassHighLimit);
-  probefail4eta = fs->make<TH1D>("probefail4eta","Invariant mass when probe fail", nInvMassBins, InvMassLowLimit, InvMassHighLimit);
 
   probepass0leadjetpt = fs->make<TH1D>("probepass0leadjetpt","Invariant mass when probe pass", nInvMassBins, InvMassLowLimit, InvMassHighLimit);
   probepass1leadjetpt = fs->make<TH1D>("probepass1leadjetpt","Invariant mass when probe pass", nInvMassBins, InvMassLowLimit, InvMassHighLimit);
@@ -419,33 +299,8 @@ EfficiencyFilter::EfficiencyFilter (const edm::ParameterSet & parameters)
   probefail1subsubleadjetpt = fs->make<TH1D>("probefail1subsubleadjetpt","Invariant mass when probe fail", nInvMassBins, InvMassLowLimit, InvMassHighLimit);
   probefail2subsubleadjetpt = fs->make<TH1D>("probefail2subsubleadjetpt","Invariant mass when probe fail", nInvMassBins, InvMassLowLimit, InvMassHighLimit);
 
-  probepass0th2f = fs->make<TH1D>("probepass0th2f","Invariant mass when probe pass", nInvMassBins, InvMassLowLimit, InvMassHighLimit);
-  probepass1th2f = fs->make<TH1D>("probepass1th2f","Invariant mass when probe pass", nInvMassBins, InvMassLowLimit, InvMassHighLimit);
-  probepass2th2f = fs->make<TH1D>("probepass2th2f","Invariant mass when probe pass", nInvMassBins, InvMassLowLimit, InvMassHighLimit);
-  probepass3th2f = fs->make<TH1D>("probepass3th2f","Invariant mass when probe pass", nInvMassBins, InvMassLowLimit, InvMassHighLimit);
-  probepass4th2f = fs->make<TH1D>("probepass4th2f","Invariant mass when probe pass", nInvMassBins, InvMassLowLimit, InvMassHighLimit);
-  probepass5th2f = fs->make<TH1D>("probepass5th2f","Invariant mass when probe pass", nInvMassBins, InvMassLowLimit, InvMassHighLimit);
-  probepass6th2f = fs->make<TH1D>("probepass6th2f","Invariant mass when probe pass", nInvMassBins, InvMassLowLimit, InvMassHighLimit);
-  probepass7th2f = fs->make<TH1D>("probepass7th2f","Invariant mass when probe pass", nInvMassBins, InvMassLowLimit, InvMassHighLimit);
-  probepass8th2f = fs->make<TH1D>("probepass8th2f","Invariant mass when probe pass", nInvMassBins, InvMassLowLimit, InvMassHighLimit);
-  probepass9th2f = fs->make<TH1D>("probepass9th2f","Invariant mass when probe pass", nInvMassBins, InvMassLowLimit, InvMassHighLimit);
-  probepass10th2f = fs->make<TH1D>("probepass10th2f","Invariant mass when probe pass", nInvMassBins, InvMassLowLimit, InvMassHighLimit);
-  probepass11th2f = fs->make<TH1D>("probepass11th2f","Invariant mass when probe pass", nInvMassBins, InvMassLowLimit, InvMassHighLimit);
-  probepass12th2f = fs->make<TH1D>("probepass12th2f","Invariant mass when probe pass", nInvMassBins, InvMassLowLimit, InvMassHighLimit);
-
-  probefail0th2f = fs->make<TH1D>("probefail0th2f","Invariant mass when probe fail", nInvMassBins, InvMassLowLimit, InvMassHighLimit);
-  probefail1th2f = fs->make<TH1D>("probefail1th2f","Invariant mass when probe fail", nInvMassBins, InvMassLowLimit, InvMassHighLimit);
-  probefail2th2f = fs->make<TH1D>("probefail2th2f","Invariant mass when probe fail", nInvMassBins, InvMassLowLimit, InvMassHighLimit);
-  probefail3th2f = fs->make<TH1D>("probefail3th2f","Invariant mass when probe fail", nInvMassBins, InvMassLowLimit, InvMassHighLimit);
-  probefail4th2f = fs->make<TH1D>("probefail4th2f","Invariant mass when probe fail", nInvMassBins, InvMassLowLimit, InvMassHighLimit);
-  probefail5th2f = fs->make<TH1D>("probefail5th2f","Invariant mass when probe fail", nInvMassBins, InvMassLowLimit, InvMassHighLimit);
-  probefail6th2f = fs->make<TH1D>("probefail6th2f","Invariant mass when probe fail", nInvMassBins, InvMassLowLimit, InvMassHighLimit);
-  probefail7th2f = fs->make<TH1D>("probefail7th2f","Invariant mass when probe fail", nInvMassBins, InvMassLowLimit, InvMassHighLimit);
-  probefail8th2f = fs->make<TH1D>("probefail8th2f","Invariant mass when probe fail", nInvMassBins, InvMassLowLimit, InvMassHighLimit);
-  probefail9th2f = fs->make<TH1D>("probefail9th2f","Invariant mass when probe fail", nInvMassBins, InvMassLowLimit, InvMassHighLimit);
-  probefail10th2f = fs->make<TH1D>("probefail10th2f","Invariant mass when probe fail", nInvMassBins, InvMassLowLimit, InvMassHighLimit);
-  probefail11th2f = fs->make<TH1D>("probefail11th2f","Invariant mass when probe fail", nInvMassBins, InvMassLowLimit, InvMassHighLimit);
-  probefail12th2f = fs->make<TH1D>("probefail12th2f","Invariant mass when probe fail", nInvMassBins, InvMassLowLimit, InvMassHighLimit);
+  probepass0subsubsubleadjetpt = fs->make<TH1D>("probepass0subsubsubleadjetpt","Invariant mass when probe pass", nInvMassBins, InvMassLowLimit, InvMassHighLimit);
+  probefail0subsubsubleadjetpt = fs->make<TH1D>("probefail0subsubsubleadjetpt","Invariant mass when probe fail", nInvMassBins, InvMassLowLimit, InvMassHighLimit);
 
   tagall_mee  = fs->make<TH1D>("tagall_mee","Invariant mass when tag fails or passes", nInvMassBins, InvMassLowLimit, InvMassHighLimit);
   tagfail_mee = fs->make<TH1D>("tagfail_mee","Invariant mass when tag fails WP80", nInvMassBins, InvMassLowLimit, InvMassHighLimit);
@@ -464,30 +319,6 @@ EfficiencyFilter::EfficiencyFilter (const edm::ParameterSet & parameters)
   tagfail3jet = fs->make<TH1D>("tagfail3Jet","Invariant mass when tag fail + 3 Jets", nInvMassBins, InvMassLowLimit, InvMassHighLimit);
   tagfail4jet = fs->make<TH1D>("tagfail4Jet","Invariant mass when tag fail + 4 Jets", nInvMassBins, InvMassLowLimit, InvMassHighLimit);
   tagfail5jet = fs->make<TH1D>("tagfail5Jet","Invariant mass when tag fail + 5 or more Jets", nInvMassBins, InvMassLowLimit, InvMassHighLimit);
-
-  tagpass0pu = fs->make<TH1D>("tagpass0pu","Invariant mass when tag pass", nInvMassBins, InvMassLowLimit, InvMassHighLimit);
-  tagpass1pu = fs->make<TH1D>("tagpass1pu","Invariant mass when tag pass", nInvMassBins, InvMassLowLimit, InvMassHighLimit);
-  tagpass2pu = fs->make<TH1D>("tagpass2pu","Invariant mass when tag pass", nInvMassBins, InvMassLowLimit, InvMassHighLimit);
-  tagpass3pu = fs->make<TH1D>("tagpass3pu","Invariant mass when tag pass", nInvMassBins, InvMassLowLimit, InvMassHighLimit);
-  tagpass4pu = fs->make<TH1D>("tagpass4pu","Invariant mass when tag pass", nInvMassBins, InvMassLowLimit, InvMassHighLimit);
-
-  tagfail0pu = fs->make<TH1D>("tagfail0pu","Invariant mass when tag fail", nInvMassBins, InvMassLowLimit, InvMassHighLimit);
-  tagfail1pu = fs->make<TH1D>("tagfail1pu","Invariant mass when tag fail", nInvMassBins, InvMassLowLimit, InvMassHighLimit);
-  tagfail2pu = fs->make<TH1D>("tagfail2pu","Invariant mass when tag fail", nInvMassBins, InvMassLowLimit, InvMassHighLimit);
-  tagfail3pu = fs->make<TH1D>("tagfail3pu","Invariant mass when tag fail", nInvMassBins, InvMassLowLimit, InvMassHighLimit);
-  tagfail4pu = fs->make<TH1D>("tagfail4pu","Invariant mass when tag fail", nInvMassBins, InvMassLowLimit, InvMassHighLimit);
-
-  tagpass0eta = fs->make<TH1D>("tagpass0eta","Invariant mass when tag pass", nInvMassBins, InvMassLowLimit, InvMassHighLimit);
-  tagpass1eta = fs->make<TH1D>("tagpass1eta","Invariant mass when tag pass", nInvMassBins, InvMassLowLimit, InvMassHighLimit);
-  tagpass2eta = fs->make<TH1D>("tagpass2eta","Invariant mass when tag pass", nInvMassBins, InvMassLowLimit, InvMassHighLimit);
-  tagpass3eta = fs->make<TH1D>("tagpass3eta","Invariant mass when tag pass", nInvMassBins, InvMassLowLimit, InvMassHighLimit);
-  tagpass4eta = fs->make<TH1D>("tagpass4eta","Invariant mass when tag pass", nInvMassBins, InvMassLowLimit, InvMassHighLimit);
-
-  tagfail0eta = fs->make<TH1D>("tagfail0eta","Invariant mass when tag fail", nInvMassBins, InvMassLowLimit, InvMassHighLimit);
-  tagfail1eta = fs->make<TH1D>("tagfail1eta","Invariant mass when tag fail", nInvMassBins, InvMassLowLimit, InvMassHighLimit);
-  tagfail2eta = fs->make<TH1D>("tagfail2eta","Invariant mass when tag fail", nInvMassBins, InvMassLowLimit, InvMassHighLimit);
-  tagfail3eta = fs->make<TH1D>("tagfail3eta","Invariant mass when tag fail", nInvMassBins, InvMassLowLimit, InvMassHighLimit);
-  tagfail4eta = fs->make<TH1D>("tagfail4eta","Invariant mass when tag fail", nInvMassBins, InvMassLowLimit, InvMassHighLimit);
 
   tagpass0leadjetpt = fs->make<TH1D>("tagpass0leadjetpt","Invariant mass when tag pass", nInvMassBins, InvMassLowLimit, InvMassHighLimit);
   tagpass1leadjetpt = fs->make<TH1D>("tagpass1leadjetpt","Invariant mass when tag pass", nInvMassBins, InvMassLowLimit, InvMassHighLimit);
@@ -531,33 +362,8 @@ EfficiencyFilter::EfficiencyFilter (const edm::ParameterSet & parameters)
   tagfail1subsubleadjetpt = fs->make<TH1D>("tagfail1subsubleadjetpt","Invariant mass when tag fail", nInvMassBins, InvMassLowLimit, InvMassHighLimit);
   tagfail2subsubleadjetpt = fs->make<TH1D>("tagfail2subsubleadjetpt","Invariant mass when tag fail", nInvMassBins, InvMassLowLimit, InvMassHighLimit);
 
-  tagpass0th2f = fs->make<TH1D>("tagpass0th2f","Invariant mass when tag pass", nInvMassBins, InvMassLowLimit, InvMassHighLimit);
-  tagpass1th2f = fs->make<TH1D>("tagpass1th2f","Invariant mass when tag pass", nInvMassBins, InvMassLowLimit, InvMassHighLimit);
-  tagpass2th2f = fs->make<TH1D>("tagpass2th2f","Invariant mass when tag pass", nInvMassBins, InvMassLowLimit, InvMassHighLimit);
-  tagpass3th2f = fs->make<TH1D>("tagpass3th2f","Invariant mass when tag pass", nInvMassBins, InvMassLowLimit, InvMassHighLimit);
-  tagpass4th2f = fs->make<TH1D>("tagpass4th2f","Invariant mass when tag pass", nInvMassBins, InvMassLowLimit, InvMassHighLimit);
-  tagpass5th2f = fs->make<TH1D>("tagpass5th2f","Invariant mass when tag pass", nInvMassBins, InvMassLowLimit, InvMassHighLimit);
-  tagpass6th2f = fs->make<TH1D>("tagpass6th2f","Invariant mass when tag pass", nInvMassBins, InvMassLowLimit, InvMassHighLimit);
-  tagpass7th2f = fs->make<TH1D>("tagpass7th2f","Invariant mass when tag pass", nInvMassBins, InvMassLowLimit, InvMassHighLimit);
-  tagpass8th2f = fs->make<TH1D>("tagpass8th2f","Invariant mass when tag pass", nInvMassBins, InvMassLowLimit, InvMassHighLimit);
-  tagpass9th2f = fs->make<TH1D>("tagpass9th2f","Invariant mass when tag pass", nInvMassBins, InvMassLowLimit, InvMassHighLimit);
-  tagpass10th2f = fs->make<TH1D>("tagpass10th2f","Invariant mass when tag pass", nInvMassBins, InvMassLowLimit, InvMassHighLimit);
-  tagpass11th2f = fs->make<TH1D>("tagpass11th2f","Invariant mass when tag pass", nInvMassBins, InvMassLowLimit, InvMassHighLimit);
-  tagpass12th2f = fs->make<TH1D>("tagpass12th2f","Invariant mass when tag pass", nInvMassBins, InvMassLowLimit, InvMassHighLimit);
-
-  tagfail0th2f = fs->make<TH1D>("tagfail0th2f","Invariant mass when tag fail", nInvMassBins, InvMassLowLimit, InvMassHighLimit);
-  tagfail1th2f = fs->make<TH1D>("tagfail1th2f","Invariant mass when tag fail", nInvMassBins, InvMassLowLimit, InvMassHighLimit);
-  tagfail2th2f = fs->make<TH1D>("tagfail2th2f","Invariant mass when tag fail", nInvMassBins, InvMassLowLimit, InvMassHighLimit);
-  tagfail3th2f = fs->make<TH1D>("tagfail3th2f","Invariant mass when tag fail", nInvMassBins, InvMassLowLimit, InvMassHighLimit);
-  tagfail4th2f = fs->make<TH1D>("tagfail4th2f","Invariant mass when tag fail", nInvMassBins, InvMassLowLimit, InvMassHighLimit);
-  tagfail5th2f = fs->make<TH1D>("tagfail5th2f","Invariant mass when tag fail", nInvMassBins, InvMassLowLimit, InvMassHighLimit);
-  tagfail6th2f = fs->make<TH1D>("tagfail6th2f","Invariant mass when tag fail", nInvMassBins, InvMassLowLimit, InvMassHighLimit);
-  tagfail7th2f = fs->make<TH1D>("tagfail7th2f","Invariant mass when tag fail", nInvMassBins, InvMassLowLimit, InvMassHighLimit);
-  tagfail8th2f = fs->make<TH1D>("tagfail8th2f","Invariant mass when tag fail", nInvMassBins, InvMassLowLimit, InvMassHighLimit);
-  tagfail9th2f = fs->make<TH1D>("tagfail9th2f","Invariant mass when tag fail", nInvMassBins, InvMassLowLimit, InvMassHighLimit);
-  tagfail10th2f = fs->make<TH1D>("tagfail10th2f","Invariant mass when tag fail", nInvMassBins, InvMassLowLimit, InvMassHighLimit);
-  tagfail11th2f = fs->make<TH1D>("tagfail11th2f","Invariant mass when tag fail", nInvMassBins, InvMassLowLimit, InvMassHighLimit);
-  tagfail12th2f = fs->make<TH1D>("tagfail12th2f","Invariant mass when tag fail", nInvMassBins, InvMassLowLimit, InvMassHighLimit);
+  tagpass0subsubsubleadjetpt = fs->make<TH1D>("tagpass0subsubsubleadjetpt","Invariant mass when tag pass", nInvMassBins, InvMassLowLimit, InvMassHighLimit);
+  tagfail0subsubsubleadjetpt = fs->make<TH1D>("tagfail0subsubsubleadjetpt","Invariant mass when tag fail", nInvMassBins, InvMassLowLimit, InvMassHighLimit);
 
   probeall_leadjetpt= fs->make<TH1D>("probeall_leadjetpt","Pt of the leading jet", 200, 0, 200.0);
   tagall_leadjetpt= fs->make<TH1D>("tagall_leadjetpt","Pt of the leading jet", 200, 0, 200.0);
@@ -575,13 +381,6 @@ EfficiencyFilter::EfficiencyFilter (const edm::ParameterSet & parameters)
   tagall_eta= fs->make<TH1D>("tagall_eta","Eta of the electron tag", 60, -3.0, 3.0);
   tagpass_eta= fs->make<TH1D>("tagpass_eta","Eta of the electron tag when passing WP80", 60, -3.0, 3.0);
   tagfail_eta= fs->make<TH1D>("tagfail_eta","Eta of the electron tag when failing WP80", 60, -3.0, 3.0);
-
-  //  scNumber_per_event    = fs->make<TH1D>("scNumber_per_event","Total # of SC > 5 GeV",10,0,10);
-  //  eleNumber_scMatch    = fs->make<TH1D>("eleNumber_scMatch","Total # of SC > 5 GeV",10,0,10);
-
-  HLTnumberOfMatches_PASS    = fs->make<TH1D>("HLTnumberOfMatches_PASS","Total # of electron matching the HLT",10,0,10);
-  HLTnumberOfMatches_FAIL    = fs->make<TH1D>("HLTnumberOfMatches_FAIL","Total # of electron NOT matching the HLT",10,0,10);
-  HLTnumberOfMatches_TOTALELE= fs->make<TH1D>("HLTnumberOfMatches_TOTALELE","Total # of electrons per event",10,0,10);
 }
 
 
