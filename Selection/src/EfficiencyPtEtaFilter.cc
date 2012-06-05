@@ -13,7 +13,7 @@ Implementation:
 //
 // Original Author:  superben
 //         Created:  Wed May 11 14:53:26 CESDo2011
-// $Id: EfficiencyPtEtaFilter.cc,v 1.6 2012/05/29 13:40:32 schizzi Exp $
+// $Id: EfficiencyPtEtaFilter.cc,v 1.7 2012/06/02 10:04:53 schizzi Exp $
 
 
 
@@ -147,6 +147,7 @@ EfficiencyPtEtaFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSet
   if (Debug_flag && l<1) cout<<"No valid SuperCluster: exiting."<<endl;
   if (l<2) return false;
 
+
   // Mixing TAG and PROBE SuperClusters
 
   if (RECO_efficiency_) {
@@ -182,7 +183,7 @@ EfficiencyPtEtaFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSet
   
   for (pat::ElectronCollection::const_iterator recoElectron = electronCollection->begin (); recoElectron != electronCollection->end (); recoElectron++) {
     protection=true;
-    if (recoElectron->pt()>20.0 && recoElectron->superCluster()->eta()<2.4 && (WP80_efficiency_ || HLTele17_efficiency_ || HLTele8_efficiency_)) {
+    if (recoElectron->pt()>20.0 && (fabs(recoElectron->superCluster()->eta())<1.4442 || (fabs(recoElectron->superCluster()->eta())>1.566 && fabs(recoElectron->superCluster()->eta())<2.4)) && (WP80_efficiency_ || HLTele17_efficiency_ || HLTele8_efficiency_)) {
       if (i==0) tag_ele=recoElectron;
       if (i==1){
 	if (tag_ele->pt()<recoElectron->pt()){
@@ -204,7 +205,7 @@ EfficiencyPtEtaFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSet
       }
       i++;
     }
-    if (recoElectron->pt()>20.0 && recoElectron->superCluster()->eta()<2.4 && RECO_efficiency_) {
+    if (recoElectron->pt()>20.0 && (fabs(recoElectron->superCluster()->eta())<1.4442 || (fabs(recoElectron->superCluster()->eta())>1.566 && fabs(recoElectron->superCluster()->eta())<2.4)) && RECO_efficiency_) {
       if (fabs(probe_SC->phi()-recoElectron->superCluster()->phi()) < 3.1416) {
 	deltaPhi = probe_SC->phi()-recoElectron->superCluster()->phi();
       } else {
@@ -249,6 +250,7 @@ EfficiencyPtEtaFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSet
 
   if (Debug_flag) cout << "Finished mixing Tag and Probe eles." << endl;
 
+
   // TRIGGER MATCHING (set flags to TRUE if matched):
 
   Handle < edm::RefToBaseVector<reco::GsfElectron> > TagHLTelectronCollection;
@@ -260,15 +262,17 @@ EfficiencyPtEtaFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSet
   double deltaReles = 999.0;
 
   for (edm::RefToBaseVector<reco::GsfElectron>::const_iterator TagHLTElectron = TagHLTelectronCollection->begin (); TagHLTElectron != TagHLTelectronCollection->end (); TagHLTElectron++) {
-    if (fabs(tag_ele->phi()-(*TagHLTElectron)->phi()) < 3.1416) {
-      deltaPhi = tag_ele->phi()-(*TagHLTElectron)->phi();
-    } else {
-      deltaPhi = fabs(tag_ele->phi()-(*TagHLTElectron)->phi()) - 6.2832;
+    if ((*TagHLTElectron)->pt()>20.0) {
+      if (fabs(tag_ele->phi()-(*TagHLTElectron)->phi()) < 3.1416) {
+	deltaPhi = tag_ele->phi()-(*TagHLTElectron)->phi();
+      } else {
+	deltaPhi = fabs(tag_ele->phi()-(*TagHLTElectron)->phi()) - 6.2832;
+      }
+      deltaReles = sqrt((tag_ele->eta()-(*TagHLTElectron)->eta())*
+			(tag_ele->eta()-(*TagHLTElectron)->eta())+
+			(deltaPhi*deltaPhi));
+      if (deltaReles < 0.2) HLTmatch = true;
     }
-    deltaReles = sqrt((tag_ele->superCluster()->eta()-(*TagHLTElectron)->eta())*
-		      (tag_ele->superCluster()->eta()-(*TagHLTElectron)->eta())+
-		      (deltaPhi*deltaPhi));
-    if (deltaReles < 0.2) HLTmatch = true;
   }
   
   if (!(HLTmatch && SelectionUtils::DoWP80Pf(tag_ele,iEvent) && SelectionUtils::DoIso2011(tag_ele, iEvent, isoVals))) return false;
@@ -280,19 +284,22 @@ EfficiencyPtEtaFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSet
   if (HLTele17_efficiency_ || HLTele8_efficiency_) {
     HLTmatch = false;
     for (edm::RefToBaseVector<reco::GsfElectron>::const_iterator ProbeHLTElectron = ProbeHLTelectronCollection->begin (); ProbeHLTElectron != ProbeHLTelectronCollection->end (); ProbeHLTElectron++) {
-      if (fabs(probe_ele->phi()-(*ProbeHLTElectron)->phi()) < 3.1416) {
-	deltaPhi = probe_ele->phi()-(*ProbeHLTElectron)->phi();
-      } else {
-	deltaPhi = fabs(probe_ele->phi()-(*ProbeHLTElectron)->phi()) - 6.2832;
+      if ((*ProbeHLTElectron)->pt()>20.0) {
+	if (fabs(probe_ele->phi()-(*ProbeHLTElectron)->phi()) < 3.1416) {
+	  deltaPhi = probe_ele->phi()-(*ProbeHLTElectron)->phi();
+	} else {
+	  deltaPhi = fabs(probe_ele->phi()-(*ProbeHLTElectron)->phi()) - 6.2832;
+	}
+	deltaReles = sqrt((probe_ele->eta()-(*ProbeHLTElectron)->eta())*
+			  (probe_ele->eta()-(*ProbeHLTElectron)->eta())+
+			  (deltaPhi*deltaPhi));
+	if (deltaReles < 0.2) HLTmatch = true;
       }
-      deltaReles = sqrt((probe_ele->superCluster()->eta()-(*ProbeHLTElectron)->eta())*
-			(probe_ele->superCluster()->eta()-(*ProbeHLTElectron)->eta())+
-			(deltaPhi*deltaPhi));
-      if (deltaReles < 0.2) HLTmatch = true;
     }
   }
 
   if (Debug_flag) cout<<"Trigger matching finished: HLTmatch = "<<HLTmatch<<endl;  
+
 
   //Calculating tag & probe stuff
   TLorentzVector tagv;
