@@ -13,7 +13,7 @@ Implementation:
 //
 // Original Author:  Vieri Candelise & Matteo Marone
 //         Created:  Wed May 11 14:53:26 CESDo2011
-// $Id: EfficiencyFilter.cc,v 1.29 2012/05/22 15:27:08 schizzi Exp $
+// $Id: EfficiencyFilter.cc,v 1.30 2012/06/05 12:56:39 schizzi Exp $
 
 
 
@@ -231,6 +231,75 @@ EfficiencyFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSetup)
 
   if(i<1) return false;
   if((WP80_efficiency_ || HLTele17_efficiency_ || HLTele8_efficiency_) && (i<2 || highestptele->charge() == secondptele->charge())) return false;
+
+// MC match
+
+  if (matchMC_) {
+
+    Handle<reco::GenParticleCollection> genPart;
+    iEvent.getByLabel(genParticleCollection_, genPart);
+
+    if (genPart.isValid()) {
+
+      int nMatch = 0;
+
+      for  (reco::GenParticleCollection::const_iterator itgen=genPart->begin(); itgen!=genPart->end(); itgen++) {
+
+        if (itgen->status() == 3 && fabs(itgen->pdgId()) == 11 && itgen->mother()->pdgId() == 23) {
+
+        double deltaPhi1, deltaR1;
+          if (fabs(itgen->phi()-highestptele->phi()) < 3.1416) {
+            deltaPhi1 = itgen->phi()-highestptele->phi();
+          } else {
+            deltaPhi1 = fabs(itgen->phi()-highestptele->phi()) - 6.2832;
+          }
+          deltaR1 = sqrt( pow(itgen->eta()-highestptele->eta(), 2) + deltaPhi1*deltaPhi1 );
+
+          double deltaPhi2, deltaR2;
+          if ( RECO_efficiency_) {
+            if (fabs(itgen->phi()-probe_SC->phi()) < 3.1416) {
+              deltaPhi2 = itgen->phi()-probe_SC->phi();
+            } else {
+              deltaPhi2 = fabs(itgen->phi()-probe_SC->phi()) - 6.2832;
+            }
+            deltaR2 = sqrt( pow(itgen->eta()-probe_SC->eta(), 2) + deltaPhi2*deltaPhi2 );
+          } else {
+            if (fabs(itgen->phi()-secondptele->phi()) < 3.1416) {
+              deltaPhi2 = itgen->phi()-secondptele->phi();
+            } else {
+              deltaPhi2 = fabs(itgen->phi()-secondptele->phi()) - 6.2832;
+            }
+            deltaR2 = sqrt( pow(itgen->eta()-secondptele->eta(), 2) + deltaPhi2*deltaPhi2 );
+          }
+
+          if ( deltaR1 < 0.1 && highestptele->charge() == itgen->charge() ) {
+            nMatch++;
+            if (Debug) std::cout << "match 1" << std::endl;
+          } else if ( deltaR2 < 0.1 && RECO_efficiency_ ) {
+            if (Debug) std::cout << "match 2" << std::endl;
+            nMatch++;
+          } else if ( deltaR2 < 0.1 && !RECO_efficiency_ && secondptele->charge() == itgen->charge() ) {
+            if (Debug) std::cout << "match 2" << std::endl;
+            nMatch++;
+          } else {
+            if (Debug) std::cout << "no match" << std::endl;
+          }
+
+        }
+
+      }
+
+      if (Debug) std::cout << "# match = " << nMatch << std::endl;
+
+      if (nMatch > 2) std::cout << "TOO MANY MATCHED ELECTRONS" << std::endl;
+
+      if (nMatch != 2) return false;
+
+    }
+
+  }
+
+// MC match
 
 
   // TRIGGER MATCHING (set flags to TRUE if matched):

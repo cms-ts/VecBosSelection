@@ -41,6 +41,8 @@ class EfficiencyFilter : public edm::EDFilter, public SelectionUtils {
 
       // ----------member data ---------------------------
 
+      bool matchMC_;
+      edm::InputTag genParticleCollection_;
       edm::InputTag theElectronCollectionLabel;
       edm::InputTag theTagHLTElectronCollectionLabel;
       edm::InputTag theProbeHLTElectronCollectionLabel;
@@ -208,6 +210,8 @@ class EfficiencyFilter : public edm::EDFilter, public SelectionUtils {
 //
 EfficiencyFilter::EfficiencyFilter (const edm::ParameterSet & parameters)
 {
+  matchMC_ = parameters.getParameter<bool>("matchMC");
+  genParticleCollection_ = parameters.getUntrackedParameter<edm::InputTag>("genParticleCollection", edm::InputTag("genParticles"));
   theElectronCollectionLabel = parameters.getParameter < edm::InputTag > ("electronCollection");
   superClusterCollection_EB_ = parameters.getParameter < edm::InputTag > ("superClusterCollection_EB");
   superClusterCollection_EE_ = parameters.getParameter < edm::InputTag > ("superClusterCollection_EE");

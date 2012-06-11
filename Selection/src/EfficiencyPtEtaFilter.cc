@@ -13,7 +13,7 @@ Implementation:
 //
 // Original Author:  superben
 //         Created:  Wed May 11 14:53:26 CESDo2011
-// $Id: EfficiencyPtEtaFilter.cc,v 1.7 2012/06/02 10:04:53 schizzi Exp $
+// $Id: EfficiencyPtEtaFilter.cc,v 1.8 2012/06/05 12:57:00 schizzi Exp $
 
 
 
@@ -235,6 +235,74 @@ EfficiencyPtEtaFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSet
   if (i<1) return false;
   if ((WP80_efficiency_ || HLTele17_efficiency_ || HLTele8_efficiency_) && (i<2 || tag_ele->charge() == probe_ele->charge())) return false;
 
+// MC match
+
+  if (matchMC_) {
+
+    Handle<reco::GenParticleCollection> genPart;
+    iEvent.getByLabel(genParticleCollection_, genPart);
+
+    if (genPart.isValid()) {
+
+      int nMatch = 0;
+
+      for  (reco::GenParticleCollection::const_iterator itgen=genPart->begin(); itgen!=genPart->end(); itgen++) {
+
+        if (itgen->status() == 3 && fabs(itgen->pdgId()) == 11 && itgen->mother()->pdgId() == 23) {
+
+          double deltaPhi1, deltaR1;
+          if (fabs(itgen->phi()-tag_ele->phi()) < 3.1416) {
+            deltaPhi1 = itgen->phi()-tag_ele->phi();
+          } else {
+            deltaPhi1 = fabs(itgen->phi()-tag_ele->phi()) - 6.2832;
+          }
+          deltaR1 = sqrt( pow(itgen->eta()-tag_ele->eta(), 2) + deltaPhi1*deltaPhi1 );
+
+          double deltaPhi2, deltaR2;
+          if ( RECO_efficiency_) {
+            if (fabs(itgen->phi()-probe_SC->phi()) < 3.1416) {
+              deltaPhi2 = itgen->phi()-probe_SC->phi();
+            } else {
+              deltaPhi2 = fabs(itgen->phi()-probe_SC->phi()) - 6.2832;
+            }
+            deltaR2 = sqrt( pow(itgen->eta()-probe_SC->eta(), 2) + deltaPhi2*deltaPhi2 );
+          } else {
+            if (fabs(itgen->phi()-probe_ele->phi()) < 3.1416) {
+              deltaPhi2 = itgen->phi()-probe_ele->phi();
+            } else {
+              deltaPhi2 = fabs(itgen->phi()-probe_ele->phi()) - 6.2832;
+            }
+            deltaR2 = sqrt( pow(itgen->eta()-probe_ele->eta(), 2) + deltaPhi2*deltaPhi2 );
+          }
+
+          if ( deltaR1 < 0.1 && tag_ele->charge() == itgen->charge() ) {
+            nMatch++;
+            if (Debug_flag) std::cout << "match 1" << std::endl;
+          } else if ( deltaR2 < 0.1 && RECO_efficiency_ ) {
+            if (Debug_flag) std::cout << "match 2" << std::endl;
+            nMatch++;
+          } else if ( deltaR2 < 0.1 && !RECO_efficiency_ && probe_ele->charge() == itgen->charge() ) {
+            if (Debug_flag) std::cout << "match 2" << std::endl;
+            nMatch++;
+          } else {
+            if (Debug_flag) std::cout << "no match" << std::endl;
+          }
+
+        }
+
+      }
+
+      if (Debug_flag) std::cout << "# match = " << nMatch << std::endl;
+
+      if (nMatch > 2) std::cout << "TOO MANY MATCHED ELECTRONS" << std::endl;
+
+      if (nMatch != 2) return false;
+
+    }
+
+  }
+
+// MC match
 
   // Mixing TAG and PROBE electrons
 
