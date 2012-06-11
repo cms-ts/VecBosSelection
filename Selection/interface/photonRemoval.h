@@ -50,11 +50,16 @@ class photonRemoval : public edm::EDProducer{
 		double barrelRCone;
 		double endcapRCone;
 		TLorentzVector e1_test;
+		double minZMass;
+		double maxZMass;
 
 		TH1F * gammaRemovedPt;
 		TH1F * gammaRemovedEta;
 		TH1F * eRemovedPt;
 		TH1F * eRemovedEta;
+		TH1F * eNotRemovedMass;
+		TH1F * eNotRemovedPt;
+		TH1F * eNotRemovedEta;
  
 };
 
@@ -71,6 +76,9 @@ photonRemoval::photonRemoval (const edm::ParameterSet & parameters)
    endcapRCone             = parameters.getUntrackedParameter<double>("endcapRCone",0.07);
    produces<reco::GenParticleCollection>();
    
+   minZMass = 60;
+   maxZMass = 120;
+   
    //Initializations...
    edm::Service<TFileService> fs;
 
@@ -78,6 +86,9 @@ photonRemoval::photonRemoval (const edm::ParameterSet & parameters)
    gammaRemovedEta = fs->make<TH1F>("gammaRemovedEta","gammaRemovedEta", 100, -2.5, 2.5);
    eRemovedPt = fs->make<TH1F>("eRemovedPt","eRemovedPt", 100, 0, 100);
    eRemovedEta = fs->make<TH1F>("eRemovedEta","eRemovedEta", 100, -2.5, 2.5);
+   eNotRemovedMass = fs->make<TH1F>("eNotRemovedMass","eNotRemovedMass",200,0,200);
+   eNotRemovedPt = fs->make<TH1F>("eNotRemovedPt","eNotRemovedPt",200,0,200);
+   eNotRemovedEta = fs->make<TH1F>("eNotRemovedEta","eNotRemovedEta", 100, -2.5, 2.5);
 }
 
 

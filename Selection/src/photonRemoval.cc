@@ -118,8 +118,14 @@ photonRemoval::produce(edm::Event & iEvent, edm::EventSetup const & iSetup)
    bool someElectrons = false;
    if (ePlusI!=-1 && eMinusI!=-1){
       zP4 = ePlusP4 + eMinusP4;
-      if (zP4.M() > 71 && zP4.M() < 111){
+      if (zP4.M() > minZMass && zP4.M() < maxZMass){
 	 someElectrons = true;
+      } else {
+	 eNotRemovedMass->Fill(zP4.M());
+	 eNotRemovedPt->Fill(ePlusP4.Pt());
+	 eNotRemovedPt->Fill(eMinusP4.Pt());
+	 eNotRemovedEta->Fill(ePlusP4.Eta());
+	 eNotRemovedEta->Fill(eMinusP4.Eta());
       }
    }
 
