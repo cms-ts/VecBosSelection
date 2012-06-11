@@ -76,8 +76,8 @@ photonRemoval::photonRemoval (const edm::ParameterSet & parameters)
    endcapRCone             = parameters.getUntrackedParameter<double>("endcapRCone",0.07);
    produces<reco::GenParticleCollection>();
    
-   minZMass = 60;
-   maxZMass = 120;
+   minZMass = 50;
+   maxZMass = 130;
    
    //Initializations...
    edm::Service<TFileService> fs;
