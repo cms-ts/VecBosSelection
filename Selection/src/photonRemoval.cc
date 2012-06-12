@@ -74,7 +74,7 @@ photonRemoval::produce(edm::Event & iEvent, edm::EventSetup const & iSetup)
 		  coppia = make_pair (*itEl,&(*it));
 		  gammaCone.push_back(coppia);
 		  break;
-	       } else if ((*itEl)->eta()>= 1.479 && (*itEl)->eta() < 2.5 && deltaR < endcapRCone){
+	       } else if ((*itEl)->eta()>= 1.479 && (*itEl)->eta() < 3.0 && deltaR < endcapRCone){
 		  pair<const reco::GenParticle*, const reco::GenParticle*> coppia;
 		  coppia = make_pair (*itEl,&(*it));
 		  gammaCone.push_back(coppia);
