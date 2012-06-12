@@ -52,14 +52,16 @@ class photonRemoval : public edm::EDProducer{
 		TLorentzVector e1_test;
 		double minZMass;
 		double maxZMass;
+		double maxElEta;
 
 		TH1F * gammaRemovedPt;
 		TH1F * gammaRemovedEta;
 		TH1F * eRemovedPt;
 		TH1F * eRemovedEta;
-		TH1F * eNotRemovedMass;
-		TH1F * eNotRemovedPt;
-		TH1F * eNotRemovedEta;
+		TH1F * eRemovedMass;
+		//TH1F * eNotRemovedMass;
+		//TH1F * eNotRemovedPt;
+		//TH1F * eNotRemovedEta;
  
 };
 
@@ -78,6 +80,7 @@ photonRemoval::photonRemoval (const edm::ParameterSet & parameters)
    
    minZMass = -1;
    maxZMass = 9999;
+   maxElEta = 2.4;
    
    //Initializations...
    edm::Service<TFileService> fs;
@@ -86,9 +89,10 @@ photonRemoval::photonRemoval (const edm::ParameterSet & parameters)
    gammaRemovedEta = fs->make<TH1F>("gammaRemovedEta","gammaRemovedEta", 100, -3.0, 3.0);
    eRemovedPt = fs->make<TH1F>("eRemovedPt","eRemovedPt", 100, 0, 100);
    eRemovedEta = fs->make<TH1F>("eRemovedEta","eRemovedEta", 100, -3.0, 3.0);
-   eNotRemovedMass = fs->make<TH1F>("eNotRemovedMass","eNotRemovedMass",200,0,200);
-   eNotRemovedPt = fs->make<TH1F>("eNotRemovedPt","eNotRemovedPt",200,0,200);
-   eNotRemovedEta = fs->make<TH1F>("eNotRemovedEta","eNotRemovedEta", 100, -3.0, 3.0);
+   eRemovedMass = fs->make<TH1F>("eRemovedMass","eRemovedMass",200,0,200);
+   //eNotRemovedMass = fs->make<TH1F>("eNotRemovedMass","eNotRemovedMass",200,0,200);
+   //eNotRemovedPt = fs->make<TH1F>("eNotRemovedPt","eNotRemovedPt",200,0,200);
+   //eNotRemovedEta = fs->make<TH1F>("eNotRemovedEta","eNotRemovedEta", 100, -3.0, 3.0);
 }
 
 
