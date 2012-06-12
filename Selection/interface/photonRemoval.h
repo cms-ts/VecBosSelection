@@ -76,19 +76,19 @@ photonRemoval::photonRemoval (const edm::ParameterSet & parameters)
    endcapRCone             = parameters.getUntrackedParameter<double>("endcapRCone",0.07);
    produces<reco::GenParticleCollection>();
    
-   minZMass = 50;
-   maxZMass = 130;
+   minZMass = -1;
+   maxZMass = 9999;
    
    //Initializations...
    edm::Service<TFileService> fs;
 
    gammaRemovedPt = fs->make<TH1F>("gammaRemovedPt","gammaRemovedPt", 100, 0, 50);
-   gammaRemovedEta = fs->make<TH1F>("gammaRemovedEta","gammaRemovedEta", 100, -2.5, 2.5);
+   gammaRemovedEta = fs->make<TH1F>("gammaRemovedEta","gammaRemovedEta", 100, -3.0, 3.0);
    eRemovedPt = fs->make<TH1F>("eRemovedPt","eRemovedPt", 100, 0, 100);
-   eRemovedEta = fs->make<TH1F>("eRemovedEta","eRemovedEta", 100, -2.5, 2.5);
+   eRemovedEta = fs->make<TH1F>("eRemovedEta","eRemovedEta", 100, -3.0, 3.0);
    eNotRemovedMass = fs->make<TH1F>("eNotRemovedMass","eNotRemovedMass",200,0,200);
    eNotRemovedPt = fs->make<TH1F>("eNotRemovedPt","eNotRemovedPt",200,0,200);
-   eNotRemovedEta = fs->make<TH1F>("eNotRemovedEta","eNotRemovedEta", 100, -2.5, 2.5);
+   eNotRemovedEta = fs->make<TH1F>("eNotRemovedEta","eNotRemovedEta", 100, -3.0, 3.0);
 }
 
 
