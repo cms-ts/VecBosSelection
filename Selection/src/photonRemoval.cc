@@ -52,7 +52,7 @@ photonRemoval::produce(edm::Event & iEvent, edm::EventSetup const & iSetup)
    
    if (particles.isValid ()){
       for (reco::GenParticleCollection::const_iterator it = particles->begin (); it != particles->end (); it++) {
-	 if (fabs(it->pdgId())==11 && it->status()==1){
+	 if (fabs(it->pdgId())==11 && it->status()==1 && it->eta() < maxElEta){
 	    // save the electrons
 	    eVector.push_back(&(*it));
 	 }
@@ -74,7 +74,7 @@ photonRemoval::produce(edm::Event & iEvent, edm::EventSetup const & iSetup)
 		  coppia = make_pair (*itEl,&(*it));
 		  gammaCone.push_back(coppia);
 		  break;
-	       } else if ((*itEl)->eta()>= 1.479 && (*itEl)->eta() < 3.0 && deltaR < endcapRCone){
+	       } else if ((*itEl)->eta()>= 1.479 && (*itEl)->eta() < maxElEta && deltaR < endcapRCone){
 		  pair<const reco::GenParticle*, const reco::GenParticle*> coppia;
 		  coppia = make_pair (*itEl,&(*it));
 		  gammaCone.push_back(coppia);
@@ -116,32 +116,28 @@ photonRemoval::produce(edm::Event & iEvent, edm::EventSetup const & iSetup)
    }
 
    bool someElectrons = false;
+
+   if (ePlusI!=-1 || eMinusI!=-1){
+      someElectrons = true;
+    }
    if (ePlusI!=-1 && eMinusI!=-1){
       zP4 = ePlusP4 + eMinusP4;
-      if (zP4.M() > minZMass && zP4.M() < maxZMass){
-	 someElectrons = true;
-      } else {
-	 eNotRemovedMass->Fill(zP4.M());
-	 eNotRemovedPt->Fill(ePlusP4.Pt());
-	 eNotRemovedPt->Fill(eMinusP4.Pt());
-	 eNotRemovedEta->Fill(ePlusP4.Eta());
-	 eNotRemovedEta->Fill(eMinusP4.Eta());
-      }
+      eRemovedMass->Fill(zP4.M());
    }
 
-	 
+   
    bool isRemoval = false;
    for  (reco::GenParticleRefVector::const_iterator itB = bottom->begin (); itB != bottom->end (); itB++) {
       isRemoval = false;
       const reco::GenParticle* partB = itB->get();
       if (someElectrons){
-	 const reco::GenParticle* eleP = eVector[ePlusI];
-	 const reco::GenParticle* eleM = eVector[eMinusI];
 	 // there are electron and gamma to remove
 	 if (partB->pdgId()==22 && partB->status()==1){
 	    // check on the photons
 	    for (vecEleGamma::const_iterator itG = gammaCone.begin (); itG != gammaCone.end (); itG++){
-	       if ((itG->first == eleP || itG->first == eleM) && partB == itG->second) {
+	       if (((ePlusI!=-1 && itG->first == eVector[ePlusI]) || 
+		    (eMinusI!=-1 && itG->first == eVector[eMinusI]) )
+		   && partB == itG->second) {
 		  isRemoval = true;
 		  gammaRemovedPt->Fill(partB->pt());
 		  gammaRemovedEta->Fill(partB->eta());
@@ -150,7 +146,8 @@ photonRemoval::produce(edm::Event & iEvent, edm::EventSetup const & iSetup)
 	    }
 	 }
 	 if (fabs(partB->pdgId())==11 && partB->status()==1){
-	       if (partB == eleP || partB == eleM) {
+	    if ((ePlusI!=-1 && partB == eVector[ePlusI]) || 
+		(eMinusI!=-1 && partB == eVector[eMinusI])){
 	    // check on the electronsif ((itG->first == eleP || itG->first == eleM) && partB == itG->second) {
 		  isRemoval = true;
 		  eRemovedPt->Fill(partB->pt());
