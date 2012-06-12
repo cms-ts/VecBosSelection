@@ -13,7 +13,7 @@ Implementation:
 //
 // Original Author:  Vieri Candelise & Matteo Marone
 //         Created:  Wed May 11 14:53:26 CESDo2011
-// $Id: EfficiencyFilter.cc,v 1.30 2012/06/05 12:56:39 schizzi Exp $
+// $Id: EfficiencyFilter.cc,v 1.31 2012/06/11 14:36:54 dellaric Exp $
 
 
 
@@ -404,12 +404,37 @@ EfficiencyFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSetup)
   double subleadingJet_pT=-1.0;
   double subsubleadingJet_pT=-1.0;
   double subsubsubleadingJet_pT=-1.0;
-  
+  double deltaR1jet = 999.0;
+  double deltaR2jet = 999.0;
+
   Handle<PFJetCollection> pfJets;
   iEvent.getByLabel(theJetCollectionLabel_, pfJets);
   if (pfJets.isValid()) {
     for(reco::PFJetCollection::const_iterator jet = pfJets->begin();jet != pfJets->end();jet++) { 
-      if (fabs(jet->eta())<2.4 
+
+      if (WP80_efficiency_ || HLTele17_efficiency_ || HLTele8_efficiency_) {
+	if (fabs(jet->phi()-secondptele->superCluster()->phi()) < 3.1416) {
+	  deltaPhi = jet->phi()-secondptele->superCluster()->phi();
+	} else {
+	  deltaPhi = fabs(jet->phi()-secondptele->superCluster()->phi()) - 6.2832;
+	}
+	deltaR1jet = sqrt( pow(jet->eta()-secondptele->superCluster()->eta(),2)+pow(deltaPhi,2) );
+      } else {
+	if (fabs(jet->phi()-probe_SC->phi()) < 3.1416) {
+	  deltaPhi = jet->phi()-probe_SC->phi();
+	} else {
+	  deltaPhi = fabs(jet->phi()-probe_SC->phi()) - 6.2832;
+	}
+	deltaR1jet = sqrt( pow(jet->eta()-probe_SC->eta(),2)+pow(deltaPhi,2) );
+      }
+      if (fabs(jet->phi()-highestptele->superCluster()->phi()) < 3.1416) {
+	deltaPhi = jet->phi()-highestptele->superCluster()->phi();
+      } else {
+	deltaPhi = fabs(jet->phi()-highestptele->superCluster()->phi()) - 6.2832;
+      }
+      deltaR2jet= sqrt( pow(jet->eta()-highestptele->superCluster()->eta(),2)+pow(deltaPhi,2) );
+
+      if (deltaR1jet > 0.3 && deltaR2jet > 0.3 && fabs(jet->eta())<2.4 
 	  && jet->pt()>30
 	  && jet->chargedEmEnergyFraction() < 0.99
 	  && jet->neutralHadronEnergyFraction() < 0.99
