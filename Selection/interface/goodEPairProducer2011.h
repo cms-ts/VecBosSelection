@@ -49,10 +49,13 @@ class goodEPairProducer2011 : public edm::EDProducer, public SelectionUtils {
 		edm::InputTag               beamSpotInputTag_;
 		edm::InputTag               primaryVertexInputTag_;
 		std::vector<edm::InputTag>  isoValInputTags_;
+		edm::InputTag               ZmumuCandidates_;
 		bool useNewID_;
 		bool doIsolation_;
 		bool doID_;
 		bool doWP90_;
+		bool isElectron_;
+
 		double secondEleEnThrhold_; 
 		double firstEleEnThrhold_;
 		double lowZmassLimit_;
@@ -92,6 +95,8 @@ goodEPairProducer2011::goodEPairProducer2011 (const edm::ParameterSet & paramete
    passSelection=true;
    theElectronCollectionLabel = parameters.getParameter <edm::InputTag> ("electronCollection");
    pflowEleCollection_ = parameters.getUntrackedParameter<edm::InputTag>("pflowEleCollection",edm::InputTag("particleFlow"));
+   ZmumuCandidates_ = parameters.getUntrackedParameter<edm::InputTag>("ZmumuCandidates");
+
    useNewID_ = parameters.getParameter<bool>("useNewID");
    doIsolation_          = parameters.getUntrackedParameter<bool>("doIsolation",true);
    doID_                 = parameters.getUntrackedParameter<bool>("doID",true);
@@ -105,6 +110,8 @@ goodEPairProducer2011::goodEPairProducer2011 (const edm::ParameterSet & paramete
    beamSpotInputTag_     = parameters.getParameter<edm::InputTag>("beamSpotInputTag");
    primaryVertexInputTag_= parameters.getParameter<edm::InputTag>("primaryVertexInputTag");
    isoValInputTags_      = parameters.getParameter<std::vector<edm::InputTag> >("isoValInputTags");
+   isElectron_            = parameters.getUntrackedParameter<bool>("isElectron");
+
    produces<reco::PFCandidateCollection>();
    
 
