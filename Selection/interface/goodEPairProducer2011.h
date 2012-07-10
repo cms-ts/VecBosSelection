@@ -45,6 +45,7 @@ class goodEPairProducer2011 : public edm::EDProducer, public SelectionUtils {
 
 		edm::InputTag theElectronCollectionLabel;
 		edm::InputTag pflowEleCollection_;
+		edm::InputTag pflowMuCollection_;
 		edm::InputTag               conversionsInputTag_;
 		edm::InputTag               beamSpotInputTag_;
 		edm::InputTag               primaryVertexInputTag_;
@@ -94,8 +95,10 @@ goodEPairProducer2011::goodEPairProducer2011 (const edm::ParameterSet & paramete
    Debug2 = false;
    passSelection=true;
    theElectronCollectionLabel = parameters.getParameter <edm::InputTag> ("electronCollection");
-   pflowEleCollection_ = parameters.getUntrackedParameter<edm::InputTag>("pflowEleCollection",edm::InputTag("particleFlow"));
-   ZmumuCandidates_ = parameters.getUntrackedParameter<edm::InputTag>("ZmumuCandidates");
+   pflowEleCollection_ = parameters.getUntrackedParameter<edm::InputTag>("pflowEleCollection",edm::InputTag("pfNoPileUp"));
+   pflowMuCollection_ = parameters.getUntrackedParameter<edm::InputTag>("pflowMuCollection",edm::InputTag("pfNoPileUp"));
+ 
+  ZmumuCandidates_ = parameters.getUntrackedParameter<edm::InputTag>("ZmumuCandidates");
 
    useNewID_ = parameters.getParameter<bool>("useNewID");
    doIsolation_          = parameters.getUntrackedParameter<bool>("doIsolation",true);

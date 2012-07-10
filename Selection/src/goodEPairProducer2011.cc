@@ -256,9 +256,36 @@ goodEPairProducer2011::produce(edm::Event & iEvent, edm::EventSetup const & iSet
     reco::PFCandidate m0(lep0->charge(), lep0->p4() , reco::PFCandidate::mu);
     reco::PFCandidate m1(lep1->charge(), lep1->p4() , reco::PFCandidate::mu);
 
-
-    pOutput->push_back(m0);
-    pOutput->push_back(m1);
+    Handle<reco::PFCandidateCollection> pfMuCollection;
+    iEvent.getByLabel (pflowMuCollection_, pfMuCollection);
+    
+    for (reco::PFCandidateCollection::const_iterator pfMu = pfMuCollection->begin (); pfMu != pfMuCollection->end (); pfMu++) {
+      if (fabs(pfMu->pdgId())==13){
+	if ( fabs(pfMu->pt() - m0.pt())<delta && 
+	     fabs(pfMu->eta() - m0.eta())<delta &&
+	     fabs(pfMu->phi() - m0.phi())<delta ) {
+	  pOutput->push_back(*pfMu);
+	  h_electronEn->Fill(pfMu->energy());
+	  h_electronEta->Fill(pfMu->eta());
+	  h_electronPt->Fill(pfMu->pt());
+	  cont++;
+	  continue;
+	}
+	if ( fabs(pfMu->pt() - m1.pt())<delta && 
+	     fabs(pfMu->eta() - m1.eta())<delta &&
+	     fabs(pfMu->phi() - m1.phi())<delta ) {
+	  pOutput->push_back(*pfMu);
+	  h_electronEn->Fill(pfMu->energy());
+	  h_electronEta->Fill(pfMu->eta());
+	  h_electronPt->Fill(pfMu->pt());
+	  cont++;
+	  continue;
+	}
+      }
+    }
+	  
+    //pOutput->push_back(m0);
+    //pOutput->push_back(m1);
     /* it's working, in case it does not work
     TLorentzVector *l0,*l1;
     l0->SetPtEtaPhiM(muon0->pt(),muon0->eta(),muon0->phi(),muon0->mass());
