@@ -47,6 +47,9 @@ class photonRemoval : public edm::EDProducer{
 		edm::InputTag particleCollectionLabel;
 		edm::InputTag bottomCollectionLabel;
 
+		bool usingMu;
+		int pdgIdLepton;
+
 		double barrelRCone;
 		double endcapRCone;
 		TLorentzVector e1_test;
@@ -76,6 +79,7 @@ photonRemoval::photonRemoval (const edm::ParameterSet & parameters)
    bottomCollectionLabel   = parameters.getParameter <edm::InputTag> ("bottomCollection");
    barrelRCone             = parameters.getUntrackedParameter<double>("barrelRCone",0.05);
    endcapRCone             = parameters.getUntrackedParameter<double>("endcapRCone",0.07);
+   isElectron              = parameters.getUntrackedParameter<bool>("isElectron",true);
    produces<reco::GenParticleCollection>();
    
    minZMass = -1;
@@ -109,7 +113,7 @@ template <class T>
 bool photonRemoval::searchHistory(T const& itSearch)
 {
    bool pass = false;
-   if (fabs(itSearch->pdgId()) ==11 && itSearch->status()==3 && itSearch->mother()->pdgId()==23) {
+   if (fabs(itSearch->pdgId()) ==pdgIdLepton && itSearch->status()==3 && itSearch->mother()->pdgId()==23) {
       e1_test.SetPtEtaPhiM(itSearch->pt(),itSearch->eta(),
                            itSearch->phi(),itSearch->mass());
 

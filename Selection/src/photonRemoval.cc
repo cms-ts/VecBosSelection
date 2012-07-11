@@ -52,7 +52,7 @@ photonRemoval::produce(edm::Event & iEvent, edm::EventSetup const & iSetup)
    
    if (particles.isValid ()){
       for (reco::GenParticleCollection::const_iterator it = particles->begin (); it != particles->end (); it++) {
-	 if (fabs(it->pdgId())==11 && it->status()==1 && it->eta() < maxElEta){
+	 if (fabs(it->pdgId())==pdgIdLepton && it->status()==1 && it->eta() < maxElEta){
 	    // save the electrons
 	    eVector.push_back(&(*it));
 	 }
@@ -100,13 +100,13 @@ photonRemoval::produce(edm::Event & iEvent, edm::EventSetup const & iSetup)
 	    ePy += (it->second)->py();
 	 }
       }
-      if ( (*itEl)->pdgId()==11 && sqrt( ePx*ePx  + ePy*ePy)> ePlusPt ){
+      if ( (*itEl)->pdgId()==pdgIdLepton && sqrt( ePx*ePx  + ePy*ePy)> ePlusPt ){
 	 ePlusPt = sqrt( ePx*ePx  + ePy*ePy);
 	 //ePlusTmp = *itEl;
 	 ePlusP4.SetPtEtaPhiM((*itEl)->pt(),(*itEl)->eta(),(*itEl)->phi(),(*itEl)->mass());
 	 ePlusI = eCont;
       }
-      if ( (*itEl)->pdgId()==-11 && sqrt( ePx*ePx  + ePy*ePy)> eMinusPt ){
+      if ( (*itEl)->pdgId()==-pdgIdLepton && sqrt( ePx*ePx  + ePy*ePy)> eMinusPt ){
 	 eMinusPt = sqrt( ePx*ePx  + ePy*ePy);
 	 //eMinusTmp = *itEl;
 	 eMinusP4.SetPtEtaPhiM((*itEl)->pt(),(*itEl)->eta(),(*itEl)->phi(),(*itEl)->mass());
@@ -145,7 +145,7 @@ photonRemoval::produce(edm::Event & iEvent, edm::EventSetup const & iSetup)
 	       }
 	    }
 	 }
-	 if (fabs(partB->pdgId())==11 && partB->status()==1){
+	 if (fabs(partB->pdgId())==pdgIdLepton && partB->status()==1){
 	    if ((ePlusI!=-1 && partB == eVector[ePlusI]) || 
 		(eMinusI!=-1 && partB == eVector[eMinusI])){
 	    // check on the electronsif ((itG->first == eleP || itG->first == eleM) && partB == itG->second) {
@@ -168,7 +168,8 @@ photonRemoval::produce(edm::Event & iEvent, edm::EventSetup const & iSetup)
 void
 photonRemoval::beginJob (){
 
-//beginJob
+   if (!isElectron){pdgIdLepton=13;}
+   else {pdgIdLepton=11;}
 
 }
 
