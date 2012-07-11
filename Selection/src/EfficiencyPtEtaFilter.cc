@@ -13,7 +13,7 @@ Implementation:
 //
 // Original Author:  superben
 //         Created:  Wed May 11 14:53:26 CESDo2011
-// $Id: EfficiencyPtEtaFilter.cc,v 1.9 2012/06/11 14:36:54 dellaric Exp $
+// $Id: EfficiencyPtEtaFilter.cc,v 1.10 2012/07/11 21:35:15 schizzi Exp $
 
 
 
@@ -63,7 +63,7 @@ using namespace std;
 using namespace edm;
 using namespace reco;
 
-bool Debug_flag=true;
+bool Debug_flag=false;
 
 //
 // member functions
