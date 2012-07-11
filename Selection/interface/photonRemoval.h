@@ -47,7 +47,7 @@ class photonRemoval : public edm::EDProducer{
 		edm::InputTag particleCollectionLabel;
 		edm::InputTag bottomCollectionLabel;
 
-		bool usingMu;
+		bool isElectron;
 		int pdgIdLepton;
 
 		double barrelRCone;
