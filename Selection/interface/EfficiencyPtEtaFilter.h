@@ -44,8 +44,12 @@ class EfficiencyPtEtaFilter : public edm::EDFilter, public SelectionUtils {
       bool matchMC_;
       edm::InputTag genParticleCollection_;
       edm::InputTag theElectronCollectionLabel;
+      edm::InputTag theMuonCollectionLabel;
       edm::InputTag theTagHLTElectronCollectionLabel;
       edm::InputTag theProbeHLTElectronCollectionLabel;
+      edm::InputTag theTightMuonCollectionLabel;
+      edm::InputTag theTagHLTMuonCollectionLabel;
+      edm::InputTag theProbeHLTMuonCollectionLabel;
       edm::InputTag superClusterCollection_EB_;
       edm::InputTag superClusterCollection_EE_;
       edm::InputTag triggerCollection_; 
@@ -60,6 +64,7 @@ class EfficiencyPtEtaFilter : public edm::EDFilter, public SelectionUtils {
       std::vector<std::string> triggerNames_; // name of the algorithms selected by our analysis
       std::vector<unsigned int> triggerIndices_; // index of the algorithms selected by our analysis
       bool removePU_;
+      bool muonEfficiency_;
 
       bool WP80_efficiency_;
       bool HLTele8_efficiency_;
@@ -125,8 +130,12 @@ EfficiencyPtEtaFilter::EfficiencyPtEtaFilter (const edm::ParameterSet & paramete
   matchMC_ = parameters.getParameter<bool>("matchMC");
   genParticleCollection_ = parameters.getUntrackedParameter<edm::InputTag>("genParticleCollection", edm::InputTag("genParticles"));
   theElectronCollectionLabel = parameters.getParameter < edm::InputTag > ("electronCollection");
+  theMuonCollectionLabel = parameters.getParameter < edm::InputTag > ("muonCollection");
+  theTightMuonCollectionLabel = parameters.getParameter < edm::InputTag > ("tightMuonCollection");
   theTagHLTElectronCollectionLabel = parameters.getParameter < edm::InputTag > ("TagHLTelectronCollection");
   theProbeHLTElectronCollectionLabel = parameters.getParameter < edm::InputTag > ("ProbeHLTelectronCollection");
+  theTagHLTMuonCollectionLabel = parameters.getParameter < edm::InputTag > ("TagHLTmuonCollection");
+  theProbeHLTMuonCollectionLabel = parameters.getParameter < edm::InputTag > ("ProbeHLTmuonCollection");
   superClusterCollection_EB_ = parameters.getParameter < edm::InputTag > ("superClusterCollection_EB");
   superClusterCollection_EE_ = parameters.getParameter < edm::InputTag > ("superClusterCollection_EE");
   VertexCollectionTag_  = parameters.getParameter<edm::InputTag>("VertexCollectionTag");
@@ -136,6 +145,7 @@ EfficiencyPtEtaFilter::EfficiencyPtEtaFilter (const edm::ParameterSet & paramete
   triggerNames_         = parameters.getParameter< std::vector<std::string> > ("TriggerNames");
   useAllTriggers_       = (triggerNames_.size()==0);
   removePU_             = parameters.getParameter<bool>("removePU");
+  muonEfficiency_             = parameters.getParameter<bool>("muonEfficiency");
   WP80_efficiency_                  = parameters.getParameter<bool>("WP80_efficiency");
   HLTele17_efficiency_              = parameters.getParameter<bool>("HLTele17_efficiency");
   HLTele8_efficiency_       = parameters.getParameter<bool>("HLTele8_efficiency");
