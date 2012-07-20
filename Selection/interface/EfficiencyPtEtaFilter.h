@@ -52,6 +52,7 @@ class EfficiencyPtEtaFilter : public edm::EDFilter, public SelectionUtils {
       edm::InputTag theProbeHLTMuonCollectionLabel;
       edm::InputTag superClusterCollection_EB_;
       edm::InputTag superClusterCollection_EE_;
+      edm::InputTag caloMuonCollection_;
       edm::InputTag triggerCollection_; 
       edm::InputTag electronIsolatedProducer_;
       edm::InputTag candTag_ ;
@@ -138,6 +139,7 @@ EfficiencyPtEtaFilter::EfficiencyPtEtaFilter (const edm::ParameterSet & paramete
   theProbeHLTMuonCollectionLabel = parameters.getParameter < edm::InputTag > ("ProbeHLTmuonCollection");
   superClusterCollection_EB_ = parameters.getParameter < edm::InputTag > ("superClusterCollection_EB");
   superClusterCollection_EE_ = parameters.getParameter < edm::InputTag > ("superClusterCollection_EE");
+  caloMuonCollection_ = parameters.getParameter < edm::InputTag > ("caloMuonCollection");
   VertexCollectionTag_  = parameters.getParameter<edm::InputTag>("VertexCollectionTag");
   std::string outputfile_D = parameters.getUntrackedParameter<std::string>("filename");
   triggerCollection_=parameters.getUntrackedParameter<edm::InputTag>("triggerCollectionTag");

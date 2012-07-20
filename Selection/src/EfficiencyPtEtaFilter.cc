@@ -13,7 +13,7 @@ Implementation:
 //
 // Original Author:  superben
 //         Created:  Wed May 11 14:53:26 CESDo2011
-// $Id: EfficiencyPtEtaFilter.cc,v 1.10 2012/07/11 21:35:15 schizzi Exp $
+// $Id: EfficiencyPtEtaFilter.cc,v 1.11 2012/07/11 22:33:31 schizzi Exp $
 
 
 
@@ -91,6 +91,13 @@ EfficiencyPtEtaFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSet
   reco::SuperClusterCollection::const_iterator tag_SC;
   reco::SuperClusterCollection::const_iterator probe_SC;
 
+  Handle<reco::MuonCollection> caloMuonCollection;
+  iEvent.getByLabel(caloMuonCollection_,caloMuonCollection );
+  if ( ! caloMuonCollection.isValid() ) return false;
+
+  reco::MuonCollection::const_iterator tag_CALOmu;
+  reco::MuonCollection::const_iterator probe_CALOmu;
+
   bool RECO_isPassingProbe=false;
   int l=0;
 
@@ -147,13 +154,36 @@ EfficiencyPtEtaFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSet
     }
   } else {
     // CALO muons:
-    if (Debug_flag) cout<<"No CALO muons yet!"<<endl;
+    for (reco::MuonCollection::const_iterator caloMuon = caloMuonCollection->begin(); caloMuon != caloMuonCollection->end(); caloMuon++) {
+      if (caloMuon->pt()>20.0 && fabs(caloMuon->eta())<=2.4) {
+	if (l==0) tag_CALOmu = caloMuon;
+	if (l==1){
+	  if (tag_CALOmu->et() < caloMuon->et()){
+	    probe_CALOmu=tag_CALOmu;
+	    tag_CALOmu=caloMuon;
+	  }
+	  else{
+	    probe_CALOmu=caloMuon;
+	  }
+	}
+	if (l>1){
+	  if (tag_CALOmu->et() < caloMuon->et()){
+	    probe_CALOmu=tag_CALOmu;
+	    tag_CALOmu=caloMuon;
+	  }
+	  else{
+	    if (probe_CALOmu->et() < caloMuon->et()) probe_CALOmu=caloMuon;
+	  }
+	}
+	l++;
+      }
+    }
   }
 
 
   if (Debug_flag && l<1) cout<<"No valid SuperCluster or CALOmuon!"<<endl;
-  if (!muonEfficiency_ && l<2) return false;
-  // Mixing TAG and PROBE SuperClusters
+  if (l<2) return false;
+  // Mixing TAG and PROBE SuperClusters or CALOmuons
   if (!muonEfficiency_ && RECO_efficiency_) {
     int SCchoice = rand()%2;
     if (SCchoice == 1) {
@@ -161,6 +191,14 @@ EfficiencyPtEtaFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSet
       temp_SC = tag_SC;
       tag_SC = probe_SC;
       probe_SC = temp_SC;
+    }
+  } else {
+    int caloMUchoice = rand()%2;
+    if (caloMUchoice == 1) {
+      reco::MuonCollection::const_iterator temp_CALOmu;
+      temp_CALOmu = tag_CALOmu;
+      tag_CALOmu = probe_CALOmu;
+      probe_CALOmu = temp_CALOmu;
     }
   }
 
@@ -182,8 +220,6 @@ EfficiencyPtEtaFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSet
   pat::MuonCollection::const_iterator tag_muon;
   pat::MuonCollection::const_iterator probe_muon;
 
-  pat::MuonCollection::const_iterator probe_CALOmu; ///TEMPORARY!!!!!!!!!
-
   // iso deposits
   IsoDepositVals isoVals(isoValInputTags_.size());
   for (size_t j = 0; j < isoValInputTags_.size(); ++j) {
@@ -196,7 +232,8 @@ EfficiencyPtEtaFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSet
 
   // Electron LOOP:
   if (!muonEfficiency_) {
-    if (electronCollection->size()<=1) return false;
+    if (Debug_flag && electronCollection->size()<1) cout << "Few electrons for a Z... Stop here." << endl;
+    if (electronCollection->size()<1) return false;
     for (pat::ElectronCollection::const_iterator recoElectron = electronCollection->begin (); recoElectron != electronCollection->end (); recoElectron++) {
       protection=true;
       if (recoElectron->pt()>20.0 && (fabs(recoElectron->superCluster()->eta())<1.4442 || (fabs(recoElectron->superCluster()->eta())>1.566 && fabs(recoElectron->superCluster()->eta())<2.4)) && (WP80_efficiency_ || HLTele17_efficiency_ || HLTele8_efficiency_)) {
@@ -244,7 +281,8 @@ EfficiencyPtEtaFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSet
 
   // Muon LOOP:
   if (muonEfficiency_) {
-    if (muonCollection->size()<=1) return false;
+    if (Debug_flag && muonCollection->size()<1) cout << "Few muons for a Z... Stop here." << endl;
+    if (muonCollection->size()<1) return false;
     for (pat::MuonCollection::const_iterator recoMuon = muonCollection->begin (); recoMuon != muonCollection->end (); recoMuon++) {
       protection=true;
       if (recoMuon->pt()>20.0 && (fabs(recoMuon->eta())<1.4442 || (fabs(recoMuon->eta())>1.566 && fabs(recoMuon->eta())<2.4)) && (WP80_efficiency_ || HLTele17_efficiency_ || HLTele8_efficiency_)) {
@@ -269,13 +307,13 @@ EfficiencyPtEtaFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSet
 	}
 	i++;
       }
-      if (recoMuon->pt()>20.0 && (fabs(recoMuon->eta())<1.4442 || (fabs(recoMuon->eta())>1.566 && fabs(recoMuon->eta())<2.4)) && RECO_efficiency_) {
-	if (fabs(probe_SC->phi()-recoMuon->phi()) < 3.1416) {
-	  deltaPhi = probe_SC->phi()-recoMuon->phi();
+      if (recoMuon->pt()>20.0 && fabs(recoMuon->eta())<2.4 && RECO_efficiency_) {
+	if (fabs(probe_CALOmu->phi()-recoMuon->phi()) < 3.1416) {
+	  deltaPhi = probe_CALOmu->phi()-recoMuon->phi();
 	} else {
-	  deltaPhi = fabs(probe_SC->phi()-recoMuon->phi()) - 6.2832;
+	  deltaPhi = fabs(probe_CALOmu->phi()-recoMuon->phi()) - 6.2832;
 	}
-	if (sqrt((probe_SC->eta()-recoMuon->eta())*(probe_SC->eta()-recoMuon->eta())+(deltaPhi*deltaPhi)) < 0.2) {
+	if (sqrt((probe_CALOmu->eta()-recoMuon->eta())*(probe_CALOmu->eta()-recoMuon->eta())+(deltaPhi*deltaPhi)) < 0.2) {
 	  RECO_isPassingProbe=true;
 	  continue;
 	}
@@ -295,7 +333,6 @@ EfficiencyPtEtaFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSet
     return false;
   }
   
-  //  if (Debug_flag) cout<<"tag_ele->pt() = "<<tag_ele->pt() <<endl;  
   if (Debug_flag) cout<<"Out of the SC and RECOele/mu loops!"<<endl;  
 
   if (i<1) return false;
@@ -322,9 +359,6 @@ EfficiencyPtEtaFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSet
     }
   }
 
-  ////////////////////////////////////////////////////
-  probe_CALOmu = tag_muon; // TEMPORARY!!!!!!!!!!!! //
-  ////////////////////////////////////////////////////
 
   if (Debug_flag) cout << "Finished mixing Tag and Probe eles." << endl;
 
@@ -463,6 +497,7 @@ EfficiencyPtEtaFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSet
   iEvent.getByLabel (theTightMuonCollectionLabel, tightMuonCollection);
   if (!tightMuonCollection.isValid ()) return false;
 
+  if (Debug_flag) cout << "TAP: tag muon trg matching temporarily down, sapevatelo!!!" << endl;
 
   bool HLTmatch = false;
   bool IDISOmatch = false;
@@ -496,7 +531,8 @@ EfficiencyPtEtaFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSet
 	deltaReles = sqrt((tag_muon->eta()-(*TagHLTMuon)->eta())*
 			  (tag_muon->eta()-(*TagHLTMuon)->eta())+
 			  (deltaPhi*deltaPhi));
-	if (deltaReles < 0.2) HLTmatch = true;
+	//if (deltaReles < 0.2) HLTmatch = true;
+	HLTmatch = true; //TEMPORARY!!! BE CAREFUL, INTENTIONAL BUG!
       }
     }
     // MuonTag ID/ISO
@@ -600,12 +636,11 @@ EfficiencyPtEtaFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSet
   } else {
     tagv.SetPtEtaPhiM(tag_muon->pt(),tag_muon->eta(),tag_muon->phi(), 0.0);
     if (RECO_efficiency_)  {
-    tagv.SetPtEtaPhiM(probe_CALOmu->pt(),probe_CALOmu->eta(),probe_CALOmu->phi(), 0.0);
+    probev.SetPtEtaPhiM(probe_CALOmu->pt(),probe_CALOmu->eta(),probe_CALOmu->phi(), 0.0);
     } else {
       probev.SetPtEtaPhiM(probe_muon->pt(),probe_muon->eta(),probe_muon->phi(), 0.0);
     }
   }
-
 
   TLorentzVector e_pair = tagv + probev;
   double e_ee_invMass = e_pair.M ();
@@ -821,7 +856,7 @@ EfficiencyPtEtaFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSet
       probeall_eta->Fill(probe_CALOmu->eta());
       probeall_mee->Fill(e_ee_invMass);
       tagall_pt->Fill(tag_muon->pt());
-      tagall_eta->Fill(tag_muon->superCluster()->eta());
+      tagall_eta->Fill(tag_muon->eta());
       if (RECO_isPassingProbe){
 	probepass_pt->Fill(probe_CALOmu->pt());
 	probepass_eta->Fill(probe_CALOmu->eta());
