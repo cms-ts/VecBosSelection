@@ -13,7 +13,7 @@ Implementation:
 //
 // Original Author:  superben
 //         Created:  Wed May 11 14:53:26 CESDo2011
-// $Id: EfficiencyPtEtaFilter.cc,v 1.11 2012/07/11 22:33:31 schizzi Exp $
+// $Id: EfficiencyPtEtaFilter.cc,v 1.12 2012/07/20 09:30:45 schizzi Exp $
 
 
 
@@ -63,7 +63,7 @@ using namespace std;
 using namespace edm;
 using namespace reco;
 
-bool Debug_flag=false;
+bool Debug_flag=true;
 
 //
 // member functions
@@ -93,7 +93,7 @@ EfficiencyPtEtaFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSet
 
   Handle<reco::MuonCollection> caloMuonCollection;
   iEvent.getByLabel(caloMuonCollection_,caloMuonCollection );
-  if ( ! caloMuonCollection.isValid() ) return false;
+  if (RECO_efficiency_ && ! caloMuonCollection.isValid() ) return false;
 
   reco::MuonCollection::const_iterator tag_CALOmu;
   reco::MuonCollection::const_iterator probe_CALOmu;
@@ -156,33 +156,33 @@ EfficiencyPtEtaFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSet
     // CALO muons:
     for (reco::MuonCollection::const_iterator caloMuon = caloMuonCollection->begin(); caloMuon != caloMuonCollection->end(); caloMuon++) {
       if (caloMuon->pt()>20.0 && fabs(caloMuon->eta())<=2.4) {
-	if (l==0) tag_CALOmu = caloMuon;
-	if (l==1){
-	  if (tag_CALOmu->et() < caloMuon->et()){
-	    probe_CALOmu=tag_CALOmu;
-	    tag_CALOmu=caloMuon;
-	  }
-	  else{
-	    probe_CALOmu=caloMuon;
-	  }
-	}
-	if (l>1){
-	  if (tag_CALOmu->et() < caloMuon->et()){
-	    probe_CALOmu=tag_CALOmu;
-	    tag_CALOmu=caloMuon;
-	  }
-	  else{
-	    if (probe_CALOmu->et() < caloMuon->et()) probe_CALOmu=caloMuon;
-	  }
-	}
-	l++;
+   	if (l==0) tag_CALOmu = caloMuon;
+   	if (l==1){
+   	  if (tag_CALOmu->et() < caloMuon->et()){
+   	    probe_CALOmu=tag_CALOmu;
+   	    tag_CALOmu=caloMuon;
+   	  }
+   	  else{
+   	    probe_CALOmu=caloMuon;
+   	  }
+   	}
+   	if (l>1){
+   	  if (tag_CALOmu->et() < caloMuon->et()){
+   	    probe_CALOmu=tag_CALOmu;
+   	    tag_CALOmu=caloMuon;
+   	  }
+   	  else{
+   	    if (probe_CALOmu->et() < caloMuon->et()) probe_CALOmu=caloMuon;
+   	  }
+   	}
+   	l++;
       }
     }
   }
 
 
   if (Debug_flag && l<1) cout<<"No valid SuperCluster or CALOmuon!"<<endl;
-  if (l<2) return false;
+  if (!muonEfficiency_ && l<2) return false;
   // Mixing TAG and PROBE SuperClusters or CALOmuons
   if (!muonEfficiency_ && RECO_efficiency_) {
     int SCchoice = rand()%2;
