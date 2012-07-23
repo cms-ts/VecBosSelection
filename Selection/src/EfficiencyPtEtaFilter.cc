@@ -13,7 +13,7 @@ Implementation:
 //
 // Original Author:  superben
 //         Created:  Wed May 11 14:53:26 CESDo2011
-// $Id: EfficiencyPtEtaFilter.cc,v 1.13 2012/07/21 00:18:45 schizzi Exp $
+// $Id: EfficiencyPtEtaFilter.cc,v 1.14 2012/07/21 00:20:01 schizzi Exp $
 
 
 
@@ -180,9 +180,8 @@ EfficiencyPtEtaFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSet
     }
   }
 
-
   if (Debug_flag && l<1) cout<<"No valid SuperCluster or CALOmuon!"<<endl;
-  if (!muonEfficiency_ && l<2) return false;
+  if (l<2) return false;
   // Mixing TAG and PROBE SuperClusters or CALOmuons
   if (!muonEfficiency_ && RECO_efficiency_) {
     int SCchoice = rand()%2;
