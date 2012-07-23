@@ -13,7 +13,7 @@ Implementation:
 //
 // Original Author:  superben
 //         Created:  Wed May 11 14:53:26 CESDo2011
-// $Id: EfficiencyPtEtaFilter.cc,v 1.14 2012/07/21 00:20:01 schizzi Exp $
+// $Id: EfficiencyPtEtaFilter.cc,v 1.15 2012/07/23 11:01:37 schizzi Exp $
 
 
 
@@ -91,12 +91,12 @@ EfficiencyPtEtaFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSet
   reco::SuperClusterCollection::const_iterator tag_SC;
   reco::SuperClusterCollection::const_iterator probe_SC;
 
-  Handle<reco::MuonCollection> caloMuonCollection;
-  iEvent.getByLabel(caloMuonCollection_,caloMuonCollection );
-  if (RECO_efficiency_ && ! caloMuonCollection.isValid() ) return false;
+  Handle<reco::TrackCollection> generalTrackCollection;
+  iEvent.getByLabel(caloMuonCollection_,generalTrackCollection );
+  if (RECO_efficiency_ && ! generalTrackCollection.isValid() ) return false;
 
-  reco::MuonCollection::const_iterator tag_CALOmu;
-  reco::MuonCollection::const_iterator probe_CALOmu;
+  reco::TrackCollection::const_iterator tag_CALOmu;
+  reco::TrackCollection::const_iterator probe_CALOmu;
 
   bool RECO_isPassingProbe=false;
   int l=0;
@@ -154,11 +154,11 @@ EfficiencyPtEtaFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSet
     }
   } else {
     // CALO muons:
-    for (reco::MuonCollection::const_iterator caloMuon = caloMuonCollection->begin(); caloMuon != caloMuonCollection->end(); caloMuon++) {
+    for (reco::TrackCollection::const_iterator caloMuon = generalTrackCollection->begin(); caloMuon != generalTrackCollection->end(); caloMuon++) {
       if (caloMuon->pt()>20.0 && fabs(caloMuon->eta())<=2.4) {
    	if (l==0) tag_CALOmu = caloMuon;
    	if (l==1){
-   	  if (tag_CALOmu->et() < caloMuon->et()){
+   	  if (tag_CALOmu->pt() < caloMuon->pt()){
    	    probe_CALOmu=tag_CALOmu;
    	    tag_CALOmu=caloMuon;
    	  }
@@ -167,12 +167,12 @@ EfficiencyPtEtaFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSet
    	  }
    	}
    	if (l>1){
-   	  if (tag_CALOmu->et() < caloMuon->et()){
+   	  if (tag_CALOmu->pt() < caloMuon->pt()){
    	    probe_CALOmu=tag_CALOmu;
    	    tag_CALOmu=caloMuon;
    	  }
    	  else{
-   	    if (probe_CALOmu->et() < caloMuon->et()) probe_CALOmu=caloMuon;
+   	    if (probe_CALOmu->pt() < caloMuon->pt()) probe_CALOmu=caloMuon;
    	  }
    	}
    	l++;
@@ -194,7 +194,7 @@ EfficiencyPtEtaFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSet
   } else {
     int caloMUchoice = rand()%2;
     if (caloMUchoice == 1) {
-      reco::MuonCollection::const_iterator temp_CALOmu;
+      reco::TrackCollection::const_iterator temp_CALOmu;
       temp_CALOmu = tag_CALOmu;
       tag_CALOmu = probe_CALOmu;
       probe_CALOmu = temp_CALOmu;
