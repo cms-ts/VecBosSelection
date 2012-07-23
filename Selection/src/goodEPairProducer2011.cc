@@ -241,59 +241,139 @@ goodEPairProducer2011::produce(edm::Event & iEvent, edm::EventSetup const & iSet
     } // if electronCollection is valid
   }
   else{
-    Handle < reco::CompositeCandidateCollection > ZmumuCandidates; 
-    iEvent.getByLabel (ZmumuCandidates_, ZmumuCandidates);
-    const reco::CompositeCandidateCollection & Zmm = *(ZmumuCandidates.product());
-    if (Zmm.size()==0) return;
-    //const reco::CompositeCandidateCollection::const_iterator zmmIter = Zmm.begin();
-    //const reco::CompositeCandidate zmm = *zmmIter;
+     //Handle < reco::CompositeCandidateCollection > ZmumuCandidates; 
+     //iEvent.getByLabel (ZmumuCandidates_, ZmumuCandidates);
+     //const reco::CompositeCandidateCollection & Zmm = *(ZmumuCandidates.product());
+     // if (Zmm.size()==0) return;
 
-    const reco::Candidate* lep0 = Zmm[0].daughter(0);   
-    const reco::Candidate* lep1 = Zmm[0].daughter(1); 
-    const pat::Muon* muon0 = dynamic_cast<const pat::Muon*>(&(*lep0->masterClone()));     
-    const pat::Muon* muon1 = dynamic_cast<const pat::Muon*>(&(*lep1->masterClone()));
+    // //const reco::CompositeCandidateCollection::const_iterator zmmIter = Zmm.begin();
+//     //const reco::CompositeCandidate zmm = *zmmIter;
 
-    reco::PFCandidate m0(lep0->charge(), lep0->p4() , reco::PFCandidate::mu);
-    reco::PFCandidate m1(lep1->charge(), lep1->p4() , reco::PFCandidate::mu);
+//     const reco::Candidate* lep0 = Zmm[0].daughter(0);   
+//     const reco::Candidate* lep1 = Zmm[0].daughter(1); 
+//     const pat::Muon* muon0 = dynamic_cast<const pat::Muon*>(&(*lep0->masterClone()));     
+//     const pat::Muon* muon1 = dynamic_cast<const pat::Muon*>(&(*lep1->masterClone()));
 
-    Handle<reco::PFCandidateCollection> pfMuCollection;
-    iEvent.getByLabel (pflowMuCollection_, pfMuCollection);
-    
-    for (reco::PFCandidateCollection::const_iterator pfMu = pfMuCollection->begin (); pfMu != pfMuCollection->end (); pfMu++) {
-      if (fabs(pfMu->pdgId())==13){
-	if ( fabs(pfMu->pt() - m0.pt())<delta && 
-	     fabs(pfMu->eta() - m0.eta())<delta &&
-	     fabs(pfMu->phi() - m0.phi())<delta ) {
-	  pOutput->push_back(*pfMu);
-	  h_electronEn->Fill(pfMu->energy());
-	  h_electronEta->Fill(pfMu->eta());
-	  h_electronPt->Fill(pfMu->pt());
-	  cont++;
-	  continue;
-	}
-	if ( fabs(pfMu->pt() - m1.pt())<delta && 
-	     fabs(pfMu->eta() - m1.eta())<delta &&
-	     fabs(pfMu->phi() - m1.phi())<delta ) {
-	  pOutput->push_back(*pfMu);
-	  h_electronEn->Fill(pfMu->energy());
-	  h_electronEta->Fill(pfMu->eta());
-	  h_electronPt->Fill(pfMu->pt());
-	  cont++;
-	  continue;
-	}
-      }
-    }
+//     reco::PFCandidate m0(lep0->charge(), lep0->p4() , reco::PFCandidate::mu);
+//     reco::PFCandidate m1(lep1->charge(), lep1->p4() , reco::PFCandidate::mu);
+
+    Handle < pat::MuonCollection > muonCollection;
+    iEvent.getByLabel (theMuCollectionLabel, muonCollection);
+    if (muonCollection.isValid () && muonCollection->size()>1) {
+   
+       pat::MuonCollection::const_iterator highestptmu;
+       pat::MuonCollection::const_iterator secondptmu;
+  
+       double lowZmassLimit=lowZmassLimit_;
+       double highZmassLimit=highZmassLimit_;
+
+       int i=0;
+
+       bool protection=false;
+       int jj=0;
+       int sizePat=muonCollection->size();
+       passSelection=true;
+       
+       /// NEW DS
+       for (pat::MuonCollection::const_iterator recoElectron = muonCollection->begin (); recoElectron != muonCollection->end (); recoElectron++) {
+	  protection=true;
+	  jj++;
 	  
-    //pOutput->push_back(m0);
-    //pOutput->push_back(m1);
-    /* it's working, in case it does not work
-    TLorentzVector *l0,*l1;
-    l0->SetPtEtaPhiM(muon0->pt(),muon0->eta(),muon0->phi(),muon0->mass());
-    l1->SetPtEtaPhiM(muon1->pt(),muon1->eta(),muon1->phi(),muon1->mass());
-    pOutputmu->push_back(l0);
-    pOutputmu->push_back(l1);
-    */
-  }
+	  if (i==0) highestptmu=recoElectron;
+	  if (i==1){
+	     if (highestptmu->pt()<recoElectron->pt()){
+		secondptmu=highestptmu;
+		highestptmu=recoElectron;
+	     }
+	     else{
+		secondptmu=recoElectron;
+	     }
+	  }
+	  if (i>1){
+	     if (highestptmu->pt()<recoElectron->pt()){
+		secondptmu=highestptmu;
+		highestptmu=recoElectron;
+	     }
+	     else{
+		if (secondptmu->pt()<recoElectron->pt()) secondptmu=recoElectron;
+	     }
+	  }
+	  i++;
+       }
+       
+       if (!protection) {
+	  cout<<"size pat is "<<sizePat<<" while jj is "<<jj<<" and protection "<<protection<<endl;
+	  cout<<"problems with PAT collection, in ZpatFilter.cc-->... Please check..."<<endl;    
+	  passSelection=false;
+       }
+
+       if(i>1                                                  //you NEED at least two electrons :)
+	  && highestptmu->charge() != secondptmu->charge()) {  //Check if the charge are opposite..
+
+	  //Calculating Invariant Mass
+	  TLorentzVector tagv;
+	  tagv.SetPtEtaPhiM(highestptmu->pt(),highestptmu->eta(),highestptmu->phi(), highestptmu->mass());
+	  TLorentzVector probev;
+	  probev.SetPtEtaPhiM(secondptmu->pt(),secondptmu->eta(),secondptmu->phi(), secondptmu->mass());
+	  
+	  TLorentzVector mu_pair = tagv + probev;
+	  double mu_invMass = mu_pair.M ();
+	  
+	  
+	  //Cut on the tag and probe mass...
+	  if (mu_invMass>highZmassLimit || mu_invMass<lowZmassLimit) passSelection=false;
+	  
+	  
+	  // searching for the corresponding GSF electron 
+	  if (passSelection){	      
+	    
+	    if (i>2) h_zPt_3e->Fill(mu_pair.Pt());
+
+	    Handle<reco::PFCandidateCollection> pfMuCollection;
+	    iEvent.getByLabel (pflowMuCollection_, pfMuCollection);
+	    
+	    for (reco::PFCandidateCollection::const_iterator pfMu = pfMuCollection->begin (); pfMu != pfMuCollection->end (); pfMu++) {
+	       if (fabs(pfMu->pdgId())==13){
+		  if ( fabs(pfMu->pt() - highestptmu->pt())<delta && 
+		       fabs(pfMu->eta() - highestptmu->eta())<delta &&
+		       fabs(pfMu->phi() - highestptmu->phi())<delta ) {
+		     pOutput->push_back(*pfMu);
+		     h_electronEn->Fill(pfMu->energy());
+		     h_electronEta->Fill(pfMu->eta());
+		     h_electronPt->Fill(pfMu->pt());
+		     cont++;
+		     continue;
+		  }
+		  if ( fabs(pfMu->pt() - secondptmu->pt())<delta && 
+		       fabs(pfMu->eta() - secondptmu->eta())<delta &&
+		       fabs(pfMu->phi() - secondptmu->phi())<delta ) {
+		     pOutput->push_back(*pfMu);
+		     h_electronEn->Fill(pfMu->energy());
+		     h_electronEta->Fill(pfMu->eta());
+		     h_electronPt->Fill(pfMu->pt());
+		     cont++;
+		     continue;
+		  }
+	       }
+	    }
+	  
+	    //pOutput->push_back(m0);
+	    //pOutput->push_back(m1);
+	    /* it's working, in case it does not work
+	       TLorentzVector *l0,*l1;
+	       l0->SetPtEtaPhiM(muon0->pt(),muon0->eta(),muon0->phi(),muon0->mass());
+	       l1->SetPtEtaPhiM(muon1->pt(),muon1->eta(),muon1->phi(),muon1->mass());
+	       pOutputmu->push_back(l0);
+	       pOutputmu->push_back(l1);
+	    */
+	  }  // passSelection
+
+	  h_electronInvMass->Fill(mu_invMass);
+	  if (cont==2) h_electronInvMassPass->Fill(mu_invMass);
+
+       }  // opposite charge
+    }    // valid && at least 2 
+  }  // isElectron
   eventAccept->Fill(cont); 
   iEvent.put( pOutput );
   
