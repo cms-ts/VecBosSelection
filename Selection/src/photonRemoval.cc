@@ -52,7 +52,7 @@ photonRemoval::produce(edm::Event & iEvent, edm::EventSetup const & iSetup)
    
    if (particles.isValid ()){
       for (reco::GenParticleCollection::const_iterator it = particles->begin (); it != particles->end (); it++) {
-	 if (fabs(it->pdgId())==pdgIdLepton && it->status()==1 && it->eta() < maxElEta){
+	 if (fabs(it->pdgId())==pdgIdLepton && it->status()==1 && fabs(it->eta()) < maxElEta){
 	    // save the electrons
 	    eVector.push_back(&(*it));
 	 }
@@ -69,12 +69,12 @@ photonRemoval::produce(edm::Event & iEvent, edm::EventSetup const & iSetup)
 	       double deltaPhi = fabs(it->phi()- (*itEl)->phi());
 	       if (deltaPhi > acos(-1)) deltaPhi= 2*acos(-1) - deltaPhi;
 	       double deltaR = sqrt( deltaPhi*deltaPhi  + pow(it->eta()-(*itEl)->eta(),2) );
-	       if ((*itEl)->eta()< 1.479 && deltaR < barrelRCone) {
+	       if (fabs((*itEl)->eta())< 1.479 && deltaR < barrelRCone) {
 		  pair<const reco::GenParticle*, const reco::GenParticle*> coppia;
 		  coppia = make_pair (*itEl,&(*it));
 		  gammaCone.push_back(coppia);
 		  break;
-	       } else if ((*itEl)->eta()>= 1.479 && (*itEl)->eta() < maxElEta && deltaR < endcapRCone){
+	       } else if (fabs((*itEl)->eta())>= 1.479 && fabs((*itEl)->eta()) < maxElEta && deltaR < endcapRCone){
 		  pair<const reco::GenParticle*, const reco::GenParticle*> coppia;
 		  coppia = make_pair (*itEl,&(*it));
 		  gammaCone.push_back(coppia);
