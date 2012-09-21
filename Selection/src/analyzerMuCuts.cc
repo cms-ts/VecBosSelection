@@ -68,7 +68,7 @@ analyzerMuCuts::analyze (const edm::Event & iEvent, const edm::EventSetup & iSet
     
     for (pat::MuonCollection::const_iterator recoMu = muonCollection->begin (); recoMu != muonCollection->end (); recoMu++) {
       
-      if (1==1) inHLT++;
+      if (recoMu->triggerObjectMatches().size()>0) inHLT++;
       if (fabs(recoMu->eta())<=2.4) inAcceptance++;
       bool isGlobal=recoMu->isGlobalMuon();
       bool isTracker=recoMu->isTrackerMuon();
