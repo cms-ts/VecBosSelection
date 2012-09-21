@@ -51,7 +51,7 @@ bool
 ZpatFilterMu2011::filter (edm::Event & iEvent, edm::EventSetup const & iSetup)
 {
 
-  muSelStepByStep->SetBinContent(1,muSelStepByStep->GetBinContent(1)+1); //Total Number of events, HLT fired + Selection (1)  
+  muSelStepByStep->SetBinContent(1,muSelStepByStep->GetBinContent(1)+1); //Total Number of events, 1 HLT fired + Selection (1)  
 
   if (DebugMu11) cout<<"------- NEW Event -----"<<endl;
    

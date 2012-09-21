@@ -81,7 +81,9 @@ analyzerMuCuts::analyze (const edm::Event & iEvent, const edm::EventSetup & iSet
 	if (recoMu->globalTrack()->normalizedChi2()<10) isChi2++;
       }
       if (isGlobal==true && isTracker==true){
-      if (recoMu->innerTrack()->hitPattern().numberOfValidPixelHits()>0 && recoMu->innerTrack()->hitPattern().numberOfValidMuonHits()>0 && recoMu->innerTrack()->hitPattern().numberOfValidTrackerHits()>8) isPixelAndMuonAndTracker++;
+	if (recoMu->innerTrack()->hitPattern().numberOfValidPixelHits()>0 
+	    && recoMu->globalTrack()->hitPattern().numberOfValidMuonHits()>0 
+	    && recoMu->innerTrack()->hitPattern().trackerLayersWithMeasurement()>8) isPixelAndMuonAndTracker++;
       }
     }
     
@@ -111,6 +113,7 @@ analyzerMuCuts::analyze (const edm::Event & iEvent, const edm::EventSetup & iSet
       muSelStepByStep->SetBinContent(7,muSelStepByStep->GetBinContent(7)+1); // Pt>20
     }
     else{return;}
+
     if (isPixelAndMuonAndTracker>1){
       muSelStepByStep->SetBinContent(8,muSelStepByStep->GetBinContent(8)+1); // Pt>20
     }
