@@ -50,7 +50,9 @@ bool DebugMu11=false;    //Activate with true if you wonna have verbosity for De
 bool
 ZpatFilterMu2011::filter (edm::Event & iEvent, edm::EventSetup const & iSetup)
 {
-  
+
+  muSelStepByStep->SetBinContent(1,muSelStepByStep->GetBinContent(1)+1); //Total Number of events, HLT fired + Selection (1)  
+
   if (DebugMu11) cout<<"------- NEW Event -----"<<endl;
    
   //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -163,8 +165,10 @@ ZpatFilterMu2011::beginJob (){
   cout<<endl; 
 
   cout<<"Z invariant mass limit: low="<<lowZmassLimit_<<"GeV, high="<<highZmassLimit_<<"GeV"<<endl;
-  
   cout<<endl;
+
+  muSelStepByStep->GetXaxis()->SetBinLabel(1,"Total # of Events");
+
 }
 
 

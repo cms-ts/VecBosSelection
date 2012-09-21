@@ -54,6 +54,7 @@ class ZpatFilterMu2011 : public edm::EDFilter, public SelectionUtils {
 		TH1F* h_invMassEB;
 		TH1F* h_invMassBB;
 		TH1F* h_zPt_3mu;
+		TH1I*  muSelStepByStep;
 };
 
 
@@ -75,6 +76,7 @@ ZpatFilterMu2011::ZpatFilterMu2011 (const edm::ParameterSet & parameters)
   h_invMassEB = fs->make<TH1F>("Z peak - Endcap-Barrel","Z peak;InvMass (Gev)", 140, 0.0, 140.0);
   h_invMassBB = fs->make<TH1F>("Z peak - Barrel-Barrel","Z peak;InvMass (Gev)", 140, 0.0, 140.0);
   h_zPt_3mu = fs->make<TH1F>("h_zPt_3mu","zPt_3mu", 200, 0.0, 200.0);
+  muSelStepByStep = fs->make<TH1I>("muSelStepByStep","History of selected/rejected mu", 13, 0, 13);
 }
 
 

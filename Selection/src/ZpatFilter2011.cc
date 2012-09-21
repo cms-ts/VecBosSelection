@@ -13,7 +13,7 @@ Implementation:
 //
 // Original Author:  Vieri Candelise, Matteo Marone & Davide Scaini
 //         Created:  Thu Dec 11 10:46:26 CEST 2011
-// $Id: ZpatFilter2011.cc,v 1.2 2012/05/21 09:56:01 montanin Exp $
+// $Id: ZpatFilter2011.cc,v 1.3 2012/05/21 14:14:16 montanin Exp $
 //
 //
 
@@ -70,7 +70,7 @@ ZpatFilter2011::filter (edm::Event & iEvent, edm::EventSetup const & iSetup)
 {
   
   if (Debug11) cout<<"------- NEW Event -----"<<endl;
-  eleSelStepByStep->SetBinContent(1,eleSelStepByStep->GetBinContent(1)+1); //Number of events in which hlt has fired (1)
+  eleSelStepByStep->SetBinContent(1,eleSelStepByStep->GetBinContent(1)+1); //Total Number of events (1)
 	
 	//  Match The HLT Trigger
 	/// to study fired HLT paths
@@ -380,9 +380,15 @@ ZpatFilter2011::beginJob (){
   eleSelStepByStep->GetXaxis()->SetBinLabel(3,">= 2 ele");
   eleSelStepByStep->GetXaxis()->SetBinLabel(4,"2 ele <= eta Acceptance");
   eleSelStepByStep->GetXaxis()->SetBinLabel(5,"2 ele HLT matched");
-  eleSelStepByStep->GetXaxis()->SetBinLabel(6,"2 ele WP80");
-  eleSelStepByStep->GetXaxis()->SetBinLabel(7,"2 ele pt > lowPt");
-  eleSelStepByStep->GetXaxis()->SetBinLabel(8,"ele pt > lowPt + pt > HighPt");
+  eleSelStepByStep->GetXaxis()->SetBinLabel(6,"1 ele ID");
+  eleSelStepByStep->GetXaxis()->SetBinLabel(7,"1 ele ID & Iso");
+  eleSelStepByStep->GetXaxis()->SetBinLabel(8,"1 ele ID & Iso & !Conv (WP90)");
+  eleSelStepByStep->GetXaxis()->SetBinLabel(9,"2 ele WP90");
+  eleSelStepByStep->GetXaxis()->SetBinLabel(10,"2 ele pt > lowPt");
+  eleSelStepByStep->GetXaxis()->SetBinLabel(11,"ele pt > lowPt + pt > HighPt");
+  eleSelStepByStep->GetXaxis()->SetBinLabel(12,"Opposite charge");
+  eleSelStepByStep->GetXaxis()->SetBinLabel(13,"M_low<InvMass<M_High");
+
   passIDEleCriteria->GetXaxis()->SetBinLabel(1,"TotEle");
   passIDEleCriteria->GetXaxis()->SetBinLabel(2,"Isolated");
   passIDEleCriteria->GetXaxis()->SetBinLabel(3,"ID");
