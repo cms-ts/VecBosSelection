@@ -50,6 +50,12 @@ analyzerMuCuts::analyze (const edm::Event & iEvent, const edm::EventSetup & iSet
   Handle < pat::MuonCollection > muonCollection;
   iEvent.getByLabel (theMuCollectionLabel, muonCollection);
 
+  Handle < pat::MuonCollection > muonMatchedCollection;
+  iEvent.getByLabel (theMuMatchedCollectionLabel, muonMatchedCollection);
+
+  double highZmassLimit = 111;
+  double lowZmassLimit = 71;
+
   //a bunch of counters...
   int inAcceptance=0;
   int inPt=0;
@@ -124,12 +130,57 @@ analyzerMuCuts::analyze (const edm::Event & iEvent, const edm::EventSetup & iSet
     return;
   }
   
-  //X damiana. Importare MacthedMuons, e replicare codice controllo Carica e Massa Invariante
-  
-  muSelStepByStep->SetBinContent(9,muSelStepByStep->GetBinContent(9)+1); // Selezioni matched
-  muSelStepByStep->SetBinContent(10,muSelStepByStep->GetBinContent(10)+1); // carica 
-  muSelStepByStep->SetBinContent(11,muSelStepByStep->GetBinContent(11)+1); // Massa invariante
+  //Importare MacthedMuons, e replicare codice controllo Carica e Massa Invariante
+  if (!muonMatchedCollection.isValid ()){
+     cout<<"Muon Matched Collection in analyzerMuCuts is not Valid"<<endl;
+     return;
+  }
 
+  if ( muonMatchedCollection->size()<2) return;
+  muSelStepByStep->SetBinContent(9,muSelStepByStep->GetBinContent(9)+1); // 2 mu in Selezioni matched
+
+  // search the two highest pt muons
+  pat::MuonCollection::const_iterator highestptmu;
+  pat::MuonCollection::const_iterator secondptmu;
+  int i=0;
+  for (pat::MuonCollection::const_iterator itmu = muonMatchedCollection->begin (); 
+       itmu != muonMatchedCollection->end (); itmu++) {
+
+    if (i==0) highestptmu=itmu;
+    if (i==1){
+       if (highestptmu->pt()<itmu->pt()){
+          secondptmu=highestptmu;
+          highestptmu=itmu;
+       }
+       else{
+          secondptmu=itmu;
+       }
+    }
+    if (i>1){
+       if (highestptmu->pt()<itmu->pt()){
+          secondptmu=highestptmu;
+          highestptmu=itmu;
+       }
+       else{
+          if (secondptmu->pt()<itmu->pt()) secondptmu=itmu;
+       }
+    }
+    i++;
+  }
+  //Check if the charge are opposite
+  if(highestptmu->charge() == secondptmu->charge()) return;  
+  muSelStepByStep->SetBinContent(10,muSelStepByStep->GetBinContent(10)+1); // 2 mu with opposite charge 
+
+  //Calculating Invariant Mass
+  TLorentzVector tagv;
+  tagv.SetPtEtaPhiM(highestptmu->pt(),highestptmu->eta(),highestptmu->phi(), 0.0);
+  TLorentzVector probev;
+  probev.SetPtEtaPhiM(secondptmu->pt(),secondptmu->eta(),secondptmu->phi(), 0.0);
+  TLorentzVector e_pair = tagv + probev;
+  double e_ee_invMass = e_pair.M ();
+  //Cut on the tag and probe mass...
+  if (e_ee_invMass>highZmassLimit || e_ee_invMass<lowZmassLimit) return ;
+  muSelStepByStep->SetBinContent(11,muSelStepByStep->GetBinContent(11)+1); // Invariant mass [71,111]
 
   return;
 }

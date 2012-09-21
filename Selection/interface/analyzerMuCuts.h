@@ -46,6 +46,7 @@ class analyzerMuCuts : public edm::EDAnalyzer{
 		// ----------member data ---------------------------
 
 		edm::InputTag theMuCollectionLabel;
+		edm::InputTag theMuMatchedCollectionLabel;
 		TH1I*  muSelStepByStep;
 		//  std::string outputFile_;
 		//TH1F* h_invMass;
@@ -59,6 +60,7 @@ class analyzerMuCuts : public edm::EDAnalyzer{
 analyzerMuCuts::analyzerMuCuts (const edm::ParameterSet & parameters)
 {
 	theMuCollectionLabel = parameters.getParameter <edm::InputTag> ("muonCollection");
+	theMuMatchedCollectionLabel = parameters.getParameter <edm::InputTag> ("muonMatchedCollection");
 
   //Initializations...
   edm::Service<TFileService> fs;
