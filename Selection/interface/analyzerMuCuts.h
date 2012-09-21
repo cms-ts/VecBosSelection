@@ -46,7 +46,7 @@ class analyzerMuCuts : public edm::EDAnalyzer{
 		// ----------member data ---------------------------
 
 		edm::InputTag theMuCollectionLabel;
-
+		TH1I*  muSelStepByStep;
 		//  std::string outputFile_;
 		//TH1F* h_invMass;
 };
@@ -62,7 +62,7 @@ analyzerMuCuts::analyzerMuCuts (const edm::ParameterSet & parameters)
 
   //Initializations...
   edm::Service<TFileService> fs;
-
+  muSelStepByStep = fs->make<TH1I>("muSelStepByStep","History of selected/rejected mu", 13, 0, 13);
   //h_invMass = fs->make<TH1F>("Z peak - WP80","Z peak;InvMass (Gev)", 140, 0.0, 140.0);
 }
 
