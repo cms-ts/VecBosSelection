@@ -56,6 +56,7 @@ class photonRemoval : public edm::EDProducer{
 		double minZMass;
 		double maxZMass;
 		double maxElEta;
+		string nameLepGamma;
 
 		TH1F * gammaRemovedPt;
 		TH1F * gammaRemovedEta;
@@ -81,7 +82,9 @@ photonRemoval::photonRemoval (const edm::ParameterSet & parameters)
    endcapRCone             = parameters.getUntrackedParameter<double>("endcapRCone",0.07);
    isElectron              = parameters.getUntrackedParameter<bool>("isElectron",true);
    produces<reco::GenParticleCollection>();
-   produces<std::vector<TLorentzVector> >("EleGammaGen");
+   if (isElectron) nameLepGamma = "EleGammaGen";
+   else nameLepGamma = "MuGammaGen";
+   produces<std::vector<TLorentzVector> >(nameLepGamma);
    
    minZMass = -1;
    maxZMass = 9999;

@@ -162,7 +162,7 @@ photonRemoval::produce(edm::Event & iEvent, edm::EventSetup const & iSetup)
    }
 
    iEvent.put( pOutput );
-   iEvent.put( EleGammaGen,"EleGammaGen" );
+   iEvent.put( EleGammaGen,nameLepGamma );
    
 }
 
