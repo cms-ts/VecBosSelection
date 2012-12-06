@@ -32,7 +32,10 @@ photonRemoval::produce(edm::Event & iEvent, edm::EventSetup const & iSetup)
 {
    
    // get gfs Electron  
-   auto_ptr< std::vector<TLorentzVector> > EleGammaGen( new std::vector<TLorentzVector>); 
+   auto_ptr< vectorLV > EleGammaGenPx( new vectorLV);
+   auto_ptr< vectorLV > EleGammaGenPy( new vectorLV);
+   auto_ptr< vectorLV > EleGammaGenPz( new vectorLV);
+   auto_ptr< vectorLV > EleGammaGenE( new vectorLV); 
    auto_ptr< reco::GenParticleCollection > pOutput( new reco::GenParticleCollection ); 
 
    Handle < reco::GenParticleCollection > particles;  
@@ -123,8 +126,16 @@ photonRemoval::produce(edm::Event & iEvent, edm::EventSetup const & iSetup)
    if (ePlusI!=-1 && eMinusI!=-1){
       zP4 = ePlusP4 + eMinusP4;
       eRemovedMass->Fill(zP4.M());
-      EleGammaGen->push_back(ePlusP4);
-      EleGammaGen->push_back(eMinusP4);
+      //EleGammaGen->push_back(ePlusP4);
+      //EleGammaGen->push_back(eMinusP4);
+      EleGammaGenPx->push_back(ePlusP4.Px());
+      EleGammaGenPx->push_back(eMinusP4.Px());
+      EleGammaGenPy->push_back(ePlusP4.Py());
+      EleGammaGenPy->push_back(eMinusP4.Py());
+      EleGammaGenPz->push_back(ePlusP4.Pz());
+      EleGammaGenPz->push_back(eMinusP4.Pz());
+      EleGammaGenE->push_back(ePlusP4.E());
+      EleGammaGenE->push_back(eMinusP4.E());
    }
 
    
@@ -162,7 +173,10 @@ photonRemoval::produce(edm::Event & iEvent, edm::EventSetup const & iSetup)
    }
 
    iEvent.put( pOutput );
-   iEvent.put( EleGammaGen,nameLepGamma );
+   iEvent.put( EleGammaGenPx,nameLepGammaPx );
+   iEvent.put( EleGammaGenPy,nameLepGammaPy );
+   iEvent.put( EleGammaGenPz,nameLepGammaPz );
+   iEvent.put( EleGammaGenE,nameLepGammaE );
    
 }
 

@@ -5,6 +5,7 @@
 #include <string>
 #include <cmath>
 #include <iostream>
+#include <vector>
 
 #include "FWCore/Framework/interface/EDProducer.h"
 #include "DataFormats/EgammaCandidates/interface/Electron.h"
@@ -23,11 +24,14 @@
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "CommonTools/UtilAlgos/interface/TFileService.h"
 #include "VecBosSelection/Selection/interface/SelectionUtils.h"
+#include <FWCore/MessageLogger/interface/MessageLogger.h>
 
 #include "TLorentzVector.h"
 #include "TMath.h"
 #include "TH1.h"
 
+//typedef std::vector<TLorentzVector> vectorLV;
+typedef std::vector<float> vectorLV;
 
 class photonRemoval : public edm::EDProducer{
 	public:
@@ -56,7 +60,10 @@ class photonRemoval : public edm::EDProducer{
 		double minZMass;
 		double maxZMass;
 		double maxElEta;
-		string nameLepGamma;
+		string nameLepGammaPx;
+		string nameLepGammaPy;
+		string nameLepGammaPz;
+		string nameLepGammaE;
 
 		TH1F * gammaRemovedPt;
 		TH1F * gammaRemovedEta;
@@ -82,9 +89,22 @@ photonRemoval::photonRemoval (const edm::ParameterSet & parameters)
    endcapRCone             = parameters.getUntrackedParameter<double>("endcapRCone",0.07);
    isElectron              = parameters.getUntrackedParameter<bool>("isElectron",true);
    produces<reco::GenParticleCollection>();
-   if (isElectron) nameLepGamma = "EleGammaGen";
-   else nameLepGamma = "MuGammaGen";
-   produces<std::vector<TLorentzVector> >(nameLepGamma);
+   if (isElectron) {
+      nameLepGammaPx = "EleGammaGenPx";
+      nameLepGammaPy = "EleGammaGenPy";
+      nameLepGammaPz = "EleGammaGenPz";
+      nameLepGammaE  = "EleGammaGenE";
+   }
+   else {
+      nameLepGammaPx = "MuGammaGenPx";
+      nameLepGammaPy = "MuGammaGenPy";
+      nameLepGammaPz = "MuGammaGenPz";
+      nameLepGammaE  = "MuGammaGenE";
+   }
+   produces<vectorLV>(nameLepGammaPx);
+   produces<vectorLV>(nameLepGammaPy);
+   produces<vectorLV>(nameLepGammaPz);
+   produces<vectorLV>(nameLepGammaE);
    
    minZMass = -1;
    maxZMass = 9999;
