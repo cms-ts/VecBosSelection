@@ -13,7 +13,7 @@ Implementation:
 //
 // Original Author:  superben
 //         Created:  Wed May 11 14:53:26 CESDo2011
-// $Id: EfficiencyPtEtaFilter.cc,v 1.17 2013/02/28 09:07:49 schizzi Exp $
+// $Id: EfficiencyPtEtaFilter.cc,v 1.18 2013/02/28 09:20:34 schizzi Exp $
 
 
 
@@ -82,18 +82,18 @@ EfficiencyPtEtaFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSet
 
   Handle<reco::SuperClusterCollection> superClusters_EB_h;
   iEvent.getByLabel(superClusterCollection_EB_,superClusters_EB_h );
-  if ( ! superClusters_EB_h.isValid() ) return false;
+  if (!muonEfficiency_ &&  !superClusters_EB_h.isValid() ) return false;
 
   Handle<reco::SuperClusterCollection> superClusters_EE_h;
   iEvent.getByLabel(superClusterCollection_EE_,superClusters_EE_h );
-  if ( ! superClusters_EE_h.isValid() ) return false;
+  if (!muonEfficiency_ &&  !superClusters_EE_h.isValid() ) return false;
 
   reco::SuperClusterCollection::const_iterator tag_SC;
   reco::SuperClusterCollection::const_iterator probe_SC;
 
   Handle<reco::TrackCollection> generalTrackCollection;
   iEvent.getByLabel(caloMuonCollection_,generalTrackCollection );
-  if (RECO_efficiency_ && ! generalTrackCollection.isValid() ) return false;
+  if (muonEfficiency_ && RECO_efficiency_ && !generalTrackCollection.isValid() ) return false;
 
   reco::TrackCollection::const_iterator tag_CALOmu;
   reco::TrackCollection::const_iterator probe_CALOmu;
@@ -104,7 +104,7 @@ EfficiencyPtEtaFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSet
   if (!muonEfficiency_) {
     //EB superclusters:
     for (reco::SuperClusterCollection::const_iterator superCluster = superClusters_EB_h->begin(); superCluster != superClusters_EB_h->end(); superCluster++) {
-      if ((superCluster->energy()/cosh(superCluster->eta()))>20.0 && fabs(superCluster->eta())<=2.5) {
+      if ((superCluster->energy()/cosh(superCluster->eta()))>20.0 && fabs(superCluster->eta())<=1.442) {
 	if (l==0) tag_SC=superCluster;
 	if (l==1){
 	  if (tag_SC->energy()/cosh(tag_SC->eta()) < superCluster->energy()/cosh(superCluster->eta())){
@@ -129,7 +129,7 @@ EfficiencyPtEtaFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSet
     }
     //EE superclusters:  
     for (reco::SuperClusterCollection::const_iterator superCluster = superClusters_EE_h->begin(); superCluster != superClusters_EE_h->end(); superCluster++) {
-      if ((superCluster->energy()/cosh(superCluster->eta())>20.0 && fabs(superCluster->eta())<=2.5)) {
+      if ((superCluster->energy()/cosh(superCluster->eta())>20.0 && fabs(superCluster->eta())<=2.5 && fabs(superCluster->eta())>=1.566)) {
 	if (l==0) tag_SC=superCluster;
 	if (l==1){
 	  if (tag_SC->energy()/cosh(tag_SC->eta()) < superCluster->energy()/cosh(superCluster->eta())){
@@ -180,7 +180,7 @@ EfficiencyPtEtaFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSet
     }
   }
 
-  if (Debug_flag && l<1) cout<<"No valid SuperCluster or CALOmuon!"<<endl;
+  if (Debug_flag && l<2) cout<<"Not enough SuperClusters or CALOmuons!"<<endl;
   if (l<2) return false;
   // Mixing TAG and PROBE SuperClusters or CALOmuons
   if (!muonEfficiency_ && RECO_efficiency_) {
@@ -201,18 +201,17 @@ EfficiencyPtEtaFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSet
     }
   }
 
-
   //////////////////////////////
   // Pick up ELECTRONS/MUONS: //
   //////////////////////////////
 
   Handle < pat::ElectronCollection > electronCollection;
   iEvent.getByLabel (theElectronCollectionLabel, electronCollection);
-  if (!electronCollection.isValid ()) return false;
+  if (!muonEfficiency_ && !electronCollection.isValid ()) return false;
 
   Handle < pat::MuonCollection > muonCollection;
   iEvent.getByLabel (theMuonCollectionLabel, muonCollection);
-  if (!muonCollection.isValid ()) return false;
+  if (muonEfficiency_ && !muonCollection.isValid ()) return false;
 
   pat::ElectronCollection::const_iterator tag_ele;
   pat::ElectronCollection::const_iterator probe_ele;
@@ -486,17 +485,17 @@ EfficiencyPtEtaFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSet
 
   Handle < edm::RefToBaseVector<reco::GsfElectron> > TagHLTelectronCollection;
   iEvent.getByLabel (theTagHLTElectronCollectionLabel, TagHLTelectronCollection);
-  if (!TagHLTelectronCollection.isValid ()) return false;
+  if (!muonEfficiency_ && !TagHLTelectronCollection.isValid ()) return false;
 
   Handle < edm::RefToBaseVector<reco::Muon> > TagHLTmuonCollection;
   iEvent.getByLabel (theTagHLTMuonCollectionLabel, TagHLTmuonCollection);
-  if (!TagHLTmuonCollection.isValid ()) return false;
+  if (muonEfficiency_ && !TagHLTmuonCollection.isValid ()) return false;
 
   Handle < pat::MuonCollection > tightMuonCollection;
   iEvent.getByLabel (theTightMuonCollectionLabel, tightMuonCollection);
-  if (!tightMuonCollection.isValid ()) return false;
+  if (muonEfficiency_ && !tightMuonCollection.isValid ()) return false;
 
-  if (Debug_flag) cout << "TAP: tag muon trg matching temporarily down, sapevatelo!!!" << endl;
+  //  if (Debug_flag) cout << "TAP: tag muon trg matching temporarily down, sapevatelo!!!" << endl;
 
   bool HLTmatch = false;
   bool IDISOmatch = false;
@@ -555,11 +554,11 @@ EfficiencyPtEtaFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSet
 
   Handle < edm::RefToBaseVector<reco::GsfElectron> > ProbeHLTelectronCollection;
   iEvent.getByLabel (theProbeHLTElectronCollectionLabel, ProbeHLTelectronCollection);
-  if (!ProbeHLTelectronCollection.isValid ()) return false;
+  if (!muonEfficiency_ && !ProbeHLTelectronCollection.isValid ()) return false;
 
   Handle < edm::RefToBaseVector<reco::Muon> > ProbeHLTmuonCollection;
   iEvent.getByLabel (theProbeHLTMuonCollectionLabel, ProbeHLTmuonCollection);
-  if (!ProbeHLTmuonCollection.isValid ()) return false;
+  if (muonEfficiency_ && !ProbeHLTmuonCollection.isValid ()) return false;
   
   if (HLTele17_efficiency_ || HLTele8_efficiency_) {
     HLTmatch = false;
