@@ -13,7 +13,7 @@ Implementation:
 //
 // Original Author:  superben
 //         Created:  Wed May 11 14:53:26 CESDo2011
-// $Id: EfficiencyPtEtaFilter.cc,v 1.16 2012/07/23 14:08:03 schizzi Exp $
+// $Id: EfficiencyPtEtaFilter.cc,v 1.17 2013/02/28 09:07:49 schizzi Exp $
 
 
 
@@ -530,8 +530,8 @@ EfficiencyPtEtaFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSet
 	deltaReles = sqrt((tag_muon->eta()-(*TagHLTMuon)->eta())*
 			  (tag_muon->eta()-(*TagHLTMuon)->eta())+
 			  (deltaPhi*deltaPhi));
-	//if (deltaReles < 0.2) HLTmatch = true;
-	HLTmatch = true; //TEMPORARY!!! BE CAREFUL, INTENTIONAL BUG!
+	if (deltaReles < 0.2) HLTmatch = true;
+	//	HLTmatch = true; //TEMPORARY!!! BE CAREFUL, INTENTIONAL BUG!
       }
     }
     // MuonTag ID/ISO
