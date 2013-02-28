@@ -13,7 +13,7 @@ Implementation:
 //
 // Original Author:  superben
 //         Created:  Wed May 11 14:53:26 CESDo2011
-// $Id: EfficiencyPtEtaFilter.cc,v 1.15 2012/07/23 11:01:37 schizzi Exp $
+// $Id: EfficiencyPtEtaFilter.cc,v 1.16 2012/07/23 14:08:03 schizzi Exp $
 
 
 
@@ -104,7 +104,7 @@ EfficiencyPtEtaFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSet
   if (!muonEfficiency_) {
     //EB superclusters:
     for (reco::SuperClusterCollection::const_iterator superCluster = superClusters_EB_h->begin(); superCluster != superClusters_EB_h->end(); superCluster++) {
-      if ((superCluster->energy()/cosh(superCluster->eta()))>20.0 && fabs(superCluster->eta())<=1.4442) {
+      if ((superCluster->energy()/cosh(superCluster->eta()))>20.0 && fabs(superCluster->eta())<=2.5) {
 	if (l==0) tag_SC=superCluster;
 	if (l==1){
 	  if (tag_SC->energy()/cosh(tag_SC->eta()) < superCluster->energy()/cosh(superCluster->eta())){
@@ -129,7 +129,7 @@ EfficiencyPtEtaFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSet
     }
     //EE superclusters:  
     for (reco::SuperClusterCollection::const_iterator superCluster = superClusters_EE_h->begin(); superCluster != superClusters_EE_h->end(); superCluster++) {
-      if ((superCluster->energy()/cosh(superCluster->eta()))>20.0 && (fabs(superCluster->eta())>=1.5660 && fabs(superCluster->eta())<=2.4000)) {
+      if ((superCluster->energy()/cosh(superCluster->eta())>20.0 && fabs(superCluster->eta())<=2.5)) {
 	if (l==0) tag_SC=superCluster;
 	if (l==1){
 	  if (tag_SC->energy()/cosh(tag_SC->eta()) < superCluster->energy()/cosh(superCluster->eta())){
@@ -235,7 +235,7 @@ EfficiencyPtEtaFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSet
     if (electronCollection->size()<1) return false;
     for (pat::ElectronCollection::const_iterator recoElectron = electronCollection->begin (); recoElectron != electronCollection->end (); recoElectron++) {
       protection=true;
-      if (recoElectron->pt()>20.0 && (fabs(recoElectron->superCluster()->eta())<1.4442 || (fabs(recoElectron->superCluster()->eta())>1.566 && fabs(recoElectron->superCluster()->eta())<2.4)) && (WP80_efficiency_ || HLTele17_efficiency_ || HLTele8_efficiency_)) {
+      if (recoElectron->pt()>20.0 && fabs(recoElectron->superCluster()->eta())<2.5 && (WP80_efficiency_ || HLTele17_efficiency_ || HLTele8_efficiency_)) {
 	if (i==0) tag_ele=recoElectron;
 	if (i==1){
 	  if (tag_ele->pt()<recoElectron->pt()){
@@ -257,7 +257,7 @@ EfficiencyPtEtaFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSet
 	}
 	i++;
       }
-      if (recoElectron->pt()>20.0 && (fabs(recoElectron->superCluster()->eta())<1.4442 || (fabs(recoElectron->superCluster()->eta())>1.566 && fabs(recoElectron->superCluster()->eta())<2.4)) && RECO_efficiency_) {
+      if (recoElectron->pt()>20.0 && fabs(recoElectron->superCluster()->eta())<2.5 && RECO_efficiency_) {
 	if (fabs(probe_SC->phi()-recoElectron->superCluster()->phi()) < 3.1416) {
 	  deltaPhi = probe_SC->phi()-recoElectron->superCluster()->phi();
 	} else {
@@ -284,7 +284,7 @@ EfficiencyPtEtaFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSet
     if (muonCollection->size()<1) return false;
     for (pat::MuonCollection::const_iterator recoMuon = muonCollection->begin (); recoMuon != muonCollection->end (); recoMuon++) {
       protection=true;
-      if (recoMuon->pt()>20.0 && (fabs(recoMuon->eta())<1.4442 || (fabs(recoMuon->eta())>1.566 && fabs(recoMuon->eta())<2.4)) && (WP80_efficiency_ || HLTele17_efficiency_ || HLTele8_efficiency_)) {
+      if (recoMuon->pt()>20.0 && fabs(recoMuon->eta())<2.4 && (WP80_efficiency_ || HLTele17_efficiency_ || HLTele8_efficiency_)) {
 	if (i==0) tag_muon=recoMuon;
 	if (i==1){
 	  if (tag_muon->pt()<recoMuon->pt()){
