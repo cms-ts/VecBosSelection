@@ -13,7 +13,7 @@ Implementation:
 //
 // Original Author:  superben
 //         Created:  Wed May 11 14:53:26 CESDo2011
-// $Id: EfficiencyPtEtaFilter.cc,v 1.18 2013/02/28 09:20:34 schizzi Exp $
+// $Id: EfficiencyPtEtaFilter.cc,v 1.19 2013/02/28 14:22:58 schizzi Exp $
 
 
 
@@ -104,7 +104,7 @@ EfficiencyPtEtaFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSet
   if (!muonEfficiency_) {
     //EB superclusters:
     for (reco::SuperClusterCollection::const_iterator superCluster = superClusters_EB_h->begin(); superCluster != superClusters_EB_h->end(); superCluster++) {
-      if ((superCluster->energy()/cosh(superCluster->eta()))>20.0 && fabs(superCluster->eta())<=1.442) {
+      if ((superCluster->energy()/cosh(superCluster->eta()))>20.0 && fabs(superCluster->eta())<=2.5) {
 	if (l==0) tag_SC=superCluster;
 	if (l==1){
 	  if (tag_SC->energy()/cosh(tag_SC->eta()) < superCluster->energy()/cosh(superCluster->eta())){
@@ -129,7 +129,7 @@ EfficiencyPtEtaFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSet
     }
     //EE superclusters:  
     for (reco::SuperClusterCollection::const_iterator superCluster = superClusters_EE_h->begin(); superCluster != superClusters_EE_h->end(); superCluster++) {
-      if ((superCluster->energy()/cosh(superCluster->eta())>20.0 && fabs(superCluster->eta())<=2.5 && fabs(superCluster->eta())>=1.566)) {
+      if ((superCluster->energy()/cosh(superCluster->eta())>20.0 && fabs(superCluster->eta())<=2.5)) {
 	if (l==0) tag_SC=superCluster;
 	if (l==1){
 	  if (tag_SC->energy()/cosh(tag_SC->eta()) < superCluster->energy()/cosh(superCluster->eta())){
