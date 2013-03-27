@@ -13,7 +13,7 @@ Implementation:
 //
 // Original Author:  superben
 //         Created:  Wed May 11 14:53:26 CESDo2011
-// $Id: EfficiencyPtEtaFilter.cc,v 1.19 2013/02/28 14:22:58 schizzi Exp $
+// $Id: EfficiencyPtEtaFilter.cc,v 1.20 2013/02/28 14:36:14 schizzi Exp $
 
 
 
@@ -82,11 +82,11 @@ EfficiencyPtEtaFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSet
 
   Handle<reco::SuperClusterCollection> superClusters_EB_h;
   iEvent.getByLabel(superClusterCollection_EB_,superClusters_EB_h );
-  if (!muonEfficiency_ &&  !superClusters_EB_h.isValid() ) return false;
+  if (!muonEfficiency_ && RECO_efficiency_ && !superClusters_EB_h.isValid() ) return false;
 
   Handle<reco::SuperClusterCollection> superClusters_EE_h;
   iEvent.getByLabel(superClusterCollection_EE_,superClusters_EE_h );
-  if (!muonEfficiency_ &&  !superClusters_EE_h.isValid() ) return false;
+  if (!muonEfficiency_ && RECO_efficiency_ && !superClusters_EE_h.isValid() ) return false;
 
   reco::SuperClusterCollection::const_iterator tag_SC;
   reco::SuperClusterCollection::const_iterator probe_SC;
@@ -104,7 +104,7 @@ EfficiencyPtEtaFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSet
   if (!muonEfficiency_) {
     //EB superclusters:
     for (reco::SuperClusterCollection::const_iterator superCluster = superClusters_EB_h->begin(); superCluster != superClusters_EB_h->end(); superCluster++) {
-      if ((superCluster->energy()/cosh(superCluster->eta()))>20.0 && fabs(superCluster->eta())<=2.5) {
+      if ((superCluster->energy()/cosh(superCluster->eta()))>20.0 && fabs(superCluster->eta())<=1.4442) {
 	if (l==0) tag_SC=superCluster;
 	if (l==1){
 	  if (tag_SC->energy()/cosh(tag_SC->eta()) < superCluster->energy()/cosh(superCluster->eta())){
@@ -129,7 +129,7 @@ EfficiencyPtEtaFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSet
     }
     //EE superclusters:  
     for (reco::SuperClusterCollection::const_iterator superCluster = superClusters_EE_h->begin(); superCluster != superClusters_EE_h->end(); superCluster++) {
-      if ((superCluster->energy()/cosh(superCluster->eta())>20.0 && fabs(superCluster->eta())<=2.5)) {
+      if ((superCluster->energy()/cosh(superCluster->eta())>20.0 && fabs(superCluster->eta())>=1.566 && fabs(superCluster->eta())<=2.4)) {
 	if (l==0) tag_SC=superCluster;
 	if (l==1){
 	  if (tag_SC->energy()/cosh(tag_SC->eta()) < superCluster->energy()/cosh(superCluster->eta())){
@@ -181,7 +181,7 @@ EfficiencyPtEtaFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSet
   }
 
   if (Debug_flag && l<2) cout<<"Not enough SuperClusters or CALOmuons!"<<endl;
-  if (l<2) return false;
+  if (RECO_efficiency_ && l<2) return false;
   // Mixing TAG and PROBE SuperClusters or CALOmuons
   if (!muonEfficiency_ && RECO_efficiency_) {
     int SCchoice = rand()%2;
@@ -191,7 +191,8 @@ EfficiencyPtEtaFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSet
       tag_SC = probe_SC;
       probe_SC = temp_SC;
     }
-  } else {
+  } 
+  if (muonEfficiency_ && RECO_efficiency_) {
     int caloMUchoice = rand()%2;
     if (caloMUchoice == 1) {
       reco::TrackCollection::const_iterator temp_CALOmu;
@@ -234,7 +235,7 @@ EfficiencyPtEtaFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSet
     if (electronCollection->size()<1) return false;
     for (pat::ElectronCollection::const_iterator recoElectron = electronCollection->begin (); recoElectron != electronCollection->end (); recoElectron++) {
       protection=true;
-      if (recoElectron->pt()>20.0 && fabs(recoElectron->superCluster()->eta())<2.5 && (WP80_efficiency_ || HLTele17_efficiency_ || HLTele8_efficiency_)) {
+      if (recoElectron->pt()>20.0 && fabs(recoElectron->eta())<=2.5 && (WP80_efficiency_ || HLTele17_efficiency_ || HLTele8_efficiency_)) {
 	if (i==0) tag_ele=recoElectron;
 	if (i==1){
 	  if (tag_ele->pt()<recoElectron->pt()){
@@ -256,13 +257,16 @@ EfficiencyPtEtaFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSet
 	}
 	i++;
       }
-      if (recoElectron->pt()>20.0 && fabs(recoElectron->superCluster()->eta())<2.5 && RECO_efficiency_) {
+      if (recoElectron->pt()>19.0 &&  fabs(recoElectron->eta())<=2.5 && RECO_efficiency_) {
 	if (fabs(probe_SC->phi()-recoElectron->superCluster()->phi()) < 3.1416) {
 	  deltaPhi = probe_SC->phi()-recoElectron->superCluster()->phi();
 	} else {
 	  deltaPhi = fabs(probe_SC->phi()-recoElectron->superCluster()->phi()) - 6.2832;
 	}
-	if (sqrt((probe_SC->eta()-recoElectron->superCluster()->eta())*(probe_SC->eta()-recoElectron->superCluster()->eta())+(deltaPhi*deltaPhi)) < 0.2) {
+	//	if (sqrt((probe_SC->eta()-recoElectron->superCluster()->eta())*(probe_SC->eta()-recoElectron->superCluster()->eta())+(deltaPhi*deltaPhi)) < 0.2) {
+	if (fabs(deltaPhi)<0.1 &&
+	    fabs(probe_SC->eta()-recoElectron->superCluster()->eta())<0.1 &&
+	    fabs( (probe_SC->energy()/cosh(probe_SC->eta())) - recoElectron->pt())<1.0) {
 	  RECO_isPassingProbe=true;
 	  continue;
 	}
@@ -283,7 +287,7 @@ EfficiencyPtEtaFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSet
     if (muonCollection->size()<1) return false;
     for (pat::MuonCollection::const_iterator recoMuon = muonCollection->begin (); recoMuon != muonCollection->end (); recoMuon++) {
       protection=true;
-      if (recoMuon->pt()>20.0 && fabs(recoMuon->eta())<2.4 && (WP80_efficiency_ || HLTele17_efficiency_ || HLTele8_efficiency_)) {
+      if (recoMuon->pt()>20.0 && fabs(recoMuon->eta())<=2.4 && (WP80_efficiency_ || HLTele17_efficiency_ || HLTele8_efficiency_)) {
 	if (i==0) tag_muon=recoMuon;
 	if (i==1){
 	  if (tag_muon->pt()<recoMuon->pt()){
@@ -305,13 +309,16 @@ EfficiencyPtEtaFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSet
 	}
 	i++;
       }
-      if (recoMuon->pt()>20.0 && fabs(recoMuon->eta())<2.4 && RECO_efficiency_) {
+      if (recoMuon->pt()>19.0 && fabs(recoMuon->eta())<=2.5 && RECO_efficiency_) {
 	if (fabs(probe_CALOmu->phi()-recoMuon->phi()) < 3.1416) {
 	  deltaPhi = probe_CALOmu->phi()-recoMuon->phi();
 	} else {
 	  deltaPhi = fabs(probe_CALOmu->phi()-recoMuon->phi()) - 6.2832;
 	}
-	if (sqrt((probe_CALOmu->eta()-recoMuon->eta())*(probe_CALOmu->eta()-recoMuon->eta())+(deltaPhi*deltaPhi)) < 0.2) {
+	//	if (sqrt((probe_CALOmu->eta()-recoMuon->eta())*(probe_CALOmu->eta()-recoMuon->eta())+(deltaPhi*deltaPhi)) < 0.2) {
+	if (fabs(deltaPhi)<0.1 &&
+	    fabs(probe_CALOmu->eta()-recoMuon->eta())<0.1 &&
+	    fabs(recoMuon->pt() - probe_CALOmu->pt())<1.0) {
 	  RECO_isPassingProbe=true;
 	  continue;
 	}
@@ -495,8 +502,6 @@ EfficiencyPtEtaFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSet
   iEvent.getByLabel (theTightMuonCollectionLabel, tightMuonCollection);
   if (muonEfficiency_ && !tightMuonCollection.isValid ()) return false;
 
-  //  if (Debug_flag) cout << "TAP: tag muon trg matching temporarily down, sapevatelo!!!" << endl;
-
   bool HLTmatch = false;
   bool IDISOmatch = false;
 
@@ -504,7 +509,7 @@ EfficiencyPtEtaFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSet
 
   if (!muonEfficiency_) {
     for (edm::RefToBaseVector<reco::GsfElectron>::const_iterator TagHLTElectron = TagHLTelectronCollection->begin (); TagHLTElectron != TagHLTelectronCollection->end (); TagHLTElectron++) {
-      if ((*TagHLTElectron)->pt()>20.0) {
+      if ((*TagHLTElectron)->pt()>15.0) {
 	if (fabs(tag_ele->phi()-(*TagHLTElectron)->phi()) < 3.1416) {
 	  deltaPhi = tag_ele->phi()-(*TagHLTElectron)->phi();
 	} else {
@@ -513,14 +518,19 @@ EfficiencyPtEtaFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSet
 	deltaReles = sqrt((tag_ele->eta()-(*TagHLTElectron)->eta())*
 			  (tag_ele->eta()-(*TagHLTElectron)->eta())+
 			  (deltaPhi*deltaPhi));
-	if (deltaReles < 0.2) HLTmatch = true;
+	//	if (deltaReles < 0.2) HLTmatch = true;
+	if (fabs(deltaPhi)<0.1 &&
+	    fabs(tag_ele->eta()-(*TagHLTElectron)->eta())<0.1 &&
+	    fabs(tag_ele->pt()-(*TagHLTElectron)->pt())<1.0) {
+	  HLTmatch=true;
+	}
       }
     }
     if (!(HLTmatch && SelectionUtils::DoWP80Pf(tag_ele,iEvent) && SelectionUtils::DoIso2011(tag_ele, iEvent, isoVals))) return false;
   } else {
     // MuonTag HLT matching:
     for (edm::RefToBaseVector<reco::Muon>::const_iterator TagHLTMuon = TagHLTmuonCollection->begin (); TagHLTMuon != TagHLTmuonCollection->end (); TagHLTMuon++) {
-      if ((*TagHLTMuon)->pt()>20.0) {
+      if ((*TagHLTMuon)->pt()>15.0) {
 	if (fabs(tag_muon->phi()-(*TagHLTMuon)->phi()) < 3.1416) {
 	  deltaPhi = tag_muon->phi()-(*TagHLTMuon)->phi();
 	} else {
@@ -529,13 +539,17 @@ EfficiencyPtEtaFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSet
 	deltaReles = sqrt((tag_muon->eta()-(*TagHLTMuon)->eta())*
 			  (tag_muon->eta()-(*TagHLTMuon)->eta())+
 			  (deltaPhi*deltaPhi));
-	if (deltaReles < 0.2) HLTmatch = true;
-	//	HLTmatch = true; //TEMPORARY!!! BE CAREFUL, INTENTIONAL BUG!
+	//	if (deltaReles < 0.2) HLTmatch = true;
+	if (fabs(deltaPhi)<0.1 &&
+	    fabs(tag_muon->eta()-(*TagHLTMuon)->eta())<0.1 &&
+	    fabs(tag_muon->pt()-(*TagHLTMuon)->pt())<1.0) {
+	  HLTmatch=true;
+	}
       }
     }
     // MuonTag ID/ISO
     for (pat::MuonCollection::const_iterator tightMuon = tightMuonCollection->begin (); tightMuon != tightMuonCollection->end (); tightMuon++) {
-      if (tightMuon->pt()>20.0) {
+      if (tightMuon->pt()>15.0) {
 	if (fabs(tag_muon->phi()-tightMuon->phi()) < 3.1416) {
 	  deltaPhi = tag_muon->phi()-tightMuon->phi();
 	} else {
@@ -544,7 +558,12 @@ EfficiencyPtEtaFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSet
 	deltaReles = sqrt((tag_muon->eta()-tightMuon->eta())*
 			  (tag_muon->eta()-tightMuon->eta())+
 			  (deltaPhi*deltaPhi));
-	if (deltaReles < 0.2) IDISOmatch = true;
+	//	if (deltaReles < 0.2) IDISOmatch = true;
+	if (fabs(deltaPhi)<0.1 &&
+	    fabs(tag_muon->eta()-tightMuon->eta())<0.1 &&
+	    fabs(tag_muon->pt()-tightMuon->pt())<1.0) {
+	  IDISOmatch=true;
+	}
       }
     }
     if (!(HLTmatch && IDISOmatch)) return false; // stop if tag is not HLT matched and ID/ISO!!!
@@ -564,7 +583,7 @@ EfficiencyPtEtaFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSet
     HLTmatch = false;
     if (!muonEfficiency_) { //ElectronProbe trg matching
       for (edm::RefToBaseVector<reco::GsfElectron>::const_iterator ProbeHLTElectron = ProbeHLTelectronCollection->begin (); ProbeHLTElectron != ProbeHLTelectronCollection->end (); ProbeHLTElectron++) {
-	if ((*ProbeHLTElectron)->pt()>20.0) {
+	if ((*ProbeHLTElectron)->pt()>15.0) {
 	  if (fabs(probe_ele->phi()-(*ProbeHLTElectron)->phi()) < 3.1416) {
 	    deltaPhi = probe_ele->phi()-(*ProbeHLTElectron)->phi();
 	  } else {
@@ -573,12 +592,17 @@ EfficiencyPtEtaFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSet
 	  deltaReles = sqrt((probe_ele->eta()-(*ProbeHLTElectron)->eta())*
 			    (probe_ele->eta()-(*ProbeHLTElectron)->eta())+
 			    (deltaPhi*deltaPhi));
-	  if (deltaReles < 0.2) HLTmatch = true;
+	  //	  if (deltaReles < 0.2) HLTmatch = true;
+	  if (fabs(deltaPhi)<0.1 &&
+	      fabs(probe_ele->eta()-(*ProbeHLTElectron)->eta())<0.1 &&
+	      fabs(probe_ele->pt()-(*ProbeHLTElectron)->pt())<1.0) {
+	    HLTmatch=true;
+	  }
 	}
       }
     } else { //MuonProbe trg matching
       for (edm::RefToBaseVector<reco::Muon>::const_iterator ProbeHLTMuon = ProbeHLTmuonCollection->begin (); ProbeHLTMuon != ProbeHLTmuonCollection->end (); ProbeHLTMuon++) {
-	if ((*ProbeHLTMuon)->pt()>20.0) {
+	if ((*ProbeHLTMuon)->pt()>15.0) {
 	  if (fabs(probe_muon->phi()-(*ProbeHLTMuon)->phi()) < 3.1416) {
 	    deltaPhi = probe_muon->phi()-(*ProbeHLTMuon)->phi();
 	  } else {
@@ -587,7 +611,12 @@ EfficiencyPtEtaFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSet
 	  deltaReles = sqrt((probe_muon->eta()-(*ProbeHLTMuon)->eta())*
 			    (probe_muon->eta()-(*ProbeHLTMuon)->eta())+
 			    (deltaPhi*deltaPhi));
-	  if (deltaReles < 0.2) HLTmatch = true;
+	  //	  if (deltaReles < 0.2) HLTmatch = true;
+	  if (fabs(deltaPhi)<0.1 &&
+	      fabs(probe_muon->eta()-(*ProbeHLTMuon)->eta())<0.1 &&
+	      fabs(probe_muon->pt()-(*ProbeHLTMuon)->pt())<1.0) {
+	    HLTmatch=true;
+	  }
 	}
       }
     }
@@ -597,7 +626,7 @@ EfficiencyPtEtaFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSet
   if (WP80_efficiency_ && muonEfficiency_) {
     IDISOmatch = false;
     for (pat::MuonCollection::const_iterator tightMuon = tightMuonCollection->begin (); tightMuon != tightMuonCollection->end (); tightMuon++) {
-      if (tightMuon->pt()>20.0) {
+      if (tightMuon->pt()>15.0) {
 	if (fabs(probe_muon->phi()-tightMuon->phi()) < 3.1416) {
 	  deltaPhi = probe_muon->phi()-tightMuon->phi();
 	} else {
@@ -606,7 +635,12 @@ EfficiencyPtEtaFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSet
 	deltaReles = sqrt((probe_muon->eta()-tightMuon->eta())*
 			  (probe_muon->eta()-tightMuon->eta())+
 			  (deltaPhi*deltaPhi));
-	if (deltaReles < 0.2) IDISOmatch = true;
+	//	if (deltaReles < 0.2) IDISOmatch = true;
+	  if (fabs(deltaPhi)<0.1 &&
+	      fabs(probe_muon->eta()-tightMuon->eta())<0.1 &&
+	      fabs(probe_muon->pt()-tightMuon->pt())<1.0) {
+	    IDISOmatch=true;
+	  }
       }
     }
   }
@@ -657,33 +691,33 @@ EfficiencyPtEtaFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSet
   if (WP80_efficiency_ || HLTele17_efficiency_ || HLTele8_efficiency_) {
     if (!muonEfficiency_) {  // Start filling electron histograms
       probeall_pt->Fill(probe_ele->pt());
-      probeall_eta->Fill(probe_ele->superCluster()->eta());
+      probeall_eta->Fill(probe_ele->eta());
       probeall_mee->Fill(e_ee_invMass);
       tagall_pt->Fill(tag_ele->pt());
-      tagall_eta->Fill(tag_ele->superCluster()->eta());
+      tagall_eta->Fill(tag_ele->eta());
       if ((WP80_efficiency_ && SelectionUtils::DoWP90Pf(probe_ele,iEvent) && SelectionUtils::DoIso2011(probe_ele, iEvent, isoVals)) || ((HLTele17_efficiency_ || HLTele8_efficiency_) && HLTmatch)) {
 	probepass_pt->Fill(probe_ele->pt());
-	probepass_eta->Fill(probe_ele->superCluster()->eta());
+	probepass_eta->Fill(probe_ele->eta());
 	probepass_mee->Fill(e_ee_invMass);
-	if (fabs(probe_ele->superCluster()->eta()) >= 0.0    && fabs(probe_ele->superCluster()->eta()) < 0.8) {
+	if (fabs(probe_ele->eta()) >= 0.0    && fabs(probe_ele->eta()) < 0.8) {
 	  if (probe_ele->pt() >= 20.0 && probe_ele->pt() <  30.0) probepass1eta1pt->Fill(e_ee_invMass);
 	  if (probe_ele->pt() >= 30.0 && probe_ele->pt() <  40.0) probepass1eta2pt->Fill(e_ee_invMass);
 	  if (probe_ele->pt() >= 40.0 && probe_ele->pt() <  50.0) probepass1eta3pt->Fill(e_ee_invMass);
 	  if (probe_ele->pt() >= 50.0 && probe_ele->pt() < 999.0) probepass1eta4pt->Fill(e_ee_invMass);
 	}
-	if (fabs(probe_ele->superCluster()->eta()) >= 0.8    && fabs(probe_ele->superCluster()->eta()) < 1.4442) {
+	if (fabs(probe_ele->eta()) >= 0.8    && fabs(probe_ele->eta()) < 1.4442) {
 	  if (probe_ele->pt() >= 20.0 && probe_ele->pt() <  30.0) probepass2eta1pt->Fill(e_ee_invMass);
 	  if (probe_ele->pt() >= 30.0 && probe_ele->pt() <  40.0) probepass2eta2pt->Fill(e_ee_invMass);
 	  if (probe_ele->pt() >= 40.0 && probe_ele->pt() <  50.0) probepass2eta3pt->Fill(e_ee_invMass);
 	  if (probe_ele->pt() >= 50.0 && probe_ele->pt() < 999.0) probepass2eta4pt->Fill(e_ee_invMass);
 	}
-	if (fabs(probe_ele->superCluster()->eta()) >= 1.566  && fabs(probe_ele->superCluster()->eta()) < 2.0) {
+	if (fabs(probe_ele->eta()) >= 1.566  && fabs(probe_ele->eta()) < 2.0) {
 	  if (probe_ele->pt() >= 20.0 && probe_ele->pt() <  30.0) probepass3eta1pt->Fill(e_ee_invMass);
 	  if (probe_ele->pt() >= 30.0 && probe_ele->pt() <  40.0) probepass3eta2pt->Fill(e_ee_invMass);
 	  if (probe_ele->pt() >= 40.0 && probe_ele->pt() <  50.0) probepass3eta3pt->Fill(e_ee_invMass);
 	  if (probe_ele->pt() >= 50.0 && probe_ele->pt() < 999.0) probepass3eta4pt->Fill(e_ee_invMass);
 	}
-	if (fabs(probe_ele->superCluster()->eta()) >= 2.0    && fabs(probe_ele->superCluster()->eta()) < 2.5) {
+	if (fabs(probe_ele->eta()) >= 2.0    && fabs(probe_ele->eta()) < 2.4) {
 	  if (probe_ele->pt() >= 20.0 && probe_ele->pt() <  30.0) probepass4eta1pt->Fill(e_ee_invMass);
 	  if (probe_ele->pt() >= 30.0 && probe_ele->pt() <  40.0) probepass4eta2pt->Fill(e_ee_invMass);
 	  if (probe_ele->pt() >= 40.0 && probe_ele->pt() <  50.0) probepass4eta3pt->Fill(e_ee_invMass);
@@ -691,27 +725,27 @@ EfficiencyPtEtaFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSet
 	}
       } else {
 	probefail_pt->Fill(probe_ele->pt());
-	probefail_eta->Fill(probe_ele->superCluster()->eta());
+	probefail_eta->Fill(probe_ele->eta());
 	probefail_mee->Fill(e_ee_invMass);
-	if (fabs(probe_ele->superCluster()->eta()) >= 0.0    && fabs(probe_ele->superCluster()->eta()) < 0.8) {
+	if (fabs(probe_ele->eta()) >= 0.0    && fabs(probe_ele->eta()) < 0.8) {
 	  if (probe_ele->pt() >= 20.0 && probe_ele->pt() <  30.0) probefail1eta1pt->Fill(e_ee_invMass);
 	  if (probe_ele->pt() >= 30.0 && probe_ele->pt() <  40.0) probefail1eta2pt->Fill(e_ee_invMass);
 	  if (probe_ele->pt() >= 40.0 && probe_ele->pt() <  50.0) probefail1eta3pt->Fill(e_ee_invMass);
 	  if (probe_ele->pt() >= 50.0 && probe_ele->pt() < 999.0) probefail1eta4pt->Fill(e_ee_invMass);
 	}
-	if (fabs(probe_ele->superCluster()->eta()) >= 0.8    && fabs(probe_ele->superCluster()->eta()) < 1.4442) {
+	if (fabs(probe_ele->eta()) >= 0.8    && fabs(probe_ele->eta()) < 1.4442) {
 	  if (probe_ele->pt() >= 20.0 && probe_ele->pt() <  30.0) probefail2eta1pt->Fill(e_ee_invMass);
 	  if (probe_ele->pt() >= 30.0 && probe_ele->pt() <  40.0) probefail2eta2pt->Fill(e_ee_invMass);
 	  if (probe_ele->pt() >= 40.0 && probe_ele->pt() <  50.0) probefail2eta3pt->Fill(e_ee_invMass);
 	  if (probe_ele->pt() >= 50.0 && probe_ele->pt() < 999.0) probefail2eta4pt->Fill(e_ee_invMass);
 	}
-	if (fabs(probe_ele->superCluster()->eta()) >= 1.566  && fabs(probe_ele->superCluster()->eta()) < 2.0) {
+	if (fabs(probe_ele->eta()) >= 1.566  && fabs(probe_ele->eta()) < 2.0) {
 	  if (probe_ele->pt() >= 20.0 && probe_ele->pt() <  30.0) probefail3eta1pt->Fill(e_ee_invMass);
 	  if (probe_ele->pt() >= 30.0 && probe_ele->pt() <  40.0) probefail3eta2pt->Fill(e_ee_invMass);
 	  if (probe_ele->pt() >= 40.0 && probe_ele->pt() <  50.0) probefail3eta3pt->Fill(e_ee_invMass);
 	  if (probe_ele->pt() >= 50.0 && probe_ele->pt() < 999.0) probefail3eta4pt->Fill(e_ee_invMass);
 	}
-	if (fabs(probe_ele->superCluster()->eta()) >= 2.0    && fabs(probe_ele->superCluster()->eta()) < 2.5) {
+	if (fabs(probe_ele->eta()) >= 2.0    && fabs(probe_ele->eta()) < 2.4) {
 	  if (probe_ele->pt() >= 20.0 && probe_ele->pt() <  30.0) probefail4eta1pt->Fill(e_ee_invMass);
 	  if (probe_ele->pt() >= 30.0 && probe_ele->pt() <  40.0) probefail4eta2pt->Fill(e_ee_invMass);
 	  if (probe_ele->pt() >= 40.0 && probe_ele->pt() <  50.0) probefail4eta3pt->Fill(e_ee_invMass);
@@ -741,12 +775,12 @@ EfficiencyPtEtaFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSet
 	  if (probe_muon->pt() >= 50.0 && probe_muon->pt() < 999.0) probepass2eta4pt->Fill(e_ee_invMass);
 	}
 	if (fabs(probe_muon->eta()) >= 1.566  && fabs(probe_muon->eta()) < 2.0) {
-	  if (probe_muon->pt() >= 20.0 && probe_muon->pt() <  30.0) probepass3eta1pt->Fill(e_ee_invMass);
+ 	  if (probe_muon->pt() >= 20.0 && probe_muon->pt() <  30.0) probepass3eta1pt->Fill(e_ee_invMass);
 	  if (probe_muon->pt() >= 30.0 && probe_muon->pt() <  40.0) probepass3eta2pt->Fill(e_ee_invMass);
 	  if (probe_muon->pt() >= 40.0 && probe_muon->pt() <  50.0) probepass3eta3pt->Fill(e_ee_invMass);
 	  if (probe_muon->pt() >= 50.0 && probe_muon->pt() < 999.0) probepass3eta4pt->Fill(e_ee_invMass);
 	}
-	if (fabs(probe_muon->eta()) >= 2.0    && fabs(probe_muon->eta()) < 2.5) {
+	if (fabs(probe_muon->eta()) >= 2.0    && fabs(probe_muon->eta()) < 2.4) {
 	  if (probe_muon->pt() >= 20.0 && probe_muon->pt() <  30.0) probepass4eta1pt->Fill(e_ee_invMass);
 	  if (probe_muon->pt() >= 30.0 && probe_muon->pt() <  40.0) probepass4eta2pt->Fill(e_ee_invMass);
 	  if (probe_muon->pt() >= 40.0 && probe_muon->pt() <  50.0) probepass4eta3pt->Fill(e_ee_invMass);
@@ -774,7 +808,7 @@ EfficiencyPtEtaFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSet
 	  if (probe_muon->pt() >= 40.0 && probe_muon->pt() <  50.0) probefail3eta3pt->Fill(e_ee_invMass);
 	  if (probe_muon->pt() >= 50.0 && probe_muon->pt() < 999.0) probefail3eta4pt->Fill(e_ee_invMass);
 	}
-	if (fabs(probe_muon->eta()) >= 2.0    && fabs(probe_muon->eta()) < 2.5) {
+	if (fabs(probe_muon->eta()) >= 2.0    && fabs(probe_muon->eta()) < 2.4) {
 	  if (probe_muon->pt() >= 20.0 && probe_muon->pt() <  30.0) probefail4eta1pt->Fill(e_ee_invMass);
 	  if (probe_muon->pt() >= 30.0 && probe_muon->pt() <  40.0) probefail4eta2pt->Fill(e_ee_invMass);
 	  if (probe_muon->pt() >= 40.0 && probe_muon->pt() <  50.0) probefail4eta3pt->Fill(e_ee_invMass);
@@ -791,7 +825,7 @@ EfficiencyPtEtaFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSet
       probeall_eta->Fill(probe_SC->eta());
       probeall_mee->Fill(e_ee_invMass);
       tagall_pt->Fill(tag_ele->pt());
-      tagall_eta->Fill(tag_ele->superCluster()->eta());
+      tagall_eta->Fill(tag_ele->eta());
       if (RECO_isPassingProbe){
 	probepass_pt->Fill((probe_SC->energy()/cosh(probe_SC->eta())));
 	probepass_eta->Fill(probe_SC->eta());
@@ -814,7 +848,7 @@ EfficiencyPtEtaFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSet
 	  if ((probe_SC->energy()/cosh(probe_SC->eta())) >= 40.0 && (probe_SC->energy()/cosh(probe_SC->eta())) <  50.0) probepass3eta3pt->Fill(e_ee_invMass);
 	  if ((probe_SC->energy()/cosh(probe_SC->eta())) >= 50.0 && (probe_SC->energy()/cosh(probe_SC->eta())) < 999.0) probepass3eta4pt->Fill(e_ee_invMass);
 	}
-	if (fabs(probe_SC->eta()) >= 2.0    && fabs(probe_SC->eta()) < 2.5) {
+	if (fabs(probe_SC->eta()) >= 2.0    && fabs(probe_SC->eta()) < 2.4) {
 	  if ((probe_SC->energy()/cosh(probe_SC->eta())) >= 20.0 && (probe_SC->energy()/cosh(probe_SC->eta())) <  30.0) probepass4eta1pt->Fill(e_ee_invMass);
 	  if ((probe_SC->energy()/cosh(probe_SC->eta())) >= 30.0 && (probe_SC->energy()/cosh(probe_SC->eta())) <  40.0) probepass4eta2pt->Fill(e_ee_invMass);
 	  if ((probe_SC->energy()/cosh(probe_SC->eta())) >= 40.0 && (probe_SC->energy()/cosh(probe_SC->eta())) <  50.0) probepass4eta3pt->Fill(e_ee_invMass);
@@ -842,7 +876,7 @@ EfficiencyPtEtaFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSet
 	  if ((probe_SC->energy()/cosh(probe_SC->eta())) >= 40.0 && (probe_SC->energy()/cosh(probe_SC->eta())) <  50.0) probefail3eta3pt->Fill(e_ee_invMass);
 	  if ((probe_SC->energy()/cosh(probe_SC->eta())) >= 50.0 && (probe_SC->energy()/cosh(probe_SC->eta())) < 999.0) probefail3eta4pt->Fill(e_ee_invMass);
 	}
-	if (fabs(probe_SC->eta()) >= 2.0    && fabs(probe_SC->eta()) < 2.5) {
+	if (fabs(probe_SC->eta()) >= 2.0    && fabs(probe_SC->eta()) < 2.4) {
 	  if ((probe_SC->energy()/cosh(probe_SC->eta())) >= 20.0 && (probe_SC->energy()/cosh(probe_SC->eta())) <  30.0) probefail4eta1pt->Fill(e_ee_invMass);
 	  if ((probe_SC->energy()/cosh(probe_SC->eta())) >= 30.0 && (probe_SC->energy()/cosh(probe_SC->eta())) <  40.0) probefail4eta2pt->Fill(e_ee_invMass);
 	  if ((probe_SC->energy()/cosh(probe_SC->eta())) >= 40.0 && (probe_SC->energy()/cosh(probe_SC->eta())) <  50.0) probefail4eta3pt->Fill(e_ee_invMass);
@@ -877,7 +911,7 @@ EfficiencyPtEtaFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSet
 	  if (probe_CALOmu->pt() >= 40.0 && probe_CALOmu->pt() <  50.0) probepass3eta3pt->Fill(e_ee_invMass);
 	  if (probe_CALOmu->pt() >= 50.0 && probe_CALOmu->pt() < 999.0) probepass3eta4pt->Fill(e_ee_invMass);
 	}
-	if (fabs(probe_CALOmu->eta()) >= 2.0    && fabs(probe_CALOmu->eta()) < 2.5) {
+	if (fabs(probe_CALOmu->eta()) >= 2.0    && fabs(probe_CALOmu->eta()) < 2.4) {
 	  if (probe_CALOmu->pt() >= 20.0 && probe_CALOmu->pt() <  30.0) probepass4eta1pt->Fill(e_ee_invMass);
 	  if (probe_CALOmu->pt() >= 30.0 && probe_CALOmu->pt() <  40.0) probepass4eta2pt->Fill(e_ee_invMass);
 	  if (probe_CALOmu->pt() >= 40.0 && probe_CALOmu->pt() <  50.0) probepass4eta3pt->Fill(e_ee_invMass);
@@ -905,7 +939,7 @@ EfficiencyPtEtaFilter::filter (edm::Event & iEvent, edm::EventSetup const & iSet
 	  if (probe_CALOmu->pt() >= 40.0 && probe_CALOmu->pt() <  50.0) probefail3eta3pt->Fill(e_ee_invMass);
 	  if (probe_CALOmu->pt() >= 50.0 && probe_CALOmu->pt() < 999.0) probefail3eta4pt->Fill(e_ee_invMass);
 	}
-	if (fabs(probe_CALOmu->eta()) >= 2.0    && fabs(probe_CALOmu->eta()) < 2.5) {
+	if (fabs(probe_CALOmu->eta()) >= 2.0    && fabs(probe_CALOmu->eta()) < 2.4) {
 	  if (probe_CALOmu->pt() >= 20.0 && probe_CALOmu->pt() <  30.0) probefail4eta1pt->Fill(e_ee_invMass);
 	  if (probe_CALOmu->pt() >= 30.0 && probe_CALOmu->pt() <  40.0) probefail4eta2pt->Fill(e_ee_invMass);
 	  if (probe_CALOmu->pt() >= 40.0 && probe_CALOmu->pt() <  50.0) probefail4eta3pt->Fill(e_ee_invMass);
