@@ -44,6 +44,7 @@ class EfficiencyGSFtoPFfilter : public edm::EDFilter, public SelectionUtils {
       bool matchMC_;
       edm::InputTag genParticleCollection_;
       edm::InputTag theGSFElectronCollectionLabel;
+      edm::InputTag theHLTElectronCollectionLabel;
       edm::InputTag thePFElectronCollectionLabel;
       edm::InputTag triggerCollection_; 
       edm::InputTag electronIsolatedProducer_;
@@ -116,6 +117,7 @@ EfficiencyGSFtoPFfilter::EfficiencyGSFtoPFfilter (const edm::ParameterSet & para
   matchMC_ = parameters.getParameter<bool>("matchMC");
   genParticleCollection_ = parameters.getUntrackedParameter<edm::InputTag>("genParticleCollection", edm::InputTag("genParticles"));
   theGSFElectronCollectionLabel = parameters.getParameter < edm::InputTag > ("electronGSFCollection");
+  theHLTElectronCollectionLabel = parameters.getParameter < edm::InputTag > ("electronHLTCollection");
   thePFElectronCollectionLabel = parameters.getParameter < edm::InputTag > ("electronPFCollection");
   VertexCollectionTag_  = parameters.getParameter<edm::InputTag>("VertexCollectionTag");
   std::string outputfile_D = parameters.getUntrackedParameter<std::string>("filename");

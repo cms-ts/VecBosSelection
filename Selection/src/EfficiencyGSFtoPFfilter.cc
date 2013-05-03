@@ -13,7 +13,7 @@ Implementation:
 //
 // Original Author:  superben
 //         Created:  Wed May 11 14:53:26 CESDo2011
-// $Id: EfficiencyGSFtoPFfilter.cc,v 1.21 2013/03/27 08:03:45 schizzi Exp $
+// $Id: EfficiencyGSFtoPFfilter.cc,v 1.1 2013/05/02 23:04:44 schizzi Exp $
 
 
 
@@ -63,7 +63,7 @@ using namespace std;
 using namespace edm;
 using namespace reco;
 
-bool debugging_flag=true;
+bool debugging_flag=false;
 
 //
 // member functions
@@ -76,17 +76,16 @@ EfficiencyGSFtoPFfilter::filter (edm::Event & iEvent, edm::EventSetup const & iS
   if (debugging_flag) cout<<"------- NEW Event -----"<<endl;
   using namespace edm;
 
-  //  Handle < reco::GsfElectronCollection > GSFelectronCollection;
-  //  iEvent.getByLabel (theGSFElectronCollectionLabel, GSFelectronCollection);
-  //  if (!GSFelectronCollection.isValid()) return false;
-  Handle < edm::RefToBaseVector<reco::GsfElectron> > GSFelectronCollection;
+  Handle < reco::GsfElectronCollection > GSFelectronCollection;
   iEvent.getByLabel (theGSFElectronCollectionLabel, GSFelectronCollection);
   if (!GSFelectronCollection.isValid()) return false;
 
-  //  reco::GsfElectronCollection::const_iterator tag_ele;
-  //  reco::GsfElectronCollection::const_iterator probe_ele;
-  edm::RefToBaseVector<reco::GsfElectron>::const_iterator tag_ele;
-  edm::RefToBaseVector<reco::GsfElectron>::const_iterator probe_ele;
+  Handle < edm::RefToBaseVector<reco::GsfElectron> > HLTelectronCollection;
+  iEvent.getByLabel (theHLTElectronCollectionLabel, HLTelectronCollection);
+  if (!HLTelectronCollection.isValid()) return false;
+
+  reco::GsfElectronCollection::const_iterator tag_ele;
+  reco::GsfElectronCollection::const_iterator probe_ele;
 
   // iso deposits
   IsoDepositVals isoVals(isoValInputTags_.size());
@@ -96,7 +95,8 @@ EfficiencyGSFtoPFfilter::filter (edm::Event & iEvent, edm::EventSetup const & iS
 
   int i=0;
   bool protection=false;
-
+  bool HLTmatch=false;
+  double deltaPhi=0.0;
   if (GSFelectronCollection->size()<1) {
     if (debugging_flag) cout << "Few electrons for a Z... Stop here." << endl; 
     return false;
@@ -104,32 +104,48 @@ EfficiencyGSFtoPFfilter::filter (edm::Event & iEvent, edm::EventSetup const & iS
 
   if (debugging_flag) cout<<"Begin main loop..."<<endl;
 
-  for (edm::RefToBaseVector<reco::GsfElectron>::const_iterator recoElectron = GSFelectronCollection->begin (); recoElectron != GSFelectronCollection->end (); recoElectron++) {
+  for (reco::GsfElectronCollection::const_iterator recoElectron = GSFelectronCollection->begin (); recoElectron != GSFelectronCollection->end (); recoElectron++) {
     protection=true;
-    if (recoElectron->pt()>20.0 && fabs(recoElectron->eta())<=2.5) {
-      if (i==0) tag_ele=recoElectron;
-      if (i==1){
-	if (tag_ele->pt()<recoElectron->pt()){
-	  probe_ele=tag_ele;
-	  tag_ele=recoElectron;
-	}
-	else{
-	  probe_ele=recoElectron;
-	}
+    if (recoElectron->pt()>20.0 && fabs(recoElectron->eta())<=2.5 && SelectionUtils::DoWP90PfGSF(recoElectron,iEvent)) {
+      for (edm::RefToBaseVector<reco::GsfElectron>::const_iterator HLTelectron = HLTelectronCollection->begin (); HLTelectron != HLTelectronCollection->end (); HLTelectron++) {
+	if ((*HLTelectron)->pt()>19.0) {
+	  if (fabs(recoElectron->phi()-(*HLTelectron)->phi()) < 3.1416) {
+	    deltaPhi = recoElectron->phi()-(*HLTelectron)->phi();
+	  } else {
+	    deltaPhi = fabs(recoElectron->phi()-(*HLTelectron)->phi()) - 6.2832;
+	  }
+	  if (fabs(deltaPhi)<0.1 &&
+	      fabs(recoElectron->eta()-(*HLTelectron)->eta())<0.1 &&
+	      fabs(recoElectron->pt()-(*HLTelectron)->pt())<1.0) {
+	    HLTmatch=true;
+	  }
+	} 
       }
-      if (i>1){
-	if (tag_ele->pt()<recoElectron->pt()){
-	  probe_ele=tag_ele;
-	  tag_ele=recoElectron;
+      if (HLTmatch) {
+	if (i==0) tag_ele=recoElectron;
+	if (i==1){
+	  if (tag_ele->pt()<recoElectron->pt()){
+	    probe_ele=tag_ele;
+	    tag_ele=recoElectron;
+	  }
+	  else{
+	    probe_ele=recoElectron;
+	  }
 	}
-	else{
-	  if (probe_ele->pt()<recoElectron->pt()) probe_ele=recoElectron;
+	if (i>1){
+	  if (tag_ele->pt()<recoElectron->pt()){
+	    probe_ele=tag_ele;
+	    tag_ele=recoElectron;
+	  }
+	  else{
+	    if (probe_ele->pt()<recoElectron->pt()) probe_ele=recoElectron;
+	  }
 	}
+	i++;
       }
-      i++;
     }
   }
-
+  
   if (!protection) {
     return false;
   }
@@ -143,7 +159,7 @@ EfficiencyGSFtoPFfilter::filter (edm::Event & iEvent, edm::EventSetup const & iS
 
   int tagchoice = rand()%2;
   if (tagchoice == 1) {
-    edm::RefToBaseVector<reco::GsfElectron>::const_iterator temp_ele;
+    reco::GsfElectronCollection::const_iterator temp_ele;
     temp_ele = tag_ele;
     tag_ele = probe_ele;
     probe_ele = temp_ele;
@@ -197,7 +213,26 @@ EfficiencyGSFtoPFfilter::filter (edm::Event & iEvent, edm::EventSetup const & iS
   // Matching GSF to PF  //
   /////////////////////////
 
+  Handle < pat::ElectronCollection > electronPFCollection;
+  iEvent.getByLabel (thePFElectronCollectionLabel, electronPFCollection);
+  if (!electronPFCollection.isValid ()) return false;
+
   bool GSFtoPFmatch = false;
+
+  for (pat::ElectronCollection::const_iterator PFElectron = electronPFCollection->begin (); PFElectron != electronPFCollection->end (); PFElectron++) {
+    if (PFElectron->pt()>19.0) {
+      if (fabs(probe_ele->phi()-PFElectron->phi()) < 3.1416) {
+	deltaPhi = probe_ele->phi()-PFElectron->phi();
+      } else {
+	deltaPhi = fabs(probe_ele->phi()-PFElectron->phi()) - 6.2832;
+      }
+      if (fabs(deltaPhi)<0.1 &&
+	  fabs(probe_ele->eta()-PFElectron->eta())<0.1 &&
+	  fabs(probe_ele->pt()-PFElectron->pt())<1.0) {
+	GSFtoPFmatch=true;
+      }
+    } 
+  }
 
   ///////////////////////////////////
   // Calculating tag & probe stuff //
