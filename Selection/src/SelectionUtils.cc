@@ -212,8 +212,94 @@ bool SelectionUtils::DoWP80Pf(pat::ElectronCollection::const_iterator recoElectr
     return false;
 }
 
-//DO the WP80Pf analysis
+//DO the WP90Pf analysis
 bool SelectionUtils::DoWP90Pf(pat::ElectronCollection::const_iterator recoElectron,edm::Event& iEvent)
+{
+   double HE=0.;
+   
+   //  if (recoElectron->et () <= 25) return false;
+   
+   HE = recoElectron->hadronicOverEm();
+   
+   //Define ID variables
+  
+  float DeltaPhiTkClu = recoElectron->deltaPhiSuperClusterTrackAtVtx ();
+  float DeltaEtaTkClu = recoElectron->deltaEtaSuperClusterTrackAtVtx ();
+  float sigmaIeIe = recoElectron->sigmaIetaIeta ();
+  
+  //Define Conversion Rejection Variables
+  
+  float Dcot = recoElectron->convDcot ();
+  float Dist = recoElectron->convDist ();
+  int NumberOfExpectedInnerHits = recoElectron->gsfTrack ()->trackerExpectedHitsInner ().numberOfHits ();
+  
+  //quality flags
+
+  bool isBarrelElectrons;
+  bool isEndcapElectrons;
+  bool isIDBarrel;
+  bool isConvertedBarrel;
+  bool isIDEndcap;
+  bool isConvertedEndcap;
+  isBarrelElectrons = false;
+  isEndcapElectrons = false;
+  isIDBarrel = false;
+  isConvertedBarrel = false;
+  isIDEndcap = false;
+  isConvertedEndcap = false;
+ 
+
+/***** Barrel WP80 Cuts *****/
+  
+  if (fabs (recoElectron ->superCluster()->eta()) <= 1.4442) {
+    
+    
+    /* Identification */
+    if (fabs (DeltaEtaTkClu) < 0.007 && fabs (DeltaPhiTkClu) < 0.8
+	&& sigmaIeIe < 0.01 && HE < 0.12) {
+      isIDBarrel = true;
+    }
+    
+    /* Conversion Rejection */
+      if ((fabs (Dist) >= 0.02 || fabs (Dcot) >= 0.02)
+	  && NumberOfExpectedInnerHits <= 1) {
+	isConvertedBarrel = true;
+      }
+      //cout<<"isIsolatedBarrel "<<isIsolatedBarrel<<" isIDBarrel "<< isIDBarrel<<" isConvertedBarrel "<<isConvertedBarrel<<endl;
+  }
+  
+  if (isIDBarrel && isConvertedBarrel) {
+    return true;
+  }
+
+    /***** Endcap WP80 Cuts *****/
+
+    if (fabs (recoElectron ->superCluster()->eta()) >= 1.5660
+	&& fabs (recoElectron ->superCluster()->eta()) <= 2.5000) {
+
+
+      /* Identification */
+      if (fabs (DeltaEtaTkClu) < 0.009 && fabs (DeltaPhiTkClu) < 0.7
+	  && sigmaIeIe < 0.03 && HE < 0.15) {
+	isIDEndcap = true;
+      }
+
+      /* Conversion Rejection */
+      if ((fabs (Dcot) > 0.02 || fabs (Dist) > 0.02)
+	  && NumberOfExpectedInnerHits <=1) {
+	isConvertedEndcap = true;
+      }
+      //cout<<"isIsolatedEndcap "<<isIsolatedEndcap<<" isIDEndcap "<< isIDEndcap<<" isConvertedEndcap "<<isConvertedEndcap<<endl;
+    }
+    
+    if (isIDEndcap && isConvertedEndcap) {
+      return true;
+    }
+    return false;
+}
+
+//DO the WP90Pf analysis
+bool SelectionUtils::DoWP90PfGSF(reco::GsfElectronCollection::const_iterator recoElectron,edm::Event& iEvent)
 {
    double HE=0.;
    
