@@ -13,7 +13,7 @@ Implementation:
 //
 // Original Author:  superben
 //         Created:  Wed May 11 14:53:26 CESDo2011
-// $Id: EfficiencyGSFtoPFfilter.cc,v 1.2 2013/05/03 00:55:05 schizzi Exp $
+// $Id: EfficiencyGSFtoPFfilter.cc,v 1.3 2013/05/08 10:14:20 schizzi Exp $
 
 
 
@@ -201,7 +201,7 @@ EfficiencyGSFtoPFfilter::filter (edm::Event & iEvent, edm::EventSetup const & iS
       }
       if (fabs(deltaPhi)<0.1 &&
 	  fabs(probe_ele->eta()-PFElectron->eta())<0.1 &&
-	  fabs(probe_ele->pt()-PFElectron->pt())<1.0) {
+	  fabs(probe_ele->pt()-PFElectron->pt())<(0.1*probe_ele->pt())) {
 	GSFtoPFmatch=true;
       }
     } 
