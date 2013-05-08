@@ -13,7 +13,7 @@ Implementation:
 //
 // Original Author:  superben
 //         Created:  Wed May 11 14:53:26 CESDo2011
-// $Id: EfficiencyGSFtoPFfilter.cc,v 1.1 2013/05/02 23:04:44 schizzi Exp $
+// $Id: EfficiencyGSFtoPFfilter.cc,v 1.2 2013/05/03 00:55:05 schizzi Exp $
 
 
 
@@ -94,6 +94,7 @@ EfficiencyGSFtoPFfilter::filter (edm::Event & iEvent, edm::EventSetup const & iS
   }
 
   int i=0;
+  int gsfEleNumber =-1;
   bool protection=false;
   bool HLTmatch=false;
   double deltaPhi=0.0;
@@ -104,11 +105,18 @@ EfficiencyGSFtoPFfilter::filter (edm::Event & iEvent, edm::EventSetup const & iS
 
   if (debugging_flag) cout<<"Begin main loop..."<<endl;
 
-  for (reco::GsfElectronCollection::const_iterator recoElectron = GSFelectronCollection->begin (); recoElectron != GSFelectronCollection->end (); recoElectron++) {
+  for (reco::GsfElectronCollection::const_iterator recoElectron = GSFelectronCollection->begin ();
+       recoElectron != GSFelectronCollection->end (); recoElectron++) {
     protection=true;
-    if (recoElectron->pt()>20.0 && fabs(recoElectron->eta())<=2.5 && SelectionUtils::DoWP90PfGSF(recoElectron,iEvent)) {
+    gsfEleNumber++; // Needed for the gsf ref (Iso computation)
+    reco::GsfElectronRef myElectronRef(GSFelectronCollection,gsfEleNumber);
+    if (((recoElectron->pt()-myElectronRef->pt())>1.0) && debugging_flag) 
+      cout << "Warning: WRONG ref to GSF, please check!" << endl;
+    if (recoElectron->pt()>19.0 && fabs(recoElectron->eta())<=2.5 
+	&& SelectionUtils::DoWP90PfGSF(recoElectron,iEvent)
+	&& SelectionUtils::DoIso2011GSF(myElectronRef,iEvent,isoVals)) {
       for (edm::RefToBaseVector<reco::GsfElectron>::const_iterator HLTelectron = HLTelectronCollection->begin (); HLTelectron != HLTelectronCollection->end (); HLTelectron++) {
-	if ((*HLTelectron)->pt()>19.0) {
+	if ((*HLTelectron)->pt()>15.0) {
 	  if (fabs(recoElectron->phi()-(*HLTelectron)->phi()) < 3.1416) {
 	    deltaPhi = recoElectron->phi()-(*HLTelectron)->phi();
 	  } else {
@@ -152,8 +160,8 @@ EfficiencyGSFtoPFfilter::filter (edm::Event & iEvent, edm::EventSetup const & iS
   
   if (debugging_flag) cout<<"Out of main loop!"<<endl;  
 
-  if (i<1) return false;
-  if (i<2 || tag_ele->charge() == probe_ele->charge()) return false;
+  if (i<2) return false;
+  if (tag_ele->charge() == probe_ele->charge()) return false;
 
   // Mixing TAG and PROBE electrons:
 
@@ -167,6 +175,37 @@ EfficiencyGSFtoPFfilter::filter (edm::Event & iEvent, edm::EventSetup const & iS
   
   if (debugging_flag) cout << "Finished mixing Tag and Probe eles." << endl;
 
+  // Tight cut on Tag ele:
+  if (!(SelectionUtils::DoWP80PfGSF(tag_ele,iEvent) && tag_ele->pt()>20.0)) {
+    if (debugging_flag) cout << "Tag elle not satisfying requirements, exit." << endl;
+    return false;
+  }
+
+  /////////////////////////
+  // Matching GSF to PF  //
+  /////////////////////////
+
+  Handle < pat::ElectronCollection > electronPFCollection;
+  iEvent.getByLabel (thePFElectronCollectionLabel, electronPFCollection);
+  if (!electronPFCollection.isValid ()) return false;
+
+  bool GSFtoPFmatch = false;
+
+  for (pat::ElectronCollection::const_iterator PFElectron = electronPFCollection->begin (); PFElectron != electronPFCollection->end (); PFElectron++) {
+    if (PFElectron->pt()>15.0) {
+      //      if (PFElectron->gsfTrackRef()==probe_ele->gsfTrack()) GSFtoPFmatch=true;
+      if (fabs(probe_ele->phi()-PFElectron->phi()) < 3.1416) {
+	deltaPhi = probe_ele->phi()-PFElectron->phi();
+      } else {
+	deltaPhi = fabs(probe_ele->phi()-PFElectron->phi()) - 6.2832;
+      }
+      if (fabs(deltaPhi)<0.1 &&
+	  fabs(probe_ele->eta()-PFElectron->eta())<0.1 &&
+	  fabs(probe_ele->pt()-PFElectron->pt())<1.0) {
+	GSFtoPFmatch=true;
+      }
+    } 
+  }
 
   //////////////
   // MC match //
@@ -207,31 +246,6 @@ EfficiencyGSFtoPFfilter::filter (edm::Event & iEvent, edm::EventSetup const & iS
       if (nMatch > 2) std::cout << "TOO MANY MATCHED ELECTRONS" << std::endl;
       if (nMatch != 2) return false;
     }
-  }
-
-  /////////////////////////
-  // Matching GSF to PF  //
-  /////////////////////////
-
-  Handle < pat::ElectronCollection > electronPFCollection;
-  iEvent.getByLabel (thePFElectronCollectionLabel, electronPFCollection);
-  if (!electronPFCollection.isValid ()) return false;
-
-  bool GSFtoPFmatch = false;
-
-  for (pat::ElectronCollection::const_iterator PFElectron = electronPFCollection->begin (); PFElectron != electronPFCollection->end (); PFElectron++) {
-    if (PFElectron->pt()>19.0) {
-      if (fabs(probe_ele->phi()-PFElectron->phi()) < 3.1416) {
-	deltaPhi = probe_ele->phi()-PFElectron->phi();
-      } else {
-	deltaPhi = fabs(probe_ele->phi()-PFElectron->phi()) - 6.2832;
-      }
-      if (fabs(deltaPhi)<0.1 &&
-	  fabs(probe_ele->eta()-PFElectron->eta())<0.1 &&
-	  fabs(probe_ele->pt()-PFElectron->pt())<1.0) {
-	GSFtoPFmatch=true;
-      }
-    } 
   }
 
   ///////////////////////////////////

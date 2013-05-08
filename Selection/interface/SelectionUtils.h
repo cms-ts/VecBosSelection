@@ -24,6 +24,7 @@ class SelectionUtils {
 
    bool DoWP80(pat::ElectronCollection::const_iterator recoElectron,edm::Event& iEvent,bool removePU_);
    bool DoWP80Pf(pat::ElectronCollection::const_iterator recoElectron,edm::Event& iEvent);
+   bool DoWP80PfGSF(reco::GsfElectronCollection::const_iterator recoElectron,edm::Event& iEvent);
    bool DoWP90Pf(pat::ElectronCollection::const_iterator recoElectron,edm::Event& iEvent);
    bool DoWP90PfGSF(reco::GsfElectronCollection::const_iterator recoElectron,edm::Event& iEvent);
    bool DoWP80Pf_NewHE(pat::ElectronCollection::const_iterator recoElectron,edm::Event& iEvent,bool removePU_);
@@ -38,6 +39,7 @@ class SelectionUtils {
 		     const edm::Handle<reco::VertexCollection> &vtxs);
    //bool DoIso2011(pat::ElectronCollection::const_iterator recoElectron,edm::Event& iEvent, IsoDepositMaps &IsoMap, IsoDepositVals &IsoVal); 
    bool DoIso2011(pat::ElectronCollection::const_iterator recoElectron, edm::Event& iEvent, IsoDepositVals &IsoVals); 
+   bool DoIso2011GSF(reco::GsfElectronRef myElectronRef, edm::Event& iEvent, IsoDepositVals &IsoVals); 
    std::vector<bool> MakePfEleNewIDAnalysis(pat::ElectronCollection::const_iterator recoElectron,edm::Event& iEvent,
 					    bool useNewID_,bool doWP90_,const edm::Handle<reco::ConversionCollection> &conversions,
 					    const reco::BeamSpot &beamspot,const edm::Handle<reco::VertexCollection> &vtxs, 
