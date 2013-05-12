@@ -42,9 +42,11 @@ class EfficiencyGSFtoPFfilter : public edm::EDFilter, public SelectionUtils {
       // ----------member data ---------------------------
 
       bool matchMC_;
+      bool HLT_efficiency_;
       edm::InputTag genParticleCollection_;
       edm::InputTag theGSFElectronCollectionLabel;
-      edm::InputTag theHLTElectronCollectionLabel;
+      edm::InputTag theTagHLTElectronCollectionLabel;
+      edm::InputTag theProbeHLTElectronCollectionLabel;
       edm::InputTag thePFElectronCollectionLabel;
       edm::InputTag triggerCollection_; 
       edm::InputTag electronIsolatedProducer_;
@@ -115,9 +117,11 @@ class EfficiencyGSFtoPFfilter : public edm::EDFilter, public SelectionUtils {
 EfficiencyGSFtoPFfilter::EfficiencyGSFtoPFfilter (const edm::ParameterSet & parameters)
 {
   matchMC_ = parameters.getParameter<bool>("matchMC");
+  HLT_efficiency_ = parameters.getParameter<bool>("HLT_efficiency");
   genParticleCollection_ = parameters.getUntrackedParameter<edm::InputTag>("genParticleCollection", edm::InputTag("genParticles"));
   theGSFElectronCollectionLabel = parameters.getParameter < edm::InputTag > ("electronGSFCollection");
-  theHLTElectronCollectionLabel = parameters.getParameter < edm::InputTag > ("electronHLTCollection");
+  theTagHLTElectronCollectionLabel = parameters.getParameter < edm::InputTag > ("electronTagHLTCollection");
+  theProbeHLTElectronCollectionLabel = parameters.getParameter < edm::InputTag > ("electronProbeHLTCollection");
   thePFElectronCollectionLabel = parameters.getParameter < edm::InputTag > ("electronPFCollection");
   VertexCollectionTag_  = parameters.getParameter<edm::InputTag>("VertexCollectionTag");
   std::string outputfile_D = parameters.getUntrackedParameter<std::string>("filename");
