@@ -169,6 +169,12 @@ photonRemoval::produce(edm::Event & iEvent, edm::EventSetup const & iSetup)
 	       }
 	 }
       } // end someElectrons
+
+      // removal charged particles with pt < 0.25 GeV
+      if (partB->charge()!= 0 && partB->pt()< 0.25) {
+	isRemoval = true;
+      }
+      
       if (isRemoval == false) pOutput->push_back(*partB);
    }
 
