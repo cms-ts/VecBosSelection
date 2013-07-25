@@ -64,6 +64,9 @@ class photonRemoval : public edm::EDProducer{
 		string nameLepGammaPy;
 		string nameLepGammaPz;
 		string nameLepGammaE;
+		string nameLepGammaPt;
+		string nameLepGammaEta;
+		string nameLepTLorentz;
 
 		TH1F * gammaRemovedPt;
 		TH1F * gammaRemovedEta;
@@ -94,17 +97,25 @@ photonRemoval::photonRemoval (const edm::ParameterSet & parameters)
       nameLepGammaPy = "EleGammaGenPy";
       nameLepGammaPz = "EleGammaGenPz";
       nameLepGammaE  = "EleGammaGenE";
+      nameLepGammaPt = "EleGammaGenPt";
+      nameLepGammaEta= "EleGammaGenEta";
+      nameLepTLorentz= "EleGenTLorentz";
    }
    else {
       nameLepGammaPx = "MuGammaGenPx";
       nameLepGammaPy = "MuGammaGenPy";
       nameLepGammaPz = "MuGammaGenPz";
       nameLepGammaE  = "MuGammaGenE";
+      nameLepGammaPt = "MuGammaGenPt";
+      nameLepGammaEta= "MuGammaGenEta";
+      nameLepTLorentz= "MuGenTLorentz";
    }
    produces<vectorLV>(nameLepGammaPx);
    produces<vectorLV>(nameLepGammaPy);
    produces<vectorLV>(nameLepGammaPz);
    produces<vectorLV>(nameLepGammaE);
+   produces<vectorLV>(nameLepGammaPt);
+   produces<vectorLV>(nameLepGammaEta);
    
    minZMass = -1;
    maxZMass = 9999;

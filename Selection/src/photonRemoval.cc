@@ -36,6 +36,10 @@ photonRemoval::produce(edm::Event & iEvent, edm::EventSetup const & iSetup)
    auto_ptr< vectorLV > EleGammaGenPy( new vectorLV);
    auto_ptr< vectorLV > EleGammaGenPz( new vectorLV);
    auto_ptr< vectorLV > EleGammaGenE( new vectorLV); 
+   auto_ptr< std::vector<float> > EleGammaGenRecPt( new std::vector<float> );
+   auto_ptr< std::vector<float> > EleGammaGenRecEta( new std::vector<float>); 
+   auto_ptr< std::vector<TLorentzVector> > leptonTLorenz( new std::vector<TLorentzVector>); 
+
    auto_ptr< reco::GenParticleCollection > pOutput( new reco::GenParticleCollection ); 
 
    Handle < reco::GenParticleCollection > particles;  
@@ -91,28 +95,32 @@ photonRemoval::produce(edm::Event & iEvent, edm::EventSetup const & iSetup)
    //stable_sort(gammaCone.begin(), gammaCone.end(), GreaterPt());
    //reco::GenParticle* ePlusTmp, eMinusTmp;
    double ePlusPt=-1, eMinusPt=-1;
-   double ePx=0, ePy=0;
+   double ePx=0, ePy=0, ePz=0, eEn=0;
    int ePlusI=-1, eMinusI=-1, eCont=0;
-   TLorentzVector ePlusP4, eMinusP4, zP4;
+   TLorentzVector ePlusP4, eMinusP4, zP4, eRecPlusP4, eRecMinusP4;
 
    for (vector<const reco::GenParticle*>::const_iterator itEl = eVector.begin(); itEl != eVector.end(); itEl++){
-      ePx=(*itEl)->px(); ePy=(*itEl)->py();
+      ePx=(*itEl)->px(); ePy=(*itEl)->py(); ePz=(*itEl)->pz(); eEn=(*itEl)->energy();
       for (vecEleGamma::const_iterator it = gammaCone.begin(); it!= gammaCone.end(); it++){
 	 if (it->first == *itEl ){
 	    ePx += (it->second)->px();
 	    ePy += (it->second)->py();
+	    ePz += (it->second)->pz();
+	    eEn += (it->second)->energy();
 	 }
       }
       if ( (*itEl)->pdgId()==pdgIdLepton && sqrt( ePx*ePx  + ePy*ePy)> ePlusPt ){
 	 ePlusPt = sqrt( ePx*ePx  + ePy*ePy);
 	 //ePlusTmp = *itEl;
 	 ePlusP4.SetPtEtaPhiM((*itEl)->pt(),(*itEl)->eta(),(*itEl)->phi(),(*itEl)->mass());
+	 eRecPlusP4.SetPxPyPzE( ePx, ePy, ePz, eEn); 
 	 ePlusI = eCont;
       }
       if ( (*itEl)->pdgId()==-pdgIdLepton && sqrt( ePx*ePx  + ePy*ePy)> eMinusPt ){
 	 eMinusPt = sqrt( ePx*ePx  + ePy*ePy);
 	 //eMinusTmp = *itEl;
 	 eMinusP4.SetPtEtaPhiM((*itEl)->pt(),(*itEl)->eta(),(*itEl)->phi(),(*itEl)->mass());
+	 eRecMinusP4.SetPxPyPzE( ePx, ePy, ePz, eEn);
 	 eMinusI = eCont;
       }
       eCont++;
@@ -136,6 +144,14 @@ photonRemoval::produce(edm::Event & iEvent, edm::EventSetup const & iSetup)
       EleGammaGenPz->push_back(eMinusP4.Pz());
       EleGammaGenE->push_back(ePlusP4.E());
       EleGammaGenE->push_back(eMinusP4.E());
+
+      EleGammaGenRecPt->push_back(eRecPlusP4.Pt());
+      EleGammaGenRecPt->push_back(eRecMinusP4.Pt());
+      EleGammaGenRecEta->push_back(eRecPlusP4.Eta());
+      EleGammaGenRecEta->push_back(eRecMinusP4.Eta());
+
+      leptonTLorenz->push_back(eRecMinusP4);
+      leptonTLorenz->push_back(eRecPlusP4);
    }
 
    
@@ -183,7 +199,11 @@ photonRemoval::produce(edm::Event & iEvent, edm::EventSetup const & iSetup)
    iEvent.put( EleGammaGenPy,nameLepGammaPy );
    iEvent.put( EleGammaGenPz,nameLepGammaPz );
    iEvent.put( EleGammaGenE,nameLepGammaE );
-   
+
+   iEvent.put( EleGammaGenRecPt,nameLepGammaPt );
+   iEvent.put( EleGammaGenRecEta,nameLepGammaEta );
+
+   //iEvent.put(leptonTLorenz,nameLepTLorentz);
 }
 
 
