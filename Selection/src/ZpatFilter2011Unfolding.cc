@@ -13,7 +13,6 @@ Implementation:
 //
 // Original Author:  Vieri Candelise, Matteo Marone & Davide Scaini
 //         Created:  Thu Dec 11 10:46:26 CEST 2011
-// $Id: ZpatFilter2011.cc,v 1.4 2012/09/21 09:14:13 marone Exp $
 //
 //
 

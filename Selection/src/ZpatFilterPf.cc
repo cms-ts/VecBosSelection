@@ -13,7 +13,6 @@ Implementation:
 //
 // Original Author:  Vieri Candelise, Matteo Marone & Davide Scaini
 //         Created:  Thu Dec 11 10:46:26 CEST 2011
-// $Id: ZpatFilterPf.cc,v 1.7 2012/03/29 17:55:39 montanin Exp $
 //
 //
 

@@ -13,7 +13,6 @@ Implementation:
 //
 // Original Author:  Vieri Candelise & Matteo Marone
 //         Created:  Wed May 11 14:53:26 CESDo2011
-// $Id: EfficiencyFilter.cc,v 1.31 2012/06/11 14:36:54 dellaric Exp $
 
 
 

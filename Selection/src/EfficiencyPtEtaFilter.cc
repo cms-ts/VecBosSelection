@@ -13,7 +13,6 @@ Implementation:
 //
 // Original Author:  superben
 //         Created:  Wed May 11 14:53:26 CESDo2011
-// $Id: EfficiencyPtEtaFilter.cc,v 1.20 2013/02/28 14:36:14 schizzi Exp $
 
 
 

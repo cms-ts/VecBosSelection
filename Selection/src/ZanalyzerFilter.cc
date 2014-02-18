@@ -13,7 +13,6 @@ Implementation:
 //
 // Original Author:  Vieri Candelise & Matteo Marone
 //         Created:  Wed May 11 14:53:26 CEST 2011
-// $Id: ZanalyzerFilter.cc,v 1.16 2011/11/23 13:57:31 marone Exp $
 //
 //
 

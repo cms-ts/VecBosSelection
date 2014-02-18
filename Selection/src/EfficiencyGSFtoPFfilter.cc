@@ -13,7 +13,6 @@ Implementation:
 //
 // Original Author:  superben
 //         Created:  Wed May 11 14:53:26 CESDo2011
-// $Id: EfficiencyGSFtoPFfilter.cc,v 1.4 2013/05/08 11:58:24 schizzi Exp $
 
 
 

@@ -15,7 +15,7 @@ using namespace reco;
 void
 goodEPairProducer2011::produce(edm::Event & iEvent, edm::EventSetup const & iSetup)
 {
-   
+  Debug2=false;   
    eleSelStepByStep->SetBinContent(2,eleSelStepByStep->GetBinContent(2)+1); //Number of events in which hlt has fired (1)
    // get gfs Electron  
    auto_ptr< reco::PFCandidateCollection > 
